@@ -32,19 +32,23 @@
     .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1; }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    /* Small preview popover */
-    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:100; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px) scale(1); transition:opacity .2s ease, transform .25s ease, visibility .2s ease, width .25s ease, height .25s ease; will-change:transform, width, height }
+    /* Small preview popover (unchanged hover behavior) */
+    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:100; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px) scale(1); transition:opacity .2s ease, transform .35s ease, visibility .2s ease; will-change:transform }
     .hover-wrap:hover .pop, .hot:focus + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
 
-    /* Expanded modal uses the SAME element, scaled up and centered */
-    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) scale(1); width:min(1000px, 80vw); height:min(70vh, 720px); max-height:85vh; border-radius:16px; padding:20px; overflow:auto; opacity:1; visibility:visible }
+    /* When opened, we morph THIS SAME element to center */
+    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; opacity:1; visibility:visible }
+
+    /* Backdrop */
+    body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90; pointer-events:none }
+
+    /* Morph animation states controlled by CSS vars */
+    .pop.morph{ transform:translate(calc(var(--dx,0px)), calc(var(--dy,0px))) scale(var(--fromScale,1)); }
+    .pop.morph.to-center{ transform:translate(0,0) scale(var(--toScale,1)); }
 
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
     .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap }
     .pop-grid img{ width:49%; height:auto; border-radius:8px; background:#222 }
-
-    /* Backdrop when modal is open */
-    body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90; pointer-events:none }
   </style>
 </head>
 <body>
@@ -75,21 +79,47 @@
   </main>
 
   <script>
-    // Click = expand the SAME preview; hover stays the lightweight preview
+    // Click = morph the SAME preview into a centered modal. Hover stays as-is.
     (function(){
       const wrap = document.querySelector('.hover-wrap');
       const hot = document.getElementById('designer-hot');
       const pop = document.getElementById('designer-pop');
 
       function open(){
-        if(!wrap) return;
+        if(!wrap || !pop) return;
+        // measure current small preview rect
+        const r = pop.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        // target scale to fit within 80vw x 70vh
+        const sx = (0.8*vw)/Math.max(r.width,1);
+        const sy = (0.7*vh)/Math.max(r.height,1);
+        const toScale = Math.min(sx, sy, 2.5);
+        // offset so pop center moves to viewport center
+        const dx = (vw/2 - (r.left + r.width/2));
+        const dy = (vh/2 - (r.top + r.height/2));
+        pop.style.setProperty('--dx', dx + 'px');
+        pop.style.setProperty('--dy', dy + 'px');
+        pop.style.setProperty('--fromScale', '1');
+        pop.style.setProperty('--toScale', String(toScale));
+
         wrap.classList.add('open');
         document.body.classList.add('modal-open');
+
+        // start from current spot, then animate to center
+        pop.classList.add('morph');
+        requestAnimationFrame(()=>{ pop.classList.add('to-center'); });
       }
       function close(){
-        if(!wrap) return;
-        wrap.classList.remove('open');
-        document.body.classList.remove('modal-open');
+        if(!wrap || !pop) return;
+        // animate back to original spot
+        pop.classList.remove('to-center');
+        const onEnd = ()=>{
+          pop.classList.remove('morph');
+          wrap.classList.remove('open');
+          document.body.classList.remove('modal-open');
+          pop.removeEventListener('transitionend', onEnd);
+        };
+        pop.addEventListener('transitionend', onEnd);
       }
 
       if(hot){ hot.addEventListener('click', (e)=>{ open(); e.stopPropagation(); }); }
