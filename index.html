@@ -32,12 +32,12 @@
     .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1; }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    /* Popover (small) */
-    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:100; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
-    .hover-wrap:hover .pop, .hot:focus + .pop, .hover-wrap.open .pop{ opacity:1; visibility:visible; transform:translateY(0) }
+    /* Small preview popover */
+    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:100; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px) scale(1); transition:opacity .2s ease, transform .25s ease, visibility .2s ease, width .25s ease, height .25s ease; will-change:transform, width, height }
+    .hover-wrap:hover .pop, .hot:focus + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
 
-    /* Expanded modal state */
-    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); width:min(1000px, 80vw); height:min(70vh, 720px); max-height:85vh; border-radius:16px; padding:20px; overflow:auto }
+    /* Expanded modal uses the SAME element, scaled up and centered */
+    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) scale(1); width:min(1000px, 80vw); height:min(70vh, 720px); max-height:85vh; border-radius:16px; padding:20px; overflow:auto; opacity:1; visibility:visible }
 
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
     .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap }
@@ -45,10 +45,6 @@
 
     /* Backdrop when modal is open */
     body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90; pointer-events:none }
-
-    /* Close button inside modal */
-    .pop .close{ position:sticky; top:0; display:inline-flex; margin-left:auto; border:1px solid rgba(255,255,255,.2); background:transparent; color:#e5e7eb; padding:6px 10px; border-radius:8px; cursor:pointer }
-    .hover-wrap.open .pop .close{ position:sticky }
   </style>
 </head>
 <body>
@@ -65,9 +61,8 @@
         <span class="hover-wrap">
           <button class="hot" id="designer-hot" aria-describedby="designer-pop" type="button">Designer</button>
           <span role="dialog" aria-modal="true" id="designer-pop" class="pop" aria-live="polite">
-            <button class="close" type="button" aria-label="Close">Close ✕</button>
             <strong>Designer</strong>
-            <span class="muted">Tap anywhere outside or press Esc to close.</span>
+            <span class="muted">Hover to preview. Click to expand. Press Esc or click outside to close.</span>
             <div class="pop-grid">
               <img src="/assets/designer1.jpg" alt="Design work 1" loading="lazy" />
               <img src="/assets/designer2.jpg" alt="Design work 2" loading="lazy" />
@@ -80,12 +75,11 @@
   </main>
 
   <script>
-    // Mobile/tap toggle for the Designer popover with modal expansion
+    // Click = expand the SAME preview; hover stays the lightweight preview
     (function(){
       const wrap = document.querySelector('.hover-wrap');
       const hot = document.getElementById('designer-hot');
       const pop = document.getElementById('designer-pop');
-      const closeBtn = pop ? pop.querySelector('.close') : null;
 
       function open(){
         if(!wrap) return;
@@ -99,13 +93,12 @@
       }
 
       if(hot){ hot.addEventListener('click', (e)=>{ open(); e.stopPropagation(); }); }
-      if(closeBtn){ closeBtn.addEventListener('click', (e)=>{ close(); e.stopPropagation(); }); }
       if(pop){ pop.addEventListener('click', (e)=>{ e.stopPropagation(); }); }
       document.addEventListener('click', close);
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
     })();
 
-    // Ransom title chaos generator with custom palettes
+    // Ransom title generator (kept as-is)
     (function(){
       const el = document.getElementById('ransom');
       if(!el) return;
