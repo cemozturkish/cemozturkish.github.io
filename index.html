@@ -20,14 +20,14 @@
 
     .hover-wrap{ position:relative; display:inline-block; transition:transform 0.2s ease; }
     .hot{ all:unset; cursor:pointer; color:inherit; text-decoration:underline; text-underline-offset:2px; display:inline-block; font-size:1em; line-height:1; transition:font-size 0.18s ease, color 0.2s ease }
-    .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1 }
+    .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1; }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:420px; z-index:20; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
+    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:600px; z-index:20; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
     .hover-wrap:hover .pop, .hot:focus + .pop, .hover-wrap.open .pop{ opacity:1; visibility:visible; transform:translateY(0) }
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
-    .pop-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
-    .pop-grid img{ width:100%; height:72px; object-fit:cover; border-radius:8px; background:#222 }
+    .pop-grid{ display:flex; flex-direction:column; gap:10px; }
+    .pop-grid img{ width:100%; height:auto; border-radius:8px; background:#222 }
   </style>
 </head>
 <body>
