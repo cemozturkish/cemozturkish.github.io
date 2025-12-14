@@ -14,7 +14,16 @@
     html,body{ margin:0; height:100%; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg); }
     a{ color:inherit; text-decoration:underline }
     .container{ max-width:1040px; margin:0 auto; padding:0 20px }
-    .hero{ display:block; padding:72px 0 }
+
+    /* Title area */
+    .site-title{ padding:36px 0 8px }
+    #ransom{ margin:0; line-height:1; display:block }
+    #ransom *{ margin:0 }
+
+    .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15); transform:rotate(var(--rot, 0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
+    .r-space{ width:14px; display:inline-block }
+
+    .hero{ display:block; padding:40px 0 72px }
     .hero h1{ font-size:clamp(14px,3vw,26px); margin:0 0 12px; line-height:1.4 }
     .hero p{ color:var(--muted); font-size:clamp(14px,2vw,16px); line-height:1.6; margin:0 }
 
@@ -23,15 +32,22 @@
     .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1; }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:800px; z-index:20; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
+    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:20; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
     .hover-wrap:hover .pop, .hot:focus + .pop, .hover-wrap.open .pop{ opacity:1; visibility:visible; transform:translateY(0) }
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
-    .pop-grid{ display:flex; flex-direction:row; gap:10px; align-items:center; justify-content:center; }
-    .pop-grid img{ width:48%; height:auto; border-radius:8px; background:#222 }
+    .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; }
+    .pop-grid img{ width:49%; height:auto; border-radius:8px; background:#222 }
   </style>
 </head>
 <body>
   <main class="container">
+    <section class="site-title" aria-labelledby="ransom" aria-live="polite">
+      <h1 id="ransom" data-text="cem was here"
+          data-palette-bg="#D7D7D5, #BB9D81, #C87E65, #D5974E, #949496, #6677A2"
+          data-palette-fg="#1F0B0D, #585858, #707070, #E21945, #DA896C, #BF5351, #BA3632"
+          aria-label="cem was here"></h1>
+    </section>
+
     <section class="hero">
       <h1>
         <span class="hover-wrap">
@@ -51,18 +67,56 @@
   </main>
 
   <script>
-    // Toggle tooltip on tap/click for mobile users
+    // Mobile/tap toggle for the Designer popover
     (function(){
       const wrap = document.querySelector('.hover-wrap');
       const hot = document.getElementById('designer-hot');
-      if(!wrap||!hot) return;
-      hot.addEventListener('click', (e)=>{
-        wrap.classList.toggle('open');
-        e.stopPropagation();
-      });
-      document.addEventListener('click', ()=>{ wrap.classList.remove('open'); });
-      // Close on Escape
-      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') wrap.classList.remove('open'); });
+      if(wrap && hot){
+        hot.addEventListener('click', (e)=>{ wrap.classList.toggle('open'); e.stopPropagation(); });
+        document.addEventListener('click', ()=> wrap.classList.remove('open'));
+        document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') wrap.classList.remove('open'); });
+      }
+    })();
+
+    // Ransom title chaos generator with custom palettes
+    (function(){
+      const el = document.getElementById('ransom');
+      if(!el) return;
+      const text = (el.dataset.text || el.getAttribute('aria-label') || 'cem was here');
+
+      const parseList = (s)=> (s||'').split(',').map(x=>x.trim()).filter(Boolean);
+      const piecesBg = parseList(el.getAttribute('data-palette-bg'));
+      const piecesFg = parseList(el.getAttribute('data-palette-fg'));
+      const fonts = [
+        'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
+        'ui-serif, Georgia, Times New Roman, serif',
+        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+        'Impact, Haettenschweiler, Arial Black, sans-serif',
+        'Trebuchet MS, Verdana, Tahoma, sans-serif'
+      ];
+
+      const rand = (min,max)=>Math.random()*(max-min)+min;
+      const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+      el.textContent = '';
+
+      for(const ch of text){
+        if(ch===' '){
+          const s = document.createElement('span');
+          s.className = 'r-space';
+          el.appendChild(s);
+          continue;
+        }
+        const span = document.createElement('span');
+        span.className = 'r-letter';
+        span.style.setProperty('--rot', rand(-8,8).toFixed(1)+'deg');
+        span.style.setProperty('--pieceBg', pick(piecesBg));
+        span.style.setProperty('--pieceFg', pick(piecesFg));
+        span.style.fontFamily = pick(fonts);
+        span.style.fontSize = (22 + Math.floor(rand(0,12))) + 'px';
+        span.textContent = Math.random()<0.35 ? ch.toUpperCase() : ch;
+        el.appendChild(span);
+      }
     })();
   </script>
 </body>
