@@ -9,19 +9,18 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="canonical" href="https://cemozturk.net/" />
   <style>
-    :root{ --bg:#3A3535; --fg:#C0ABAF; --muted:#B9B2AA; }
-    :root.light{ --bg:#F3EFEF; --fg:#2A2626; --muted:#5F5A58; }
+    :root{ --bg:#F0EEEF; --fg:#17111B; --muted:#5F5A58; }
     *{ box-sizing:border-box }
     html,body{ margin:0; height:100%; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg); }
     a{ color:inherit; text-decoration:underline }
     .container{ max-width:1040px; margin:0 auto; padding:0 20px }
     .hero{ display:block; padding:72px 0 }
-    .hero h1{ font-size:clamp(14px,3vw,26px); margin:0 0 12px }
+    .hero h1{ font-size:clamp(14px,3vw,26px); margin:0 0 12px; line-height:1.4 }
     .hero p{ color:var(--muted); font-size:clamp(14px,2vw,16px); line-height:1.6; margin:0 }
 
-    .hover-wrap{ position:relative; display:inline-block }
-    .hot{ all:unset; cursor:pointer; color:inherit; text-decoration:underline; text-underline-offset:2px; transition:transform 0.2s ease }
-    .hot:hover{ transform:scale(1.3); }
+    .hover-wrap{ position:relative; display:inline-block; transition:transform 0.2s ease; }
+    .hot{ all:unset; cursor:pointer; color:inherit; text-decoration:underline; text-underline-offset:2px; display:inline-block; transition:transform 0.2s ease, color 0.2s ease }
+    .hot:hover{ transform:scale(1.3); color:#66607C; position:relative; z-index:1; }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
     .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:420px; z-index:20; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
@@ -29,7 +28,6 @@
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
     .pop-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
     .pop-grid img{ width:100%; height:72px; object-fit:cover; border-radius:8px; background:#222 }
-    @media (prefers-color-scheme: light){ .pop{ background:#fff; color:#111; border-color:rgba(0,0,0,.12) } }
   </style>
 </head>
 <body>
