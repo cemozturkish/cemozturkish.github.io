@@ -9,43 +9,32 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="canonical" href="https://cemozturk.net/" />
   <style>
-    :root{ --bg:#F0EEEF; --fg:#17111B; --muted:#5F5A58; --rule:#D9D6D2 }
+    :root{ --bg:#F0EEEF; --fg:#17111B; --muted:#5F5A58; }
     *{ box-sizing:border-box }
-    html,body{ margin:0; height:100%; font-family:ui-serif, Georgia, "Times New Roman", serif; color:var(--fg); background:var(--bg); }
+    html,body{ margin:0; height:100%; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg); }
     a{ color:inherit; text-decoration:underline }
     .container{ max-width:1040px; margin:0 auto; padding:0 20px }
 
-    /* Subtle newsprint grain */
-    body:before{ content:""; position:fixed; inset:0; pointer-events:none; opacity:.06;
-      background:
-        repeating-linear-gradient(0deg, rgba(0,0,0,.03) 0 1px, transparent 1px 3px),
-        repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 1px, transparent 1px 4px);
-      mix-blend-mode:multiply; }
-
-    /* Title area with newspaper rules */
-    .site-title{ padding:52px 0 36px; text-align:center; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule) }
-    #ransom{ margin:0 auto; line-height:1.3; display:inline-block; transform:scale(1.4); transform-origin:center }
+    .site-title{ padding:60px 0 40px; text-align:left; }
+    #ransom{ margin:0; line-height:1.3; display:inline-block; transform:scale(1.4); transform-origin:left; }
     #ransom *{ margin:0 }
 
-    /* Ransom pieces refined */
-    .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; background:var(--pieceBg,#fff); color:var(--pieceFg,#111);
-      font-weight:800; letter-spacing:.2px; transform:translateY(var(--dy,0)) rotate(var(--rot,0deg)); margin-right:var(--kern,6px);
-      box-shadow:var(--shadow, 0 1px 0 rgba(0,0,0,.15)); border:1px solid var(--stroke, rgba(0,0,0,.15)); }
-    .r-space{ width:18px; display:inline-block }
+    .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15); transform:rotate(var(--rot, 0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
+    .r-space{ width:14px; display:inline-block }
 
     .hero{ display:block; padding:40px 0 72px }
     .hero h1{ font-size:clamp(14px,3vw,26px); margin:0 0 12px; line-height:1.4 }
     .hero p{ color:var(--muted); font-size:clamp(14px,2vw,16px); line-height:1.6; margin:0 }
 
-    .hover-wrap{ position:relative; display:inline-block; transition:transform 0.2s ease }
+    .hover-wrap{ position:relative; display:inline-block; transition:transform 0.2s ease; }
     .hot{ all:unset; cursor:pointer; color:inherit; text-decoration:underline; text-underline-offset:2px; display:inline-block; font-size:1em; line-height:1; transition:font-size 0.18s ease, color 0.2s ease }
-    .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1 }
+    .hot:hover{ font-size:1.3em; color:#66607C; position:relative; z-index:1; }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
     .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:20; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .15s ease, transform .15s ease, visibility .15s ease }
     .hover-wrap:hover .pop, .hot:focus + .pop, .hover-wrap.open .pop{ opacity:1; visibility:visible; transform:translateY(0) }
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
-    .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center }
+    .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; }
     .pop-grid img{ width:49%; height:auto; border-radius:8px; background:#222 }
   </style>
 </head>
@@ -88,18 +77,7 @@
       }
     })();
 
-    // Helpers
-    function hexToRgb(hex){
-      const h = hex.replace('#','');
-      const bigint = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
-      return { r:(bigint>>16)&255, g:(bigint>>8)&255, b:bigint&255 };
-    }
-    function luminance({r,g,b}){
-      const a=[r,g,b].map(v=>{ v/=255; return v<=0.03928? v/12.92 : Math.pow((v+0.055)/1.055,2.4); });
-      return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
-    }
-
-    // Ransom title chaos generator with refinements (no adjacent repeats, jitter, clustered drift)
+    // Ransom title chaos generator with custom palettes
     (function(){
       const el = document.getElementById('ransom');
       if(!el) return;
@@ -116,43 +94,29 @@
         'Trebuchet MS, Verdana, Tahoma, sans-serif'
       ];
 
-      const pickDiff = (arr,last)=>{ if(!arr.length) return last; let p; do{ p=arr[Math.floor(Math.random()*arr.length)]; }while(p===last && arr.length>1); return p; };
       const rand = (min,max)=>Math.random()*(max-min)+min;
+      const pickDiff = (arr,last)=>{ if(!arr.length) return last; let p; do{ p=arr[Math.floor(Math.random()*arr.length)]; }while(p===last && arr.length>1); return p; };
 
       el.textContent = '';
-      let lastBg=null, lastFg=null, drift=rand(-2,2);
+      let lastBg = null, lastFg = null;
 
-      for(let i=0;i<text.length;i++){
-        const ch = text[i];
+      for(const ch of text){
         if(ch===' '){
-          const s=document.createElement('span'); s.className='r-space'; el.appendChild(s); continue;
+          const s = document.createElement('span');
+          s.className = 'r-space';
+          el.appendChild(s);
+          continue;
         }
-        const span=document.createElement('span'); span.className='r-letter';
-        const bg = pickDiff(piecesBg, lastBg); lastBg=bg;
-        const fg = pickDiff(piecesFg, lastFg); lastFg=fg;
-
-        // rotation clusters: gentle wave every few letters
-        if(i%3===0) drift += rand(-1.0,1.0);
-        const rot = rand(-3,3) + drift;
-        const dy = rand(-3,2); // vertical jitter
-        const kern = Math.max(2, rand(2,10)); // irregular spacing
-
-        // shadow/outline based on background lightness
-        const lum = luminance(hexToRgb(bg));
-        const shadowColor = lum > 0.6 ? 'rgba(0,0,0,.25)' : 'rgba(255,255,255,.25)';
-        const strokeColor = lum > 0.6 ? 'rgba(0,0,0,.22)' : 'rgba(255,255,255,.22)';
-
-        span.style.setProperty('--rot', rot.toFixed(1)+'deg');
-        span.style.setProperty('--dy', dy.toFixed(0)+'px');
-        span.style.setProperty('--kern', kern.toFixed(0)+'px');
-        span.style.setProperty('--shadow', `0 ${lum>0.6?2:1}px 0 ${shadowColor}`);
-        span.style.setProperty('--stroke', strokeColor);
-
+        const span = document.createElement('span');
+        span.className = 'r-letter';
+        const bg = pickDiff(piecesBg, lastBg); lastBg = bg;
+        const fg = pickDiff(piecesFg, lastFg); lastFg = fg;
+        span.style.setProperty('--rot', rand(-8,8).toFixed(1)+'deg');
         span.style.setProperty('--pieceBg', bg);
         span.style.setProperty('--pieceFg', fg);
-        span.style.fontFamily = fonts[Math.floor(Math.random()*fonts.length)];
-        span.style.fontSize = (30 + Math.floor(rand(0,16))) + 'px';
-        span.textContent = Math.random()<0.3 ? ch.toUpperCase() : ch;
+        span.style.fontFamily = pickDiff(fonts);
+        span.style.fontSize = (28 + Math.floor(rand(0,14))) + 'px';
+        span.textContent = Math.random()<0.35 ? ch.toUpperCase() : ch;
         el.appendChild(span);
       }
     })();
