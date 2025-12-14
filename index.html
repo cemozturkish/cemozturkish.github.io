@@ -16,8 +16,8 @@
     .container{ max-width:1040px; margin:0 auto; padding:0 20px }
 
     /* Title area */
-    .site-title{ padding:36px 0 8px }
-    #ransom{ margin:0; line-height:1; display:block }
+    .site-title{ padding:60px 0 40px; text-align:center; }
+    #ransom{ margin:0 auto; line-height:1.3; display:inline-block; transform:scale(1.4); transform-origin:center; }
     #ransom *{ margin:0 }
 
     .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15); transform:rotate(var(--rot, 0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
@@ -96,9 +96,15 @@
       ];
 
       const rand = (min,max)=>Math.random()*(max-min)+min;
-      const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+      const pickDiff = (arr,last)=>{
+        if(!arr.length) return last;
+        let pick;
+        do { pick = arr[Math.floor(Math.random()*arr.length)]; } while(pick===last && arr.length>1);
+        return pick;
+      };
 
       el.textContent = '';
+      let lastBg = null, lastFg = null;
 
       for(const ch of text){
         if(ch===' '){
@@ -109,11 +115,13 @@
         }
         const span = document.createElement('span');
         span.className = 'r-letter';
+        const bg = pickDiff(piecesBg, lastBg); lastBg = bg;
+        const fg = pickDiff(piecesFg, lastFg); lastFg = fg;
         span.style.setProperty('--rot', rand(-8,8).toFixed(1)+'deg');
-        span.style.setProperty('--pieceBg', pick(piecesBg));
-        span.style.setProperty('--pieceFg', pick(piecesFg));
-        span.style.fontFamily = pick(fonts);
-        span.style.fontSize = (22 + Math.floor(rand(0,12))) + 'px';
+        span.style.setProperty('--pieceBg', bg);
+        span.style.setProperty('--pieceFg', fg);
+        span.style.fontFamily = fonts[Math.floor(Math.random()*fonts.length)];
+        span.style.fontSize = (28 + Math.floor(rand(0,14))) + 'px';
         span.textContent = Math.random()<0.35 ? ch.toUpperCase() : ch;
         el.appendChild(span);
       }
