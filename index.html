@@ -10,165 +10,137 @@
   <link rel="canonical" href="https://cemozturk.net/" />
   <meta property="og:type" content="website">
   <meta property="og:title" content="Cem Ozturk">
-  <meta property="og:description" content="Student, researcher, and creator.">
+  <meta property="og:description" content="Student, researcher, and creator. Projects at the edge of politics, philosophy, and media.">
   <meta property="og:url" content="https://cemozturk.net/">
   <meta property="og:image" content="https://cemozturk.net/assets/cover.jpg">
   <meta name="twitter:card" content="summary_large_image">
 
   <style>
-    :root{
-      --bg:#D9D9D9; --fg:#17111B; --muted:#595959;
-      --card:#fff; --line:#e7e7e7; --accent:#66607C;
-    }
+    :root{ --bg:#D9D9D9; --fg:#17111B; --muted:#5F5A58; }
     *{ box-sizing:border-box }
-    html,body{ margin:0; height:100%; background:var(--bg); color:var(--fg);
-      font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    html,body{ margin:0; height:100%; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg); }
     a{ color:inherit; text-decoration:underline; text-underline-offset:2px }
-
     .container{ max-width:1040px; margin:0 auto; padding:0 20px }
-    header{ padding:24px 0 10px; border-bottom:1px solid var(--line) }
 
-    /* Ransom title */
-    .site-title{ text-align:center; padding:18px 0 8px }
+    /* Centered ransom title */
+    .site-title{ padding:60px 0 40px; text-align:center; }
     #ransom{ margin:0 auto; line-height:1.3; display:inline-block; transform:scale(1.4); transform-origin:center; min-height:3.6rem }
-    .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15);
-      transform:rotate(var(--rot,0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
+    #ransom *{ margin:0 }
+
+    .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15); transform:rotate(var(--rot, 0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
     .r-space{ width:14px; display:inline-block }
-    .lead{ text-align:center; color:var(--muted); margin:8px 0 22px }
 
-    /* Blocks */
-    .section{ padding:26px 0 }
-    .h2{ font-size:clamp(18px,3vw,24px); margin:0 0 12px }
-    .grid{ display:grid; gap:14px }
-    @media (min-width:760px){ .grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (min-width:1020px){ .grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    .hero{ display:block; padding:40px 0 72px }
+    .hero h1{ font-size:clamp(14px,3vw,26px); margin:0 0 12px; line-height:1.4 }
+    .hero p{ color:var(--muted); font-size:clamp(14px,2vw,16px); line-height:1.6; margin:0 }
 
-    .block{
-      background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px;
-      display:flex; flex-direction:column; gap:10px; min-height:120px;
+    .hover-wrap{ position:relative; display:inline-block; }
+    .hot{ all:unset; cursor:pointer; color:inherit; text-decoration:underline; text-underline-offset:2px; display:inline-block; font-size:1em; line-height:1; transition:font-size .18s ease, color .2s ease }
+    .hot:hover{ font-size:1.3em; color:#66607C }
+    .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
+
+    .pop{
+      position:absolute; left:0; top:calc(100% + 10px);
+      min-width:280px; max-width:900px; z-index:100;
+      background:rgba(20,20,22,.96); color:#e5e7eb;
+      border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);
+      opacity:0; visibility:hidden; transform:translateY(-4px) scale(1);
+      transition:opacity .2s ease, transform .35s ease, visibility .2s ease;
+      will-change:transform;
+      max-height:80vh; overflow:auto;
     }
-    .block h3{ margin:0; font-size:16px }
-    .block p{ margin:0; color:var(--fg); line-height:1.55 }
-    .muted{ color:var(--muted) }
+    .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
 
-    /* Block variants */
-    .note{ }
-    .quote{ border-left:4px solid var(--accent); background:#fbfbfb }
-    .quote p{ font-style:italic }
-    .imgcap img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; background:#222 }
-    .imgcap figcaption{ font-size:13px; color:var(--muted); margin-top:6px }
+    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) }
 
-    /* Big free text area */
-    .bigpad{
-      background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; line-height:1.7;
-    }
+    body.modal-open{ overflow:hidden }
+    body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90 }
 
-    footer{ margin:28px 0 40px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; text-align:center }
+    .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
+    .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap }
+    .pop-grid img{ width:49%; height:auto; aspect-ratio:4/3; border-radius:8px; background:#222 }
 
     @media (prefers-reduced-motion: reduce){
-      *,*::before,*::after{ animation:none !important; transition:none !important }
+      *, *::before, *::after{ animation:none !important; transition:none !important }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container site-title" aria-labelledby="ransom" aria-live="polite">
-      <h1 id="ransom"
-          data-text="cem was here"
+  <main class="container">
+    <section class="site-title" aria-labelledby="ransom" aria-live="polite">
+      <h1 id="ransom" data-text="cem was here"
           data-palette-bg="#D7D7D5, #BEBEBE, #AFAFAF, #B9B9B9, #949496, #898989"
           data-palette-fg="#1F0B0D, #585858, #707070, #E21945, #DA896C, #BF5351, #BA3632"
-          aria-label="cem was here"><noscript>cem was here</noscript></h1>
-      <p class="lead">[ One clear sentence about what you do. ]</p>
-    </div>
-  </header>
-
-  <main class="container" id="top">
-    <!-- Quick Intro (editable sentences) -->
-    <section class="section" aria-labelledby="intro-h">
-      <h2 id="intro-h" class="h2">Intro</h2>
-      <div class="bigpad">
-        <p>[ Sentence 1 about your current focus. ]</p>
-        <p>[ Sentence 2 tying politics/philosophy/media. ]</p>
-        <p class="muted">[ Optional softer line or tagline. ]</p>
-      </div>
+          aria-label="cem was here">
+        <noscript>cem was here</noscript>
+      </h1>
     </section>
 
-    <!-- Slots you can fill with your sentences -->
-    <section class="section" aria-labelledby="slots-h">
-      <h2 id="slots-h" class="h2">Highlights</h2>
-      <div class="grid">
-        <article class="block note">
-          <h3>[ Title or theme ]</h3>
-          <p>[ One or two sentences go here. Keep it tight. ]</p>
-        </article>
-
-        <article class="block note">
-          <h3>[ Another thing you want to say ]</h3>
-          <p>[ A crisp claim or summary. ]</p>
-        </article>
-
-        <article class="block quote" aria-label="Quote">
-          <h3 class="muted">Quote</h3>
-          <p>“[ A line you stand by. ]”</p>
-          <p class="muted">— [ Source or you ]</p>
-        </article>
-
-        <figure class="block imgcap">
-          <img src="/assets/designer1.jpg" alt="[ short alt text ]" loading="lazy" />
-          <figcaption>[ Image caption or context. ]</figcaption>
-        </figure>
-
-        <article class="block note">
-          <h3>[ Ongoing project / thread ]</h3>
-          <p>[ One sentence about status or what’s next. ]</p>
-        </article>
-
-        <article class="block note">
-          <h3>[ Contact / availability ]</h3>
-          <p>Email: <a href="mailto:hello@cemozturk.net">hello@cemozturk.net</a></p>
-        </article>
-      </div>
-    </section>
-
-    <!-- Writing list (simple links you can fill later) -->
-    <section class="section" aria-labelledby="writing-h">
-      <h2 id="writing-h" class="h2">Writing</h2>
-      <div class="grid">
-        <article class="block note">
-          <h3><a href="#">[ Piece title ]</a></h3>
-          <p class="muted">[ short descriptor ]</p>
-        </article>
-        <article class="block note">
-          <h3><a href="#">[ Piece title ]</a></h3>
-          <p class="muted">[ short descriptor ]</p>
-        </article>
-        <article class="block note">
-          <h3><a href="#">[ Piece title ]</a></h3>
-          <p class="muted">[ short descriptor ]</p>
-        </article>
-      </div>
-    </section>
-
-    <!-- Music embed placeholder -->
-    <section class="section" aria-labelledby="music-h">
-      <h2 id="music-h" class="h2">Music</h2>
-      <div class="bigpad">
-        <!-- Replace about:blank with a real player URL when ready -->
-        <iframe title="Player" src="about:blank" style="width:100%; height:300px; border:0; background:#fff"></iframe>
-        <p class="muted" style="margin-top:10px">[ Drop a public player link here later. ]</p>
-      </div>
+    <section class="hero">
+      <h1>
+        <span class="hover-wrap">
+          <button class="hot" id="designer-hot" aria-controls="designer-pop" aria-expanded="false" type="button">Designer</button>
+          <span role="dialog" aria-modal="true" id="designer-pop" class="pop" aria-labelledby="designer-hot" aria-live="polite">
+            <strong>Designer</strong>
+            <span class="muted">Hover to preview. Click to expand. Press Esc or click outside to close.</span>
+            <div class="pop-grid">
+              <img src="/assets/designer1.jpg" alt="Design work 1" loading="lazy" width="800" height="600" />
+              <img src="/assets/designer2.jpg" alt="Design work 2" loading="lazy" width="800" height="600" />
+            </div>
+          </span>
+        </span>, researcher, and student building at the edge of politics, philosophy, and media.
+      </h1>
+      <p>This site is a simple, fast, static home for my projects. I’ll publish essays, maps, and music here as they mature. For now, a tidy snapshot.</p>
     </section>
   </main>
 
-  <footer>
-    © <span id="y"></span> Cem Ozturk · <a href="https://github.com/cemozturkish">GitHub</a>
-  </footer>
-
   <script defer>
-    // Year
-    document.getElementById('y').textContent = new Date().getFullYear();
+    (function(){
+      const wrap = document.querySelector('.hover-wrap');
+      const hot  = document.getElementById('designer-hot');
+      const pop  = document.getElementById('designer-pop');
+      if(!wrap || !hot || !pop) return;
+      let lastFocus = null;
+      const getFocusable = el =>
+        [...el.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])')]
+          .filter(e => !e.disabled && e.offsetParent !== null);
 
-    // Ransom title generator (grayscale tiles + your colored text palette)
+      function open(){
+        const r1 = pop.getBoundingClientRect();
+        wrap.classList.add('open');
+        document.body.classList.add('modal-open');
+        hot.setAttribute('aria-expanded','true');
+        lastFocus = document.activeElement;
+        pop.getBoundingClientRect();
+        const r2 = pop.getBoundingClientRect();
+        const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
+        const dy = (r1.top  + r1.height/2) - (r2.top  + r2.height/2);
+        const scale = Math.min(r1.width / r2.width, r1.height / r2.height);
+        pop.style.transition = 'none';
+        pop.style.transform  = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        pop.getBoundingClientRect();
+        pop.style.transition = 'transform 350ms ease';
+        pop.style.transform  = 'translate(0,0) scale(1)';
+        const focusables = getFocusable(pop);
+        (focusables[0] || pop).focus({preventScroll:true});
+      }
+
+      function close(){
+        wrap.classList.remove('open');
+        document.body.classList.remove('modal-open');
+        hot.setAttribute('aria-expanded','false');
+        if(lastFocus) lastFocus.focus({preventScroll:true});
+      }
+
+      hot.addEventListener('click', e => { e.stopPropagation(); open(); });
+      pop.addEventListener('click', e => e.stopPropagation());
+      document.addEventListener('click', () => { if(wrap.classList.contains('open')) close(); });
+      document.addEventListener('keydown', e => {
+        if(e.key==='Escape' && wrap.classList.contains('open')) close();
+      });
+    })();
+
     (function(){
       const el = document.getElementById('ransom');
       if(!el) return;
@@ -185,13 +157,12 @@
       ];
       const rand = (min,max)=>Math.random()*(max-min)+min;
       const pickDiff = (arr,last)=>{ if(!arr.length) return last; let p; do{ p=arr[Math.floor(Math.random()*arr.length)]; }while(p===last && arr.length>1); return p; };
-
       el.textContent = '';
       let lastBg = null, lastFg = null;
       for(const ch of text){
         if(ch===' '){ const s=document.createElement('span'); s.className='r-space'; el.appendChild(s); continue; }
         const span = document.createElement('span');
-        span.className = 'r-letter';
+        span.className='r-letter';
         const bg = pickDiff(piecesBg, lastBg); lastBg = bg;
         const fg = pickDiff(piecesFg, lastFg); lastFg = fg;
         span.style.setProperty('--rot', rand(-8,8).toFixed(1)+'deg');
