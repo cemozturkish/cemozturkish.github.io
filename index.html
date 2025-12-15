@@ -1,4 +1,4 @@
-<!doctype html>
+,<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -37,7 +37,7 @@
     .hot:hover{ font-size:1.3em; color:#66607C }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    /* Modal */
+    /* Base popover */
     .pop{
       position:absolute; left:0; top:calc(100% + 10px);
       min-width:280px; max-width:900px; z-index:100;
@@ -50,39 +50,36 @@
       max-height:80vh; overflow:auto;
     }
 
+    /* Hover preview visible */
     .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
+
+    /* Preview layout: keep natural aspect, smaller */
+    .pop .pop-grid{
+      display:flex; gap:12px; align-items:flex-start; justify-content:center;
+      flex-wrap:nowrap; overflow:auto hidden; padding:6px 2px;
+    }
+    .pop .pop-grid img{
+      height:180px; width:auto; max-width:100%;
+      border-radius:8px; background:#222; object-fit:contain;
+    }
+
+    /* Modal state: force true center, larger images side-by-side */
     .pop.is-open{
       position:fixed; left:50%; top:50%;
       transform:translate(-50%,-50%) !important;
       opacity:1; visibility:visible;
     }
+    .pop.is-open .pop-grid{ gap:14px; flex-wrap:nowrap; }
+    .pop.is-open .pop-grid img{ height:60vh; width:auto; }
 
     body.modal-open{ overflow:hidden }
     body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90 }
 
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
 
-    /* FIXED: keep natural proportions, side by side */
-    .pop-grid{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-      justify-content:center;
-      flex-wrap:nowrap;
-      overflow:auto hidden;
-      padding:6px 2px;
-    }
-    .pop-grid img{
-      height:60vh;
-      width:auto;
-      max-width:100%;
-      border-radius:8px;
-      background:#222;
-      object-fit:contain;
-    }
     @media (max-width:700px){
-      .pop-grid{ flex-wrap:wrap; }
-      .pop-grid img{ height:auto; width:100%; }
+      .pop.is-open .pop-grid{ flex-wrap:wrap; }
+      .pop.is-open .pop-grid img{ height:auto; width:100%; }
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -121,10 +118,9 @@
 
   <script defer>
     (function(){
-      const wrap = document.querySelector('.hover-wrap');
       const hot  = document.getElementById('designer-hot');
       const pop  = document.getElementById('designer-pop');
-      if(!wrap || !hot || !pop) return;
+      if(!hot || !pop) return;
 
       let lastFocus = null;
       const getFocusable = el =>
@@ -192,3 +188,4 @@
   </script>
 </body>
 </html>
+
