@@ -8,6 +8,7 @@
   <meta name="robots" content="index,follow" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="canonical" href="https://cemozturk.net/" />
+
   <meta property="og:type" content="website">
   <meta property="og:title" content="Cem Ozturk">
   <meta property="og:description" content="Student, researcher, and creator. Projects at the edge of politics, philosophy, and media.">
@@ -39,6 +40,7 @@
     .hot:hover{ font-size:1.3em; color:#66607C }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
+    /* Popover / modal */
     .pop{
       position:absolute; left:0; top:calc(100% + 10px);
       min-width:280px; max-width:900px; z-index:100;
@@ -50,9 +52,14 @@
       will-change:transform;
       max-height:80vh; overflow:auto;
     }
+    /* Hover preview */
     .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
-
-    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) }
+    /* Robust centered modal state (beats Safari weirdness) */
+    .pop.is-open{
+      position:fixed; left:50%; top:50%;
+      transform:translate(-50%,-50%) !important;
+      opacity:1; visibility:visible;
+    }
 
     body.modal-open{ overflow:hidden }
     body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90 }
@@ -71,7 +78,7 @@
     <section class="site-title" aria-labelledby="ransom" aria-live="polite">
       <h1 id="ransom" data-text="cem was here"
           data-palette-bg="#D7D7D5, #BEBEBE, #AFAFAF, #B9B9B9, #949496, #898989"
-          data-palette-fg="#1F0B0D, #585858, #707070, #E21945, #DA896C, #BF5351, #BA3632"
+          data-palette-fg="#111111, #222222, #333333, #444444, #555555, #666666"
           aria-label="cem was here">
         <noscript>cem was here</noscript>
       </h1>
@@ -101,33 +108,23 @@
       const hot  = document.getElementById('designer-hot');
       const pop  = document.getElementById('designer-pop');
       if(!wrap || !hot || !pop) return;
+
       let lastFocus = null;
       const getFocusable = el =>
         [...el.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])')]
           .filter(e => !e.disabled && e.offsetParent !== null);
 
       function open(){
-        const r1 = pop.getBoundingClientRect();
-        wrap.classList.add('open');
         document.body.classList.add('modal-open');
         hot.setAttribute('aria-expanded','true');
         lastFocus = document.activeElement;
-        pop.getBoundingClientRect();
-        const r2 = pop.getBoundingClientRect();
-        const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
-        const dy = (r1.top  + r1.height/2) - (r2.top  + r2.height/2);
-        const scale = Math.min(r1.width / r2.width, r1.height / r2.height);
-        pop.style.transition = 'none';
-        pop.style.transform  = `translate(${dx}px, ${dy}px) scale(${scale})`;
-        pop.getBoundingClientRect();
-        pop.style.transition = 'transform 350ms ease';
-        pop.style.transform  = 'translate(0,0) scale(1)';
+        pop.classList.add('is-open'); // force fixed centered modal
         const focusables = getFocusable(pop);
         (focusables[0] || pop).focus({preventScroll:true});
       }
 
       function close(){
-        wrap.classList.remove('open');
+        pop.classList.remove('is-open');
         document.body.classList.remove('modal-open');
         hot.setAttribute('aria-expanded','false');
         if(lastFocus) lastFocus.focus({preventScroll:true});
@@ -135,9 +132,9 @@
 
       hot.addEventListener('click', e => { e.stopPropagation(); open(); });
       pop.addEventListener('click', e => e.stopPropagation());
-      document.addEventListener('click', () => { if(wrap.classList.contains('open')) close(); });
+      document.addEventListener('click', () => { if(pop.classList.contains('is-open')) close(); });
       document.addEventListener('keydown', e => {
-        if(e.key==='Escape' && wrap.classList.contains('open')) close();
+        if(e.key==='Escape' && pop.classList.contains('is-open')) close();
       });
     })();
 
@@ -157,6 +154,7 @@
       ];
       const rand = (min,max)=>Math.random()*(max-min)+min;
       const pickDiff = (arr,last)=>{ if(!arr.length) return last; let p; do{ p=arr[Math.floor(Math.random()*arr.length)]; }while(p===last && arr.length>1); return p; };
+
       el.textContent = '';
       let lastBg = null, lastFg = null;
       for(const ch of text){
@@ -165,7 +163,7 @@
         span.className='r-letter';
         const bg = pickDiff(piecesBg, lastBg); lastBg = bg;
         const fg = pickDiff(piecesFg, lastFg); lastFg = fg;
-        span.style.setProperty('--rot', rand(-8,8).toFixed(1)+'deg');
+        span.style.setProperty('--rot', rand(-6,6).toFixed(1)+'deg'); /* slightly calmer */
         span.style.setProperty('--pieceBg', bg);
         span.style.setProperty('--pieceFg', fg);
         span.style.fontFamily = fonts[Math.floor(Math.random()*fonts.length)];
