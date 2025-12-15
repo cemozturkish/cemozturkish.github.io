@@ -9,7 +9,7 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="canonical" href="https://cemozturk.net/" />
 
-  <!-- Social share (optional but nice) -->
+  <!-- Social (optional) -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Cem Ozturk">
   <meta property="og:description" content="Student, researcher, and creator. Projects at the edge of politics, philosophy, and media.">
@@ -43,16 +43,24 @@
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
     /* Popover / modal */
-    .pop{ position:absolute; left:0; top:calc(100% + 10px); min-width:280px; max-width:900px; z-index:100; background:rgba(20,20,22,.96); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); opacity:0; visibility:hidden; transform:translateY(-4px) scale(1); transition:opacity .2s ease, transform .35s ease, visibility .2s ease; will-change:transform }
+    .pop{
+      position:absolute; left:0; top:calc(100% + 10px);
+      min-width:280px; max-width:900px; z-index:100;
+      background:rgba(20,20,22,.96); color:#e5e7eb;
+      border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);
+      opacity:0; visibility:hidden; transform:translateY(-4px) scale(1);
+      transition:opacity .2s ease, transform .35s ease, visibility .2s ease;
+      will-change:transform;
+      max-height:80vh; overflow:auto;
+    }
     .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
 
-    .hover-wrap.open .pop{ position:fixed; left:50%; top:50% }
+    /* When opened as modal, fixed and centered */
+    .hover-wrap.open .pop{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) }
 
     body.modal-open{ overflow:hidden }
     body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90 }
-
-    .pop.morph{ transform:translate(var(--dx,0px), var(--dy,0px)) scale(var(--fromScale,1)) }
-    .pop.morph.to-center{ transform:translate(0,0) scale(var(--toScale,1)) }
 
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
     .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap }
@@ -93,7 +101,7 @@
   </main>
 
   <script defer>
-    // Modal open/close with focus trap and ARIA updates
+    /* Modal with FLIP centering + focus trap */
     (function(){
       const wrap = document.querySelector('.hover-wrap');
       const hot  = document.getElementById('designer-hot');
@@ -102,56 +110,80 @@
 
       let lastFocus = null;
 
-      function getFocusable(el){
-        return [...el.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])')].filter(e=>!e.disabled && e.offsetParent!==null);
-      }
+      const getFocusable = el =>
+        [...el.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])')]
+          .filter(e => !e.disabled && e.offsetParent !== null);
 
       function open(){
-        const r = pop.getBoundingClientRect();
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const sx = (0.8*vw)/Math.max(r.width,1);
-        const sy = (0.7*vh)/Math.max(r.height,1);
-        const toScale = Math.min(sx, sy, 2.5);
-        const dx = (vw/2 - (r.left + r.width/2));
-        const dy = (vh/2 - (r.top + r.height/2));
-        pop.style.setProperty('--dx', dx + 'px');
-        pop.style.setProperty('--dy', dy + 'px');
-        pop.style.setProperty('--fromScale', '1');
-        pop.style.setProperty('--toScale', String(toScale));
+        // 1) measure current (hover) rect
+        const r1 = pop.getBoundingClientRect();
 
-        lastFocus = document.activeElement;
+        // 2) move to fixed-centered without showing jump
         wrap.classList.add('open');
         document.body.classList.add('modal-open');
         hot.setAttribute('aria-expanded','true');
+        lastFocus = document.activeElement;
 
-        pop.classList.add('morph');
-        requestAnimationFrame(()=>{ pop.classList.add('to-center'); });
+        pop.getBoundingClientRect(); // reflow
+
+        // 3) measure final rect
+        const r2 = pop.getBoundingClientRect();
+
+        // 4) invert
+        const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
+        const dy = (r1.top  + r1.height/2) - (r2.top  + r2.height/2);
+        const scale = Math.min(
+          r1.width  / Math.max(r2.width,1),
+          r1.height / Math.max(r2.height,1)
+        );
+
+        pop.style.transition = 'none';
+        pop.style.transform  = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        pop.getBoundingClientRect(); // reflow
+        pop.style.transition = 'transform 350ms ease';
+        pop.style.transform  = 'translate(0,0) scale(1)';
 
         const focusables = getFocusable(pop);
         (focusables[0] || pop).focus({preventScroll:true});
       }
 
       function close(){
-        pop.classList.remove('to-center');
-        const onEnd = ()=>{
-          pop.classList.remove('morph');
-          wrap.classList.remove('open');
-          document.body.classList.remove('modal-open');
-          hot.setAttribute('aria-expanded','false');
-          pop.removeEventListener('transitionend', onEnd);
-          if(lastFocus) lastFocus.focus({preventScroll:true});
-        };
-        pop.addEventListener('transitionend', onEnd, {once:true});
+        // play back to hover rect
+        const r2 = pop.getBoundingClientRect(); // current center
+        wrap.classList.remove('open');          // snap DOM to hover
+        pop.getBoundingClientRect();            // reflow
+        const r1 = pop.getBoundingClientRect(); // hover rect
+
+        const dx = (r1.left + r1.width/2) - (r2.left + r2.width/2);
+        const dy = (r1.top  + r1.height/2) - (r2.top  + r2.height/2);
+        const scale = Math.min(
+          r1.width  / Math.max(r2.width,1),
+          r1.height / Math.max(r2.height,1)
+        );
+
+        wrap.classList.add('open');             // keep visually centered
+        pop.style.transition = 'none';
+        pop.style.transform  = 'translate(0,0) scale(1)';
+        pop.getBoundingClientRect();
+
+        requestAnimationFrame(()=>{
+          pop.style.transition = 'transform 300ms ease';
+          pop.style.transform  = `translate(${dx}px, ${dy}px) scale(${scale})`;
+          pop.addEventListener('transitionend', () => {
+            pop.style.transition = '';
+            pop.style.transform  = '';
+            wrap.classList.remove('open');      // actually back to hover
+            document.body.classList.remove('modal-open');
+            hot.setAttribute('aria-expanded','false');
+            if(lastFocus) lastFocus.focus({preventScroll:true});
+          }, {once:true});
+        });
       }
 
-      hot.addEventListener('click', (e)=>{ e.stopPropagation(); open(); });
-      pop.addEventListener('click', (e)=>{ e.stopPropagation(); });
-
-      document.addEventListener('click', ()=>{
-        if(wrap.classList.contains('open')) close();
-      });
-
-      document.addEventListener('keydown', (e)=>{
+      hot.addEventListener('click', e => { e.stopPropagation(); open(); });
+      pop.addEventListener('click', e => e.stopPropagation());
+      document.addEventListener('click', () => { if(wrap.classList.contains('open')) close(); });
+      document.addEventListener('keydown', e => {
         if(e.key==='Escape' && wrap.classList.contains('open')) close();
         if(e.key==='Tab' && wrap.classList.contains('open')){
           const items = getFocusable(pop);
@@ -163,13 +195,13 @@
       });
     })();
 
-    // Ransom title generator
+    /* Ransom title generator */
     (function(){
       const el = document.getElementById('ransom');
       if(!el) return;
       const text = (el.dataset.text || el.getAttribute('aria-label') || 'cem was here');
 
-      const parseList = (s)=> (s||'').split(',').map(x=>x.trim()).filter(Boolean);
+      const parseList = s => (s||'').split(',').map(x=>x.trim()).filter(Boolean);
       const piecesBg = parseList(el.getAttribute('data-palette-bg'));
       const piecesFg = parseList(el.getAttribute('data-palette-fg'));
       const fonts = [
@@ -187,12 +219,7 @@
       let lastBg = null, lastFg = null;
 
       for(const ch of text){
-        if(ch===' '){
-          const s = document.createElement('span');
-          s.className = 'r-space';
-          el.appendChild(s);
-          continue;
-        }
+        if(ch===' '){ const s=document.createElement('span'); s.className='r-space'; el.appendChild(s); continue; }
         const span = document.createElement('span');
         span.className = 'r-letter';
         const bg = pickDiff(piecesBg, lastBg); lastBg = bg;
@@ -200,7 +227,7 @@
         span.style.setProperty('--rot', rand(-8,8).toFixed(1)+'deg');
         span.style.setProperty('--pieceBg', bg);
         span.style.setProperty('--pieceFg', fg);
-        span.style.fontFamily = (fonts[Math.floor(Math.random()*fonts.length)]);
+        span.style.fontFamily = fonts[Math.floor(Math.random()*fonts.length)];
         span.style.fontSize = (28 + Math.floor(rand(0,14))) + 'px';
         span.textContent = Math.random()<0.35 ? ch.toUpperCase() : ch;
         el.appendChild(span);
