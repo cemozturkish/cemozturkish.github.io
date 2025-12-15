@@ -8,7 +8,6 @@
   <meta name="robots" content="index,follow" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="canonical" href="https://cemozturk.net/" />
-
   <meta property="og:type" content="website">
   <meta property="og:title" content="Cem Ozturk">
   <meta property="og:description" content="Student, researcher, and creator. Projects at the edge of politics, philosophy, and media.">
@@ -23,11 +22,9 @@
     a{ color:inherit; text-decoration:underline; text-underline-offset:2px }
     .container{ max-width:1040px; margin:0 auto; padding:0 20px }
 
-    /* Centered ransom title */
     .site-title{ padding:60px 0 40px; text-align:center; }
     #ransom{ margin:0 auto; line-height:1.3; display:inline-block; transform:scale(1.4); transform-origin:center; min-height:3.6rem }
     #ransom *{ margin:0 }
-
     .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15); transform:rotate(var(--rot, 0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
     .r-space{ width:14px; display:inline-block }
 
@@ -40,7 +37,7 @@
     .hot:hover{ font-size:1.3em; color:#66607C }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    /* Popover / modal */
+    /* Modal */
     .pop{
       position:absolute; left:0; top:calc(100% + 10px);
       min-width:280px; max-width:900px; z-index:100;
@@ -52,9 +49,8 @@
       will-change:transform;
       max-height:80vh; overflow:auto;
     }
-    /* Hover preview */
+
     .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
-    /* Robust centered modal state (beats Safari weirdness) */
     .pop.is-open{
       position:fixed; left:50%; top:50%;
       transform:translate(-50%,-50%) !important;
@@ -65,8 +61,29 @@
     body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90 }
 
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
-    .pop-grid{ display:flex; flex-direction:row; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap }
-    .pop-grid img{ width:49%; height:auto; aspect-ratio:4/3; border-radius:8px; background:#222 }
+
+    /* FIXED: keep natural proportions, side by side */
+    .pop-grid{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:center;
+      flex-wrap:nowrap;
+      overflow:auto hidden;
+      padding:6px 2px;
+    }
+    .pop-grid img{
+      height:60vh;
+      width:auto;
+      max-width:100%;
+      border-radius:8px;
+      background:#222;
+      object-fit:contain;
+    }
+    @media (max-width:700px){
+      .pop-grid{ flex-wrap:wrap; }
+      .pop-grid img{ height:auto; width:100%; }
+    }
 
     @media (prefers-reduced-motion: reduce){
       *, *::before, *::after{ animation:none !important; transition:none !important }
@@ -92,8 +109,8 @@
             <strong>Designer</strong>
             <span class="muted">Hover to preview. Click to expand. Press Esc or click outside to close.</span>
             <div class="pop-grid">
-              <img src="/assets/designer1.jpg" alt="Design work 1" loading="lazy" width="800" height="600" />
-              <img src="/assets/designer2.jpg" alt="Design work 2" loading="lazy" width="800" height="600" />
+              <img src="/assets/designer1.jpg" alt="Design work 1" loading="lazy" />
+              <img src="/assets/designer2.jpg" alt="Design work 2" loading="lazy" />
             </div>
           </span>
         </span>, researcher, and student building at the edge of politics, philosophy, and media.
@@ -118,7 +135,7 @@
         document.body.classList.add('modal-open');
         hot.setAttribute('aria-expanded','true');
         lastFocus = document.activeElement;
-        pop.classList.add('is-open'); // force fixed centered modal
+        pop.classList.add('is-open');
         const focusables = getFocusable(pop);
         (focusables[0] || pop).focus({preventScroll:true});
       }
@@ -163,7 +180,7 @@
         span.className='r-letter';
         const bg = pickDiff(piecesBg, lastBg); lastBg = bg;
         const fg = pickDiff(piecesFg, lastFg); lastFg = fg;
-        span.style.setProperty('--rot', rand(-6,6).toFixed(1)+'deg'); /* slightly calmer */
+        span.style.setProperty('--rot', rand(-6,6).toFixed(1)+'deg');
         span.style.setProperty('--pieceBg', bg);
         span.style.setProperty('--pieceFg', fg);
         span.style.fontFamily = fonts[Math.floor(Math.random()*fonts.length)];
