@@ -1,4 +1,4 @@
-,<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -16,28 +16,317 @@
   <meta name="twitter:card" content="summary_large_image">
 
   <style>
-    :root{ --bg:#D9D9D9; --fg:#17111B; --muted:#5F5A58; }
-    *{ box-sizing:border-box }
-    html,body{ margin:0; height:100%; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--fg); background:var(--bg); }
-    a{ color:inherit; text-decoration:underline; text-underline-offset:2px }
-    .container{ max-width:1040px; margin:0 auto; padding:0 20px }
+    :root{
+      --bg:#D9D9D9;
+      --fg:#17111B;
+      --muted:#5F5A58;
 
-    .site-title{ padding:60px 0 40px; text-align:center; }
-    #ransom{ margin:0 auto; line-height:1.3; display:inline-block; transform:scale(1.4); transform-origin:center; min-height:3.6rem }
+      /* New “framework” colors */
+      --deep:#0b1030;
+      --card: rgba(255,255,255,0.07);
+      --cardStroke: rgba(255,255,255,0.14);
+      --ink: rgba(255,255,255,0.92);
+      --inkMuted: rgba(255,255,255,0.70);
+      --radius: 22px;
+      --shadow: 0 22px 60px rgba(0,0,0,0.35);
+      --max: 1120px;
+      --accent: #ff4d8d;
+      --accent2:#7c5cff;
+    }
+
+    *{ box-sizing:border-box }
+    html,body{
+      margin:0;
+      height:100%;
+      font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--fg);
+      background:var(--bg);
+    }
+    a{ color:inherit; text-decoration:underline; text-underline-offset:2px }
+    img{ max-width:100%; height:auto; display:block }
+
+    /* ---------- Framework layout shell ---------- */
+    body{
+      background:
+        radial-gradient(1200px 800px at 15% 10%, rgba(124,92,255,0.35), transparent 55%),
+        radial-gradient(900px 700px at 85% 30%, rgba(255,77,141,0.25), transparent 60%),
+        radial-gradient(900px 900px at 45% 120%, rgba(0,224,255,0.12), transparent 55%),
+        var(--bg);
+    }
+
+    .container{ max-width: var(--max); margin:0 auto; padding: 0 20px; }
+
+    /* Sticky top bar like the reference */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(217,217,217,0.70);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .topbar__inner{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 16px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+      text-decoration:none;
+    }
+    .brand__mark{
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(255,255,255,0.25)),
+        linear-gradient(135deg, rgba(124,92,255,0.9), rgba(255,77,141,0.85));
+      box-shadow: 0 10px 25px rgba(0,0,0,0.20);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content:flex-end;
+    }
+    .nav a{
+      font-size: 13px;
+      color: rgba(23,17,27,0.70);
+      padding: 8px 10px;
+      border-radius: 999px;
+      text-decoration:none;
+      transition: 160ms ease;
+    }
+    .nav a:hover{
+      background: rgba(0,0,0,0.05);
+      color: rgba(23,17,27,0.92);
+    }
+
+    .cta{
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.55);
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration:none;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+      white-space: nowrap;
+      transition: 160ms ease;
+    }
+    .cta:hover{ transform: translateY(-1px); }
+
+    /* Hero grid like the reference */
+    .hero{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 34px 20px 24px;
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 26px;
+      align-items:center;
+      min-height: 540px;
+    }
+
+    .hero__left{ display:flex; flex-direction:column; gap: 18px; }
+
+    /* Keep your ransom title but position it like a hero “logo” */
+    .site-title{
+      padding: 0;
+      text-align:left;
+    }
+    #ransom{
+      margin:0;
+      line-height:1.2;
+      display:inline-block;
+      transform:scale(1.2);
+      transform-origin:left center;
+      min-height: 3.6rem;
+    }
     #ransom *{ margin:0 }
-    .r-letter{ display:inline-block; padding:6px 10px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.15); transform:rotate(var(--rot, 0deg)); background:var(--pieceBg,#fff); color:var(--pieceFg,#111); font-weight:800; letter-spacing:.3px }
+    .r-letter{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:4px;
+      box-shadow:0 2px 0 rgba(0,0,0,.15);
+      transform:rotate(var(--rot, 0deg));
+      background:var(--pieceBg,#fff);
+      color:var(--pieceFg,#111);
+      font-weight:800;
+      letter-spacing:.3px;
+    }
     .r-space{ width:14px; display:inline-block }
 
-    .hero{ display:block; padding:40px 0 72px }
-    .hero h1{ font-size:clamp(14px,3vw,26px); margin:0 0 12px; line-height:1.4 }
-    .hero p{ color:var(--muted); font-size:clamp(14px,2vw,16px); line-height:1.6; margin:0 }
+    /* Your intro line becomes the hero headline */
+    .hero-line{
+      font-size: clamp(18px, 2.6vw, 30px);
+      margin: 0;
+      line-height: 1.35;
+      color: rgba(23,17,27,0.92);
+    }
+    .hero-sub{
+      color: rgba(23,17,27,0.68);
+      font-size: clamp(14px, 2vw, 16px);
+      line-height: 1.65;
+      margin: 0;
+      max-width: 62ch;
+    }
 
+    .hero-actions{ display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.55);
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration:none;
+      transition: 160ms ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn--primary{
+      border-color: rgba(255,77,141,0.35);
+      background: linear-gradient(135deg, rgba(124,92,255,0.35), rgba(255,77,141,0.35));
+    }
+
+    /* Right-side big visual “illustration” card */
+    .hero__visual{
+      position: relative;
+      border-radius: var(--radius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.10);
+      min-height: 420px;
+      background:
+        radial-gradient(600px 420px at 30% 25%, rgba(255,255,255,0.25), transparent 55%),
+        linear-gradient(135deg, rgba(124,92,255,0.40), rgba(255,77,141,0.28)),
+        radial-gradient(900px 700px at 70% 70%, rgba(0,224,255,0.12), transparent 55%);
+    }
+    .hero__visualInner{
+      position:absolute;
+      inset:0;
+      padding: 18px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-start;
+    }
+
+    /* Optional: show a tiny “caption” area if you want later */
+    .visual-caption{
+      font-size: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(0,0,0,0.10);
+      color: rgba(23,17,27,0.75);
+      max-width: 34ch;
+    }
+
+    /* Section 2 like the reference “Where Are We From” */
+    .section{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 26px 20px 74px;
+    }
+    .section__grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .panel{
+      border-radius: var(--radius);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.45);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    }
+    .panel--text{ padding: 26px; }
+
+    .kicker{
+      color: rgba(23,17,27,0.60);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin: 0 0 10px;
+    }
+    .h2{
+      font-size: 34px;
+      margin: 0 0 10px;
+      letter-spacing: -0.01em;
+      color: rgba(23,17,27,0.92);
+    }
+    .p{
+      color: rgba(23,17,27,0.68);
+      line-height: 1.7;
+      margin: 0 0 16px;
+      font-size: 14px;
+      max-width: 68ch;
+    }
+
+    .media{
+      position: relative;
+      overflow:hidden;
+      border-radius: var(--radius);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(0,0,0,0.06);
+      min-height: 320px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    }
+    .media img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .play{
+      position:absolute;
+      left: 24px;
+      bottom: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,77,141,0.80);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 18px 35px rgba(0,0,0,0.22);
+      cursor:pointer;
+      user-select:none;
+    }
+    .play svg{ width: 20px; height: 20px; fill: white; }
+
+    /* ---------- Your existing hover/popover system (kept, lightly re-blended) ---------- */
     .hover-wrap{ position:relative; display:inline-block; }
-    .hot{ all:unset; cursor:pointer; color:inherit; text-decoration:underline; text-underline-offset:2px; display:inline-block; font-size:1em; line-height:1; transition:font-size .18s ease, color .2s ease }
+    .hot{
+      all:unset;
+      cursor:pointer;
+      color:inherit;
+      text-decoration:underline;
+      text-underline-offset:2px;
+      display:inline-block;
+      font-size:1em;
+      line-height:1;
+      transition:font-size .18s ease, color .2s ease;
+    }
     .hot:hover{ font-size:1.3em; color:#66607C }
     .hot:focus-visible{ outline:2px solid currentColor; outline-offset:3px }
 
-    /* Base popover */
     .pop{
       position:absolute; left:0; top:calc(100% + 10px);
       min-width:280px; max-width:900px; z-index:100;
@@ -49,11 +338,9 @@
       will-change:transform;
       max-height:80vh; overflow:auto;
     }
-
-    /* Hover preview visible */
-    .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{ opacity:1; visibility:visible; transform:translateY(0) scale(1) }
-
-    /* Preview layout: keep natural aspect, smaller */
+    .hover-wrap:hover .pop, .hot[aria-expanded="true"] + .pop{
+      opacity:1; visibility:visible; transform:translateY(0) scale(1)
+    }
     .pop .pop-grid{
       display:flex; gap:12px; align-items:flex-start; justify-content:center;
       flex-wrap:nowrap; overflow:auto hidden; padding:6px 2px;
@@ -63,7 +350,6 @@
       border-radius:8px; background:#222; object-fit:contain;
     }
 
-    /* Modal state: force true center, larger images side-by-side */
     .pop.is-open{
       position:fixed; left:50%; top:50%;
       transform:translate(-50%,-50%) !important;
@@ -73,9 +359,21 @@
     .pop.is-open .pop-grid img{ height:60vh; width:auto; }
 
     body.modal-open{ overflow:hidden }
-    body.modal-open::before{ content:""; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:90 }
+    body.modal-open::before{
+      content:""; position:fixed; inset:0;
+      background:rgba(0,0,0,.35); z-index:90
+    }
 
     .pop .muted{ display:block; font-size:12px; opacity:.8; margin:4px 0 8px }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 920px){
+      .hero{ grid-template-columns: 1fr; min-height: auto; padding-bottom: 18px; }
+      .hero__visual{ min-height: 320px; }
+      .section__grid{ grid-template-columns: 1fr; }
+      .nav{ display:none; } /* keep it clean on small screens */
+      #ransom{ transform: scale(1.1); }
+    }
 
     @media (max-width:700px){
       .pop.is-open .pop-grid{ flex-wrap:wrap; }
@@ -87,19 +385,41 @@
     }
   </style>
 </head>
-<body>
-  <main class="container">
-    <section class="site-title" aria-labelledby="ransom" aria-live="polite">
-      <h1 id="ransom" data-text="cem was here"
-          data-palette-bg="#D7D7D5, #BEBEBE, #AFAFAF, #B9B9B9, #949496, #898989"
-          data-palette-fg="#111111, #222222, #333333, #444444, #555555, #666666"
-          aria-label="cem was here">
-        <noscript>cem was here</noscript>
-      </h1>
-    </section>
 
-    <section class="hero">
-      <h1>
+<body>
+  <!-- Top navigation (one page) -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#top">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span>Cem</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="#about">about</a>
+        <a href="#work">work</a>
+        <a href="#contact">contact</a>
+      </nav>
+
+      <a class="cta" href="#contact">join</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main id="top" class="hero">
+    <section class="hero__left">
+      <!-- Your ransom title is preserved; it just lives in the hero now -->
+      <section class="site-title" aria-labelledby="ransom" aria-live="polite">
+        <h1 id="ransom" data-text="cem was here"
+            data-palette-bg="#D7D7D5, #BEBEBE, #AFAFAF, #B9B9B9, #949496, #898989"
+            data-palette-fg="#111111, #222222, #333333, #444444, #555555, #666666"
+            aria-label="cem was here">
+          <noscript>cem was here</noscript>
+        </h1>
+      </section>
+
+      <!-- Your original hero line, unchanged -->
+      <h2 class="hero-line">
         <span class="hover-wrap">
           <button class="hot" id="designer-hot" aria-controls="designer-pop" aria-expanded="false" type="button">Designer</button>
           <span role="dialog" aria-modal="true" id="designer-pop" class="pop" aria-labelledby="designer-hot" aria-live="polite">
@@ -111,10 +431,70 @@
             </div>
           </span>
         </span>, researcher, and student building at the edge of politics, philosophy, and media.
-      </h1>
-      <p>This site is a simple, fast, static home for my projects. I’ll publish essays, maps, and music here as they mature. For now, a tidy snapshot.</p>
+      </h2>
+
+      <!-- Your original paragraph, unchanged -->
+      <p class="hero-sub">
+        This site is a simple, fast, static home for my projects. I’ll publish essays, maps, and music here as they mature. For now, a tidy snapshot.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#work">discover</a>
+        <a class="btn" href="#about">read</a>
+      </div>
     </section>
+
+    <!-- Right-side visual panel (placeholder “illustration” like the reference) -->
+    <aside class="hero__visual" aria-label="Hero visual">
+      <div class="hero__visualInner">
+        <div class="visual-caption">
+          Replace this later with a real hero image/illustration if you want. For now it’s pretending.
+        </div>
+      </div>
+    </aside>
   </main>
+
+  <!-- Section 2: “Where Are We From” style block -->
+  <section id="about" class="section" aria-label="About">
+    <div class="section__grid">
+      <div class="panel panel--text">
+        <p class="kicker">about</p>
+        <h2 class="h2">Where Are We From</h2>
+        <p class="p">
+          You already have the core: a clear identity line and a purpose paragraph. This section is just a
+          structured place to expand later (bio, thesis, projects, whatever you decide to unleash on the internet).
+        </p>
+        <a class="btn" href="#work">read more →</a>
+      </div>
+
+      <div class="media" aria-label="Featured media">
+        <!-- If you don’t have an image yet, leave src empty or add one later -->
+        <img src="/assets/cover.jpg" alt="Featured visual" loading="lazy" />
+        <div class="play" title="Play (placeholder)">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5v14l11-7z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empty “framework” sections (no deletions, just placeholders for your future content) -->
+  <section id="work" class="section" aria-label="Work">
+    <div class="panel panel--text">
+      <p class="kicker">work</p>
+      <h2 class="h2">Gallery</h2>
+      <p class="p">Drop your projects here when you’re ready.</p>
+    </div>
+  </section>
+
+  <section id="contact" class="section" aria-label="Contact">
+    <div class="panel panel--text">
+      <p class="kicker">contact</p>
+      <h2 class="h2">Contacts</h2>
+      <p class="p">Add your email, socials, or a simple contact form here later.</p>
+    </div>
+  </section>
 
   <script defer>
     (function(){
@@ -188,4 +568,3 @@
   </script>
 </body>
 </html>
-
