@@ -7,19 +7,21 @@
 
 <style>
 :root{
-  --wall:#e6e6e6;
-  --wall2:#f2f2f2;
+  --wall:#f3f1ec;
+  --wall2:#e8e2d7;
 
   --paper:#fbfbfb;
-  --paper2:#f2f2f2;
-  --ink:#111;
+  --paper2:#f6f2ea;
+  --ink:#121212;
 
   --pinRed:#d12a2a;
+  --pinGold:#d6a600;
   --pinBlue:#1c4bd1;
   --pinBlack:#2a2a2a;
 
   --shadow:0 18px 40px rgba(0,0,0,.22);
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
+  --grain:repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 2px, transparent 2px 4px);
 }
 
 *{box-sizing:border-box}
@@ -29,11 +31,13 @@ body{
   margin:0;
   overflow:hidden;
   background:
-    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.75), transparent 60%),
-    radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 2px, transparent 2px 7px),
+    radial-gradient(1000px 820px at 10% 10%, rgba(255,255,255,.6), transparent 60%),
+    radial-gradient(900px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
+    var(--grain),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 6px),
     linear-gradient(135deg, var(--wall), var(--wall2));
-  font-family: Georgia, serif;
+  font-family: "Iowan Old Style", "Times New Roman", Georgia, serif;
+  color:var(--ink);
 }
 
 /* Board */
@@ -73,6 +77,43 @@ body{
   touch-action:none;
 }
 .doc:active{cursor:grabbing}
+
+.doc--clipping{
+  background:linear-gradient(180deg, var(--paper), var(--paper2));
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow:var(--shadowSoft);
+  padding:18px 18px 22px;
+  width:min(320px, 38vw);
+  line-height:1.5;
+  letter-spacing:.01em;
+  font-size:15px;
+  max-width:360px;
+}
+.doc--clipping h2{
+  margin:0 0 6px;
+  font-size:18px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.doc--clipping .kicker{
+  display:inline-block;
+  font-family:"Courier New", Courier, monospace;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:11px;
+  padding:4px 7px;
+  border:1px dashed rgba(0,0,0,.4);
+  margin-bottom:10px;
+}
+.doc--clipping .lede{margin:6px 0 0; opacity:.86;}
+.doc--clipping .tags{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+.doc--clipping .tag{
+  font-family:"Courier New", Courier, monospace;
+  font-size:11px;
+  background:rgba(0,0,0,.08);
+  padding:3px 7px;
+  border-radius:4px;
+}
 
 .pin{
   position:absolute;
@@ -135,11 +176,38 @@ body{
   bottom:14px; right:14px;
   padding:10px 14px;
   border-radius:999px;
-  background:rgba(250,250,250,.9);
+  background:rgba(12,12,12,.9);
+  color:#fdfbf7;
   font-size:12px;
-  font-family:system-ui;
+  font-family:"Courier New", Courier, monospace;
+  letter-spacing:.06em;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
   z-index:60;
 }
+
+/* Desk panel */
+.desk{
+  position:fixed;
+  left:50%;
+  bottom:0;
+  transform:translate(-50%, 110%);
+  width:min(640px, 92vw);
+  background:#0f0f0f;
+  color:#fefdf8;
+  border-radius:14px 14px 0 0;
+  padding:18px 20px 24px;
+  box-shadow:0 -20px 40px rgba(0,0,0,.32);
+  transition:transform .4s ease;
+  z-index:140;
+  font-family:"Courier New", Courier, monospace;
+}
+.desk.on{transform:translate(-50%, 0);}
+.desk__header{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+.desk__light{width:12px; height:12px; border-radius:50%; background:var(--pinRed); box-shadow:0 0 0 4px rgba(255,255,255,.12), 0 8px 14px rgba(0,0,0,.3);}
+.desk__title{margin:0; letter-spacing:.06em; font-size:14px; text-transform:uppercase;}
+.desk__body{margin:6px 0 0; line-height:1.5; font-size:13px; color:#f2efe7; opacity:.94;}
+.desk__tags{margin:10px 0 0; display:flex; gap:6px; flex-wrap:wrap;}
+.desk__tag{background:#fefefe; color:#101010; padding:4px 7px; border-radius:4px; font-size:11px; letter-spacing:.04em; text-transform:uppercase;}
 </style>
 </head>
 
@@ -147,18 +215,62 @@ body{
 
 <div class="focus-dim" id="dim"></div>
 <main class="board" id="board"></main>
-<div class="hint">Drag · Click to focus · ESC to exit</div>
+<aside class="desk" id="desk">
+  <div class="desk__header">
+    <span class="desk__light"></span>
+    <p class="desk__title" id="deskTitle">Press any clipping for the assignment desk.</p>
+  </div>
+  <p class="desk__body" id="deskBody">Select a nameplate, portrait, or clipping to see the editor notes.
+  </p>
+  <div class="desk__tags" id="deskTags"></div>
+</aside>
+<div class="hint">Drag · Click to open notes · ESC to exit</div>
 
 <script>
 (function(){
   const board = document.getElementById("board");
   const dim = document.getElementById("dim");
+  const desk = document.getElementById("desk");
+  const deskTitle = document.getElementById("deskTitle");
+  const deskBody = document.getElementById("deskBody");
+  const deskTags = document.getElementById("deskTags");
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
+  const DEFAULT_DESK = {
+    title:"Press any clipping for the assignment desk.",
+    body:"Select a nameplate, portrait, or clipping to see the editor notes.",
+    tags:[]
+  };
+
   let focused=null;
   const saved=new Map();
+
+  function setDetails(el,{title,body,tags}){
+    if(!el) return;
+    el.dataset.title=title||"";
+    el.dataset.body=body||"";
+    el.dataset.tags=(tags||[]).join("|");
+  }
+
+  function fillDesk({title,body,tags}){
+    desk.classList.add("on");
+    deskTitle.textContent=title;
+    deskBody.textContent=body;
+    deskTags.innerHTML="";
+    (tags||[]).forEach(t=>{
+      const chip=document.createElement("span");
+      chip.className="desk__tag";
+      chip.textContent=t;
+      deskTags.appendChild(chip);
+    });
+  }
+
+  function resetDesk(){
+    fillDesk(DEFAULT_DESK);
+    desk.classList.remove("on");
+  }
 
   function save(el){
     saved.set(el,{
@@ -198,10 +310,18 @@ body{
   }
 
   function toggleFocus(doc){
-    if(focused){ clearFocus(); return; }
+    if(focused===doc){ clearFocus(); return; }
+    if(focused) clearFocus();
     focused=doc;
     dim.classList.add("on");
     doc.classList.add("focused");
+
+    const details={
+      title:doc.dataset.title||DEFAULT_DESK.title,
+      body:doc.dataset.body||DEFAULT_DESK.body,
+      tags:(doc.dataset.tags||"").split("|").filter(Boolean)
+    };
+    fillDesk(details);
 
     const isName = doc.classList.contains("doc--name");
     const fr=doc.getBoundingClientRect();
@@ -236,6 +356,7 @@ body{
       if(o){ d.style.left=o.left+"px"; d.style.top=o.top+"px"; }
     });
     focused=null;
+    resetDesk();
   }
 
   dim.onclick=clearFocus;
@@ -250,14 +371,19 @@ body{
   board.appendChild(name);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
+  setDetails(name,{
+    title:"Masthead: Cem Ozturk",
+    body:"Currently blending research, design, and code to find new ways of thinking through products.",
+    tags:["editorial", "design lead", "systems"]
+  });
   save(name);
   wire(name);
 
   /* Photos */
   [
-    ["./assets/designer1.jpg","var(--pinRed)"],
-    ["./assets/designer2.jpg","var(--pinBlue)"]
-  ].forEach(([src,pin])=>{
+    ["./assets/designer1.jpg","var(--pinRed)","Portrait: Morning desk","Warm-up sketches and coffee before the pages go to print.",["studio","analog"]],
+    ["./assets/designer2.jpg","var(--pinBlue)","Portrait: Field walk","Collecting references and textures out in the city.",["field","texture"]]
+  ].forEach(([src,pin,title,body,tags])=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
     d.style.setProperty("--rot",rand(-6,6)+"deg");
@@ -281,11 +407,62 @@ body{
       d.style.height=h+"px";
       d.style.left=rand(40,innerWidth-w-40)+"px";
       d.style.top =rand(80,innerHeight-h-40)+"px";
+      setDetails(d,{title,body,tags});
       save(d);
     };
 
     wire(d);
   });
+
+  /* Clippings */
+  const clippings=[
+    {
+      kicker:"Newsroom",
+      title:"Staff roster",
+      lede:"Mapping collaborators, potential co-conspirators, and the questions we chase.",
+      tags:["people","strategy","research"],
+      pin:"var(--pinGold)",
+    },
+    {
+      kicker:"Assignments",
+      title:"Active beats",
+      lede:"Interaction models, speculative products, embodied tools, and how they alter how we make decisions.",
+      tags:["decision-systems","prototyping","writing"],
+      pin:"var(--pinRed)",
+    },
+    {
+      kicker:"Edition notes",
+      title:"Next issue",
+      lede:"A zine-like drop on visual research tools, stitched with code snippets and marginalia.",
+      tags:["print","code","experiments"],
+      pin:"var(--pinBlue)",
+    }
+  ];
+
+  clippings.forEach((clip,i)=>{
+    const d=document.createElement("article");
+    d.className="doc doc--clipping";
+    d.style.setProperty("--rot",rand(-4,4)+"deg");
+    d.style.setProperty("--pin",clip.pin||"var(--pinBlack)");
+    d.innerHTML=`
+      <span class="pin"></span>
+      <span class="kicker">${clip.kicker}</span>
+      <h2>${clip.title}</h2>
+      <p class="lede">${clip.lede}</p>
+      <div class="tags">${(clip.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    `;
+    board.appendChild(d);
+
+    const width=d.offsetWidth;
+    const height=d.offsetHeight;
+    d.style.left=rand(28,innerWidth-width-28)+"px";
+    d.style.top =rand(120,innerHeight-height-80)+"px";
+    setDetails(d,{title:`${clip.kicker}: ${clip.title}`,body:clip.lede,tags:clip.tags});
+    save(d);
+    wire(d);
+  });
+
+  resetDesk();
 
 })();
 </script>
