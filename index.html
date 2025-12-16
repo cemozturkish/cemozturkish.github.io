@@ -9,10 +9,18 @@
 :root{
   --wall:#e6e6e6;
   --wall2:#f2f2f2;
+
+  --paper:#fbfbfb;
+  --paper2:#f2f2f2;
+  --ink:#111;
+
   --pinRed:#d12a2a;
   --pinBlue:#1c4bd1;
   --pinBlack:#2a2a2a;
-  --shadow:0 18px 40px rgba(0,0,0,.25);
+
+  --shadow:0 18px 40px rgba(0,0,0,.22);
+  --shadowSoft:0 10px 24px rgba(0,0,0,.16);
+  --radius:18px;
 }
 
 *{box-sizing:border-box}
@@ -22,9 +30,9 @@ body{
   margin:0;
   overflow:hidden;
   background:
-    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.7), transparent 60%),
+    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.75), transparent 60%),
     radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 2px, transparent 2px 7px),
     linear-gradient(135deg, var(--wall), var(--wall2));
   font-family: Georgia, serif;
 }
@@ -35,34 +43,9 @@ body::before{
   pointer-events:none;
   background-image:
     radial-gradient(rgba(0,0,0,.06) 1px, transparent 1px),
-    radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);
+    radial-gradient(rgba(255,255,255,.55) 1px, transparent 1px);
   background-size:30px 30px,38px 38px;
-  opacity:.35;
-}
-
-/* Masthead */
-.masthead{
-  position:fixed;
-  top:18px; left:50%;
-  transform:translateX(-50%);
-  padding:14px 20px;
-  border-radius:999px;
-  background:rgba(250,250,250,.9);
-  z-index:50;
-  text-align:center;
-  box-shadow:0 8px 20px rgba(0,0,0,.12);
-}
-.masthead h1{
-  margin:0;
-  font-size:28px;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.masthead p{
-  margin:4px 0 0;
-  font-size:13px;
-  opacity:.7;
-  font-family:system-ui;
+  opacity:.28;
 }
 
 /* Board */
@@ -70,7 +53,7 @@ body::before{
   position:relative;
   width:100vw;
   height:100vh;
-  padding-top:140px;
+  padding-top:0; /* IMPORTANT: no blocked top zone */
 }
 
 /* Focus dim */
@@ -92,7 +75,7 @@ body::before{
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
-  transform-origin: top left; /* important: avoids “shifting” when transforms change */
+  transform-origin: top left;
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
     top .45s cubic-bezier(.22,.61,.36,1),
@@ -126,7 +109,7 @@ body::before{
 }
 
 /* Photo docs */
-.doc img{
+.doc--photo img{
   display:block;
   width:100%;
   height:100%;
@@ -137,14 +120,39 @@ body::before{
   user-drag:none;
 }
 
-/* Focused doc: DO NOT scale (so it won't move). Just brighten. */
+/* Name card doc */
+.doc--name{
+  background:linear-gradient(180deg, var(--paper), var(--paper2));
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:999px;
+  box-shadow:var(--shadowSoft);
+  padding:14px 18px 12px;
+  color:var(--ink);
+}
+.doc--name .name-title{
+  margin:0;
+  font-size:28px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-weight:900;
+  text-align:center;
+}
+.doc--name .name-sub{
+  margin:4px 0 0;
+  font-size:13px;
+  opacity:.75;
+  font-family:system-ui;
+  text-align:center;
+}
+
+/* Focused doc: do NOT scale, do NOT move. Just brighten. */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
   cursor:default;
 }
 
-/* Other docs during focus */
+/* Others during focus */
 .doc.dimmed{
   opacity:.35;
 }
@@ -159,20 +167,15 @@ body::before{
   font-size:12px;
   font-family:system-ui;
   z-index:60;
+  box-shadow:0 8px 20px rgba(0,0,0,.10);
 }
 </style>
 </head>
 
 <body>
 
-<header class="masthead">
-  <h1>Cem Ozturk</h1>
-  <p>Student, researcher, designer</p>
-</header>
-
 <div class="focus-dim" id="dim"></div>
 <main class="board" id="board"></main>
-
 <div class="hint">Drag documents · Click to focus · ESC to exit</div>
 
 <script>
@@ -180,14 +183,7 @@ body::before{
   const board = document.getElementById("board");
   const dim = document.getElementById("dim");
 
-  const photos = [
-    {src:"./assets/designer1.jpg", pin:"var(--pinRed)"},
-    {src:"./assets/designer2.jpg", pin:"var(--pinBlue)"}
-  ];
-
-  const pins = ["var(--pinRed)","var(--pinBlue)","var(--pinBlack)"];
   const rand = (a,b)=>Math.random()*(b-a)+a;
-  const pick = a=>a[Math.floor(Math.random()*a.length)];
   const clamp = (v,min,max)=>Math.max(min, Math.min(max, v));
 
   let focused = null;
@@ -210,51 +206,15 @@ body::before{
     });
   }
 
-  function makeDoc(i){
-    const d = document.createElement("article");
-    d.className = "doc";
-    d.style.setProperty("--rot", rand(-6,6).toFixed(2)+"deg");
-    d.style.setProperty("--pin", photos[i]?.pin || pick(pins));
+  function preventNativeDrag(el){
+    el.addEventListener("dragstart", (e) => e.preventDefault());
+    el.querySelectorAll("img").forEach(img =>
+      img.addEventListener("dragstart", (e) => e.preventDefault())
+    );
+  }
 
-    d.innerHTML = `
-      <span class="pin"></span>
-      <img src="${photos[i].src}" alt="" draggable="false">
-    `;
-
-    // Stop native image drag (Safari)
-    d.addEventListener("dragstart", (e) => e.preventDefault());
-    d.querySelector("img").addEventListener("dragstart", (e) => e.preventDefault());
-
-    board.appendChild(d);
-
-    const img = d.querySelector("img");
-    img.onload = () => {
-      // Half size, never upscale, still capped
-      const maxW = 420;
-      const maxH = 420;
-
-      const nw = img.naturalWidth || maxW;
-      const nh = img.naturalHeight || maxH;
-
-      const halfW = nw * 0.5;
-      const halfH = nh * 0.5;
-
-      // Clamp to max but keep aspect ratio
-      const scale = Math.min(maxW / halfW, maxH / halfH, 1);
-
-      const w = Math.round(halfW * scale);
-      const h = Math.round(halfH * scale);
-
-      d.style.width = w+"px";
-      d.style.height = h+"px";
-
-      d.style.left = rand(40, innerWidth - w - 40) + "px";
-      d.style.top  = rand(180, innerHeight - h - 40) + "px";
-
-      savePosition(d);
-    };
-
-    // Drag logic
+  function wireDragAndFocus(d){
+    // Pointer drag
     d.addEventListener("pointerdown", (e) => {
       if (focused) return;
 
@@ -284,7 +244,7 @@ body::before{
       }
 
       const newLeft = clamp(dragStartLeft + dx, 12, innerWidth - d.offsetWidth - 12);
-      const newTop  = clamp(dragStartTop  + dy, 120, innerHeight - d.offsetHeight - 12);
+      const newTop  = clamp(dragStartTop  + dy, 12, innerHeight - d.offsetHeight - 12); // IMPORTANT: no top dead-zone
 
       d.style.left = Math.round(newLeft) + "px";
       d.style.top  = Math.round(newTop)  + "px";
@@ -308,17 +268,85 @@ body::before{
       if (didDrag) return;
       toggleFocus(d);
     });
+  }
 
+  function makeNameCard(){
+    const d = document.createElement("article");
+    d.className = "doc doc--name";
+    d.style.setProperty("--rot", rand(-3,3).toFixed(2) + "deg");
+    d.style.setProperty("--pin", "var(--pinBlack)");
+
+    d.innerHTML = `
+      <span class="pin" aria-hidden="true"></span>
+      <h1 class="name-title">CEM OZTURK</h1>
+      <p class="name-sub">Student, researcher, designer</p>
+    `;
+
+    board.appendChild(d);
+    preventNativeDrag(d);
+
+    // Size is intrinsic via padding, set position
+    // Start near top center but draggable anywhere
+    const w = d.offsetWidth;
+    const h = d.offsetHeight;
+
+    d.style.left = Math.round((innerWidth - w) / 2) + "px";
+    d.style.top  = "18px";
+
+    savePosition(d);
+    wireDragAndFocus(d);
+    return d;
+  }
+
+  function makePhotoDoc(src, pinCss){
+    const d = document.createElement("article");
+    d.className = "doc doc--photo";
+    d.style.setProperty("--rot", rand(-6,6).toFixed(2)+"deg");
+    d.style.setProperty("--pin", pinCss);
+
+    d.innerHTML = `
+      <span class="pin" aria-hidden="true"></span>
+      <img src="${src}" alt="" draggable="false">
+    `;
+
+    board.appendChild(d);
+    preventNativeDrag(d);
+
+    const img = d.querySelector("img");
+    img.onload = () => {
+      // Half size, never upscale
+      const maxW = 420;
+      const maxH = 420;
+
+      const nw = img.naturalWidth || maxW;
+      const nh = img.naturalHeight || maxH;
+
+      const halfW = nw * 0.5;
+      const halfH = nh * 0.5;
+
+      const scale = Math.min(maxW / halfW, maxH / halfH, 1);
+      const w = Math.round(halfW * scale);
+      const h = Math.round(halfH * scale);
+
+      d.style.width = w + "px";
+      d.style.height = h + "px";
+
+      d.style.left = Math.round(rand(40, innerWidth - w - 40)) + "px";
+      d.style.top  = Math.round(rand(90, innerHeight - h - 40)) + "px";
+
+      savePosition(d);
+    };
+
+    wireDragAndFocus(d);
     return d;
   }
 
   function toggleFocus(doc){
     if (focused) { clearFocus(); return; }
-
     focused = doc;
     dim.classList.add("on");
 
-    // IMPORTANT: do not move the focused doc at all.
+    // Focused doc: no movement, no scale, only brighten
     doc.classList.add("focused");
 
     const fr = doc.getBoundingClientRect();
@@ -344,7 +372,7 @@ body::before{
       let ny = o.top  + dy * push;
 
       nx = clamp(nx, 12, innerWidth - r.width - 12);
-      ny = clamp(ny, 120, innerHeight - r.height - 12);
+      ny = clamp(ny, 12, innerHeight - r.height - 12);
 
       d.style.left = Math.round(nx) + "px";
       d.style.top  = Math.round(ny) + "px";
@@ -370,7 +398,11 @@ body::before{
     if(e.key === "Escape") clearFocus();
   });
 
-  photos.forEach((_,i)=>makeDoc(i));
+  // Build board
+  makeNameCard();
+  makePhotoDoc("./assets/designer1.jpg", "var(--pinRed)");
+  makePhotoDoc("./assets/designer2.jpg", "var(--pinBlue)");
+
 })();
 </script>
 
