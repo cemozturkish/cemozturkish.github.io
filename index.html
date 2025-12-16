@@ -19,7 +19,7 @@
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
 }
 
-/* ---- HARD STOP SAFARI SELECTION ---- */
+/* Kill Safari selection */
 *{
   -webkit-user-select:none;
   user-select:none;
@@ -41,21 +41,19 @@ body{
   font-family:"Tinos", serif;
 }
 
-/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
 }
 
-/* Dim overlay */
 .focus-dim{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.35);
   opacity:0;
   pointer-events:none;
-  transition:opacity .35s ease;
+  transition:.35s ease;
   z-index:80;
 }
 .focus-dim.on{
@@ -63,7 +61,6 @@ body{
   pointer-events:auto;
 }
 
-/* Docs */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
@@ -116,7 +113,7 @@ body{
   width:100%;
   height:100%;
   box-shadow:var(--shadow);
-  border:1px solid #000; /* thin black frame */
+  border:1px solid #000;
 }
 
 /* Name card */
@@ -143,7 +140,6 @@ body{
   font-family:system-ui;
 }
 
-/* Focus */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
@@ -151,7 +147,6 @@ body{
 }
 .doc.dimmed{opacity:.35}
 
-/* Hint */
 .hint{
   position:fixed;
   bottom:14px;
@@ -265,6 +260,7 @@ body{
 
   function wire(d){
     let dragging=false,sx,sy,sl,st,moved=false;
+
     d.addEventListener("pointerdown",e=>{
       if(focused) return;
       e.preventDefault();
@@ -289,7 +285,8 @@ body{
         const vx=(e.clientX-p.lastX)/dt;
         p.lastX=e.clientX;p.lastT=now;
         const lever=.35+p.off*1.15;
-        p.target=p.base+clamp(-vx*210*lever,-18,18);
+        /* FLIPPED SIGN HERE */
+        p.target=p.base+clamp(vx*210*lever,-18,18);
         start();
       }
     },{passive:false});
