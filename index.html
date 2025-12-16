@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Cem Ozturk</title>
 
+<!-- Tinos font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --wall:#e6e6e6;
@@ -33,7 +38,9 @@ body{
     radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
     repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 2px, transparent 2px 7px),
     linear-gradient(135deg, var(--wall), var(--wall2));
-  font-family: Georgia, serif;
+
+  /* Tinos everywhere */
+  font-family: "Tinos", serif;
 }
 
 /* Board */
@@ -61,11 +68,8 @@ body{
 /* Documents */
 .doc{
   position:absolute;
-
-  /* IMPORTANT: rotate around the pin point (so it "hangs") */
   transform:rotate(var(--rot));
   transform-origin:22px 6px;
-
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
     top .45s cubic-bezier(.22,.61,.36,1),
@@ -95,22 +99,16 @@ body{
   background:rgba(255,255,255,.6);
 }
 
-/* Photos */
-.doc--photo{
-  position:absolute;
-}
-
-/* little "string" above the photo so it reads as hanging */
+/* Hanging string */
 .doc--photo::before{
   content:"";
   position:absolute;
-  left:22px;         /* align with transform-origin/pin center */
+  left:22px;
   top:-44px;
   width:2px;
   height:44px;
   background:rgba(0,0,0,.25);
   border-radius:2px;
-  z-index:1;
 }
 
 .doc--photo img{
@@ -139,7 +137,6 @@ body{
   margin:4px 0 0;
   font-size:13px;
   opacity:.75;
-  font-family:system-ui;
 }
 
 /* Focus states */
@@ -158,7 +155,6 @@ body{
   border-radius:999px;
   background:rgba(250,250,250,.9);
   font-size:12px;
-  font-family:system-ui;
   z-index:60;
 }
 </style>
@@ -172,8 +168,8 @@ body{
 
 <script>
 (function(){
-  const board = document.getElementById("board");
-  const dim = document.getElementById("dim");
+  const board=document.getElementById("board");
+  const dim=document.getElementById("dim");
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
@@ -224,22 +220,18 @@ body{
     dim.classList.add("on");
     doc.classList.add("focused");
 
-    const isName = doc.classList.contains("doc--name");
     const fr=doc.getBoundingClientRect();
     const fx=fr.left+fr.width/2;
     const fy=fr.top+fr.height/2;
 
     document.querySelectorAll(".doc").forEach(d=>{
       if(d===doc) return;
-      if(d.classList.contains("doc--name") && !isName) return;
-      if(isName) return;
-
       const o=saved.get(d);
-      const r=d.getBoundingClientRect();
-      const cx=r.left+r.width/2;
-      const cy=r.top+r.height/2;
+      if(!o) return;
 
-      let dx=cx-fx, dy=cy-fy;
+      const r=d.getBoundingClientRect();
+      let dx=r.left+r.width/2-fx;
+      let dy=r.top+r.height/2-fy;
       const mag=Math.hypot(dx,dy)||1;
       dx/=mag; dy/=mag;
 
@@ -262,7 +254,6 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  /* Name card */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--rot",rand(-3,3)+"deg");
@@ -274,7 +265,6 @@ body{
   save(name);
   wire(name);
 
-  /* Photos */
   [
     ["./assets/designer1.jpg","var(--pinRed)"],
     ["./assets/designer2.jpg","var(--pinBlue)"],
@@ -289,26 +279,19 @@ body{
 
     const img=d.querySelector("img");
     img.onload=()=>{
-      const TARGET_WIDTH = 120;
-      const MAX_WIDTH = 150;
+      const TARGET_WIDTH=120;
+      const MAX_WIDTH=150;
 
-      const nw=img.naturalWidth;
-      const nh=img.naturalHeight;
-
-      const scale=Math.min(TARGET_WIDTH/nw, MAX_WIDTH/nw, 1);
-      const w=Math.round(nw*scale);
-      const h=Math.round(nh*scale);
-
-      d.style.width=w+"px";
-      d.style.height=h+"px";
-      d.style.left=rand(40,innerWidth-w-40)+"px";
-      d.style.top =rand(80,innerHeight-h-40)+"px";
+      const scale=Math.min(TARGET_WIDTH/img.naturalWidth, MAX_WIDTH/img.naturalWidth,1);
+      d.style.width=Math.round(img.naturalWidth*scale)+"px";
+      d.style.height=Math.round(img.naturalHeight*scale)+"px";
+      d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
+      d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
       save(d);
     };
 
     wire(d);
   });
-
 })();
 </script>
 
