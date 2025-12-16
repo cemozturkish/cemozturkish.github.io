@@ -36,14 +36,12 @@ body{
   font-family: Georgia, serif;
 }
 
-/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
 }
 
-/* Dim overlay */
 .focus-dim{
   position:fixed;
   inset:0;
@@ -58,7 +56,6 @@ body{
   pointer-events:auto;
 }
 
-/* Documents */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
@@ -91,7 +88,6 @@ body{
   background:rgba(255,255,255,.6);
 }
 
-/* Photos */
 .doc--photo img{
   display:block;
   width:100%;
@@ -101,7 +97,6 @@ body{
   -webkit-user-drag:none;
 }
 
-/* Name card */
 .doc--name{
   background:linear-gradient(180deg, var(--paper), var(--paper2));
   border-radius:999px;
@@ -121,7 +116,6 @@ body{
   font-family:system-ui;
 }
 
-/* Focus states */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
@@ -129,7 +123,6 @@ body{
 }
 .doc.dimmed{opacity:.35}
 
-/* Hint */
 .hint{
   position:fixed;
   bottom:14px; right:14px;
@@ -241,7 +234,6 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  /* Name card */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--rot",rand(-3,3)+"deg");
@@ -253,10 +245,10 @@ body{
   save(name);
   wire(name);
 
-  /* Photos */
   [
     ["./assets/designer1.jpg","var(--pinRed)"],
-    ["./assets/designer2.jpg","var(--pinBlue)"]
+    ["./assets/designer2.jpg","var(--pinBlue)"],
+    ["./assets/designer3.jpg","var(--pinBlack)"]
   ].forEach(([src,pin])=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
@@ -267,8 +259,8 @@ body{
 
     const img=d.querySelector("img");
     img.onload=()=>{
-      const TARGET_WIDTH = 160;
-      const MAX_WIDTH = 190;
+      const TARGET_WIDTH = 220;
+      const MAX_WIDTH = 260;
 
       const nw=img.naturalWidth;
       const nh=img.naturalHeight;
