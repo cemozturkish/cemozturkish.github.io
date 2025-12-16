@@ -61,7 +61,6 @@ body{
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
-  /* pin is ON the photo now, so the rotation pivot should be on the photo too */
   transform-origin: var(--pinX) 14px;
 
   transition:
@@ -78,7 +77,7 @@ body{
 /* Pin */
 .pin{
   position:absolute;
-  top:6px; /* sits on the image */
+  top:6px;
   left:var(--pinX);
   transform:translateX(-50%);
   width:16px; height:16px;
@@ -96,12 +95,12 @@ body{
   background:rgba(255,255,255,.55);
 }
 
-/* A tiny “puncture shadow” under the pin */
+/* Puncture shadow under pin (photos only) */
 .doc--photo::after{
   content:"";
   position:absolute;
   left:var(--pinX);
-  top:16px;                 /* right under the pin */
+  top:16px;
   transform:translateX(-50%);
   width:12px;
   height:7px;
@@ -176,39 +175,110 @@ body{
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
-  // Pin positions (left / middle / right)
+  // Pin positions: left / middle / right
   const PIN_X_OPTIONS = ["16%","50%","84%"];
 
   function pinPercent(pinX){
     return parseFloat(String(pinX).replace("%","")) || 50;
   }
 
-  // Random gray pins
+  // Random grayscale pins
   function randomGrayPin(){
     const g = Math.floor(rand(40, 110));
     return `rgb(${g},${g},${g})`;
   }
 
-  // Rotation depends on pin offset from center:
-  // center -> ~0deg
-  // left   -> +deg (tilt down to the right)
-  // right  -> -deg (tilt down to the left)
-  function hangAngleFromPin(pinX){
+  // Base tilt depends on pin offset from center:
+  // left pin -> tilts down to the right (+deg)
+  // right pin -> tilts down to the left (-deg)
+  function baseAngleFromPin(pinX){
     const p = pinPercent(pinX);
     const offset = (p - 50) / 34; // ~-1..+1
-
     const MAX_TILT = 9.5;
     const base = -offset * MAX_TILT;
 
-    // small imperfection, more when pin is off-center
-    const wobble = (Math.random() - 0.5) * 2 * (0.35 + Math.abs(offset) * 1.6);
-    const rare = (Math.random() < 0.15)
-      ? (Math.random() - 0.5) * 2 * (Math.abs(offset) * 2.0)
-      : 0;
-
-    return clamp(base + wobble + rare, -16, 16);
+    // tiny natural imperfection, stronger when pin is off-center
+    const wobble = (Math.random() - 0.5) * 2 * (0.25 + Math.abs(offset) * 0.9);
+    return clamp(base + wobble, -14, 14);
   }
 
+  // --- Wiggle Physics (damped spring) ---
+  // We simulate rotation as a spring toward targetAngle, with damping.
+  const phys = new WeakMap();
+  const physDocs = new Set();
+  let rafOn = false;
+  let lastFrame = 0;
+
+  function ensurePhysics(doc, baseAngle){
+    const st = {
+      base: baseAngle,
+      angle: baseAngle,
+      vel: 0,
+      target: baseAngle,
+      dragging: false,
+      lastX: 0,
+      lastT: 0,
+      lastVX: 0
+    };
+    phys.set(doc, st);
+    physDocs.add(doc);
+    doc.style.setProperty("--rot", st.angle + "deg");
+    startRAF();
+    return st;
+  }
+
+  function startRAF(){
+    if(rafOn) return;
+    rafOn = true;
+    lastFrame = performance.now();
+    requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    const dt = Math.min(0.033, (now - lastFrame) / 1000); // seconds, capped
+    lastFrame = now;
+
+    // Tunables: higher stiffness = snappier swing, higher damping = settles faster
+    const STIFFNESS = 60;   // spring strength
+    const DAMPING   = 10;   // friction
+    const STOP_EPS_ANGLE = 0.02;
+    const STOP_EPS_VEL   = 0.05;
+
+    let anyActive = false;
+
+    physDocs.forEach(doc=>{
+      const st = phys.get(doc);
+      if(!st) return;
+
+      // If doc is focused, freeze it (no wiggle while focused)
+      if(doc.classList.contains("focused")){
+        st.angle = st.base;
+        st.vel = 0;
+        st.target = st.base;
+        doc.style.setProperty("--rot", st.angle + "deg");
+        return;
+      }
+
+      // Spring dynamics
+      const acc = (st.target - st.angle) * STIFFNESS - st.vel * DAMPING;
+      st.vel += acc * dt;
+      st.angle += st.vel * dt;
+
+      doc.style.setProperty("--rot", st.angle + "deg");
+
+      // Decide if we can stop animating globally
+      const nearRest = Math.abs(st.angle - st.base) < STOP_EPS_ANGLE && Math.abs(st.vel) < STOP_EPS_VEL && !st.dragging;
+      if(!nearRest) anyActive = true;
+    });
+
+    if(anyActive){
+      requestAnimationFrame(tick);
+    }else{
+      rafOn = false;
+    }
+  }
+
+  // --- Focus logic ---
   let focused=null;
   const saved=new Map();
 
@@ -216,36 +286,6 @@ body{
     saved.set(el,{
       left:parseFloat(el.style.left),
       top:parseFloat(el.style.top)
-    });
-  }
-
-  function wire(d){
-    let dragging=false, sx, sy, sl, st, moved=false;
-
-    d.addEventListener("pointerdown",e=>{
-      if(focused) return;
-      dragging=true; moved=false;
-      sx=e.clientX; sy=e.clientY;
-      sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
-      d.setPointerCapture(e.pointerId);
-    });
-
-    d.addEventListener("pointermove",e=>{
-      if(!dragging) return;
-      const dx=e.clientX-sx, dy=e.clientY-sy;
-      if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
-      d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
-      d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
-    });
-
-    d.addEventListener("pointerup",()=>{
-      if(dragging) save(d);
-      dragging=false;
-    });
-
-    d.addEventListener("click",()=>{
-      if(moved) return;
-      toggleFocus(d);
     });
   }
 
@@ -293,12 +333,88 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  /* Name card: pin always top-center */
+  // --- Drag wiring with wiggle ---
+  function wire(d){
+    let dragging=false, sx, sy, sl, st, moved=false;
+
+    const stp = phys.get(d) || ensurePhysics(d, 0);
+
+    d.addEventListener("pointerdown",e=>{
+      if(focused) return;
+      dragging=true; moved=false;
+      sx=e.clientX; sy=e.clientY;
+      sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
+      d.setPointerCapture(e.pointerId);
+
+      const p = phys.get(d);
+      if(p){
+        p.dragging = true;
+        p.lastX = e.clientX;
+        p.lastT = performance.now();
+        p.lastVX = 0;
+        startRAF();
+      }
+    });
+
+    d.addEventListener("pointermove",e=>{
+      if(!dragging) return;
+
+      const dx=e.clientX-sx, dy=e.clientY-sy;
+      if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
+
+      d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
+      d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
+
+      // Wiggle target depends on drag velocity (inertia lag)
+      const p = phys.get(d);
+      if(p){
+        const now = performance.now();
+        const dtMs = Math.max(8, now - p.lastT);
+        const vx = (e.clientX - p.lastX) / dtMs; // px per ms
+        p.lastX = e.clientX;
+        p.lastT = now;
+        p.lastVX = vx;
+
+        // Move right->left (vx negative) => target swings right (positive angle)
+        // Move left->right (vx positive) => target swings left (negative angle)
+        const SPEED_TO_ANGLE = 220; // bigger = more swing for same speed
+        const swing = clamp(-vx * SPEED_TO_ANGLE, -14, 14);
+
+        // Don’t overpower base physics: add swing on top of equilibrium base
+        p.target = p.base + swing;
+
+        startRAF();
+      }
+    });
+
+    d.addEventListener("pointerup",()=>{
+      if(dragging) save(d);
+      dragging=false;
+
+      const p = phys.get(d);
+      if(p){
+        p.dragging = false;
+        // Return to equilibrium; inertia causes overshoot naturally
+        p.target = p.base;
+        startRAF();
+      }
+    });
+
+    d.addEventListener("click",()=>{
+      if(moved) return;
+      toggleFocus(d);
+    });
+  }
+
+  // --- Create Name card (pin centered) ---
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
   name.style.setProperty("--pin", randomGrayPin());
-  name.style.setProperty("--rot",rand(-2.0,2.0)+"deg");
+
+  const nameBase = rand(-2.0,2.0);
+  ensurePhysics(name, nameBase);
+
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
@@ -306,7 +422,7 @@ body{
   save(name);
   wire(name);
 
-  /* Photos */
+  // --- Create Photos ---
   [
     ["./assets/designer1.jpg"],
     ["./assets/designer2.jpg"],
@@ -318,7 +434,9 @@ body{
     const pinX = PIN_X_OPTIONS[Math.floor(Math.random()*PIN_X_OPTIONS.length)];
     d.style.setProperty("--pinX", pinX);
     d.style.setProperty("--pin", randomGrayPin());
-    d.style.setProperty("--rot", hangAngleFromPin(pinX) + "deg");
+
+    const base = baseAngleFromPin(pinX);
+    ensurePhysics(d, base);
 
     d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
     board.appendChild(d);
