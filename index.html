@@ -20,7 +20,6 @@
 
   --shadow:0 18px 40px rgba(0,0,0,.22);
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
-  --radius:18px;
 }
 
 *{box-sizing:border-box}
@@ -37,26 +36,12 @@ body{
   font-family: Georgia, serif;
 }
 
-body::before{
-  content:"";
-  position:fixed; inset:0;
-  pointer-events:none;
-  background-image:
-    radial-gradient(rgba(0,0,0,.06) 1px, transparent 1px),
-    radial-gradient(rgba(255,255,255,.55) 1px, transparent 1px);
-  background-size:30px 30px,38px 38px;
-  opacity:.28;
-}
-
-/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
-  padding-top:0; /* IMPORTANT: no blocked top zone */
 }
 
-/* Focus dim */
 .focus-dim{
   position:fixed;
   inset:0;
@@ -66,16 +51,12 @@ body::before{
   transition:opacity .35s ease;
   z-index:80;
 }
-.focus-dim.on{
-  opacity:1;
-  pointer-events:auto;
-}
+.focus-dim.on{opacity:1;pointer-events:auto}
 
-/* Documents */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
-  transform-origin: top left;
+  transform-origin:top left;
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
     top .45s cubic-bezier(.22,.61,.36,1),
@@ -84,9 +65,7 @@ body::before{
   cursor:grab;
 
   user-select:none;
-  -webkit-user-select:none;
   touch-action:none;
-  -webkit-user-drag:none;
 }
 .doc:active{cursor:grabbing}
 
@@ -97,7 +76,6 @@ body::before{
   border-radius:50%;
   background:var(--pin);
   box-shadow:0 6px 14px rgba(0,0,0,.25);
-  z-index:2;
   pointer-events:none;
 }
 .pin::after{
@@ -108,56 +86,44 @@ body::before{
   background:rgba(255,255,255,.6);
 }
 
-/* Photo docs */
+/* Photos */
 .doc--photo img{
   display:block;
   width:100%;
   height:100%;
   box-shadow:var(--shadow);
-
   pointer-events:none;
   -webkit-user-drag:none;
-  user-drag:none;
 }
 
-/* Name card doc */
+/* Name card */
 .doc--name{
   background:linear-gradient(180deg, var(--paper), var(--paper2));
-  border:1px solid rgba(0,0,0,.12);
   border-radius:999px;
-  box-shadow:var(--shadowSoft);
   padding:14px 18px 12px;
-  color:var(--ink);
+  box-shadow:var(--shadowSoft);
+  text-align:center;
 }
-.doc--name .name-title{
+.doc--name h1{
   margin:0;
   font-size:28px;
   letter-spacing:.08em;
-  text-transform:uppercase;
-  font-weight:900;
-  text-align:center;
 }
-.doc--name .name-sub{
+.doc--name p{
   margin:4px 0 0;
   font-size:13px;
   opacity:.75;
   font-family:system-ui;
-  text-align:center;
 }
 
-/* Focused doc: do NOT scale, do NOT move. Just brighten. */
+/* Focus states */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
   cursor:default;
 }
+.doc.dimmed{opacity:.35}
 
-/* Others during focus */
-.doc.dimmed{
-  opacity:.35;
-}
-
-/* Hint */
 .hint{
   position:fixed;
   bottom:14px; right:14px;
@@ -167,7 +133,6 @@ body::before{
   font-size:12px;
   font-family:system-ui;
   z-index:60;
-  box-shadow:0 8px 20px rgba(0,0,0,.10);
 }
 </style>
 </head>
@@ -176,206 +141,86 @@ body::before{
 
 <div class="focus-dim" id="dim"></div>
 <main class="board" id="board"></main>
-<div class="hint">Drag documents · Click to focus · ESC to exit</div>
+<div class="hint">Drag · Click to focus · ESC to exit</div>
 
 <script>
 (function(){
   const board = document.getElementById("board");
   const dim = document.getElementById("dim");
 
-  const rand = (a,b)=>Math.random()*(b-a)+a;
-  const clamp = (v,min,max)=>Math.max(min, Math.min(max, v));
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const rand=(a,b)=>Math.random()*(b-a)+a;
 
-  let focused = null;
+  let focused=null;
+  const saved=new Map();
 
-  // Stores current resting positions (updates after dragging)
-  const savedPos = new Map();
-
-  // Drag state
-  let dragEl = null;
-  let dragPointerId = null;
-  let dragStartX = 0, dragStartY = 0;
-  let dragStartLeft = 0, dragStartTop = 0;
-  let didDrag = false;
-  const DRAG_THRESHOLD = 6;
-
-  function savePosition(el){
-    savedPos.set(el, {
-      left: parseFloat(el.style.left) || 0,
-      top:  parseFloat(el.style.top)  || 0
+  function save(el){
+    saved.set(el,{
+      left:parseFloat(el.style.left),
+      top:parseFloat(el.style.top)
     });
   }
 
-  function preventNativeDrag(el){
-    el.addEventListener("dragstart", (e) => e.preventDefault());
-    el.querySelectorAll("img").forEach(img =>
-      img.addEventListener("dragstart", (e) => e.preventDefault())
-    );
-  }
+  function wire(d){
+    let dragging=false, sx, sy, sl, st, moved=false;
 
-  function wireDragAndFocus(d){
-    // Pointer drag
-    d.addEventListener("pointerdown", (e) => {
-      if (focused) return;
-
-      dragEl = d;
-      dragPointerId = e.pointerId;
-      didDrag = false;
-
-      d.style.zIndex = "110";
-
-      dragStartX = e.clientX;
-      dragStartY = e.clientY;
-      dragStartLeft = parseFloat(d.style.left) || 0;
-      dragStartTop  = parseFloat(d.style.top)  || 0;
-
-      d.setPointerCapture(dragPointerId);
-      e.preventDefault();
+    d.addEventListener("pointerdown",e=>{
+      if(focused) return;
+      dragging=true; moved=false;
+      sx=e.clientX; sy=e.clientY;
+      sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
+      d.setPointerCapture(e.pointerId);
     });
 
-    d.addEventListener("pointermove", (e) => {
-      if (!dragEl || dragEl !== d || e.pointerId !== dragPointerId) return;
-
-      const dx = e.clientX - dragStartX;
-      const dy = e.clientY - dragStartY;
-
-      if (!didDrag && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
-        didDrag = true;
-      }
-
-      const newLeft = clamp(dragStartLeft + dx, 12, innerWidth - d.offsetWidth - 12);
-      const newTop  = clamp(dragStartTop  + dy, 12, innerHeight - d.offsetHeight - 12); // IMPORTANT: no top dead-zone
-
-      d.style.left = Math.round(newLeft) + "px";
-      d.style.top  = Math.round(newTop)  + "px";
-
-      e.preventDefault();
+    d.addEventListener("pointermove",e=>{
+      if(!dragging) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy;
+      if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
+      d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
+      d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
     });
 
-    function endDrag(){
-      if (!dragEl || dragEl !== d) return;
-      savePosition(d);
-      dragEl = null;
-      dragPointerId = null;
-      d.style.zIndex = "";
-    }
+    d.addEventListener("pointerup",()=>{
+      if(dragging) save(d);
+      dragging=false;
+    });
 
-    d.addEventListener("pointerup", endDrag);
-    d.addEventListener("pointercancel", endDrag);
-
-    // Click to focus (ignore drags)
-    d.addEventListener("click", () => {
-      if (didDrag) return;
+    d.addEventListener("click",()=>{
+      if(moved) return;
       toggleFocus(d);
     });
   }
 
-  function makeNameCard(){
-    const d = document.createElement("article");
-    d.className = "doc doc--name";
-    d.style.setProperty("--rot", rand(-3,3).toFixed(2) + "deg");
-    d.style.setProperty("--pin", "var(--pinBlack)");
-
-    d.innerHTML = `
-      <span class="pin" aria-hidden="true"></span>
-      <h1 class="name-title">CEM OZTURK</h1>
-      <p class="name-sub">Student, researcher, designer</p>
-    `;
-
-    board.appendChild(d);
-    preventNativeDrag(d);
-
-    // Size is intrinsic via padding, set position
-    // Start near top center but draggable anywhere
-    const w = d.offsetWidth;
-    const h = d.offsetHeight;
-
-    d.style.left = Math.round((innerWidth - w) / 2) + "px";
-    d.style.top  = "18px";
-
-    savePosition(d);
-    wireDragAndFocus(d);
-    return d;
-  }
-
-  function makePhotoDoc(src, pinCss){
-    const d = document.createElement("article");
-    d.className = "doc doc--photo";
-    d.style.setProperty("--rot", rand(-6,6).toFixed(2)+"deg");
-    d.style.setProperty("--pin", pinCss);
-
-    d.innerHTML = `
-      <span class="pin" aria-hidden="true"></span>
-      <img src="${src}" alt="" draggable="false">
-    `;
-
-    board.appendChild(d);
-    preventNativeDrag(d);
-
-    const img = d.querySelector("img");
-    img.onload = () => {
-      // Half size, never upscale
-      const maxW = 420;
-      const maxH = 420;
-
-      const nw = img.naturalWidth || maxW;
-      const nh = img.naturalHeight || maxH;
-
-      const halfW = nw * 0.5;
-      const halfH = nh * 0.5;
-
-      const scale = Math.min(maxW / halfW, maxH / halfH, 1);
-      const w = Math.round(halfW * scale);
-      const h = Math.round(halfH * scale);
-
-      d.style.width = w + "px";
-      d.style.height = h + "px";
-
-      d.style.left = Math.round(rand(40, innerWidth - w - 40)) + "px";
-      d.style.top  = Math.round(rand(90, innerHeight - h - 40)) + "px";
-
-      savePosition(d);
-    };
-
-    wireDragAndFocus(d);
-    return d;
-  }
-
   function toggleFocus(doc){
-    if (focused) { clearFocus(); return; }
-    focused = doc;
+    if(focused){ clearFocus(); return; }
+    focused=doc;
     dim.classList.add("on");
-
-    // Focused doc: no movement, no scale, only brighten
     doc.classList.add("focused");
 
-    const fr = doc.getBoundingClientRect();
-    const fx = fr.left + fr.width/2;
-    const fy = fr.top  + fr.height/2;
+    const isName = doc.classList.contains("doc--name");
+
+    const fr=doc.getBoundingClientRect();
+    const fx=fr.left+fr.width/2;
+    const fy=fr.top+fr.height/2;
 
     document.querySelectorAll(".doc").forEach(d=>{
-      if(d === doc) return;
+      if(d===doc) return;
 
-      const r = d.getBoundingClientRect();
-      const cx = r.left + r.width/2;
-      const cy = r.top  + r.height/2;
+      /* NAME CARD EXCEPTION */
+      if(d.classList.contains("doc--name") && !isName) return;
+      if(isName) return;
 
-      let dx = cx - fx;
-      let dy = cy - fy;
-      const mag = Math.hypot(dx,dy) || 1;
-      dx /= mag; dy /= mag;
+      const o=saved.get(d);
+      const r=d.getBoundingClientRect();
+      const cx=r.left+r.width/2;
+      const cy=r.top+r.height/2;
 
-      const push = 120;
+      let dx=cx-fx, dy=cy-fy;
+      const mag=Math.hypot(dx,dy)||1;
+      dx/=mag; dy/=mag;
 
-      const o = savedPos.get(d) || {left: parseFloat(d.style.left)||0, top: parseFloat(d.style.top)||0};
-      let nx = o.left + dx * push;
-      let ny = o.top  + dy * push;
-
-      nx = clamp(nx, 12, innerWidth - r.width - 12);
-      ny = clamp(ny, 12, innerHeight - r.height - 12);
-
-      d.style.left = Math.round(nx) + "px";
-      d.style.top  = Math.round(ny) + "px";
+      d.style.left=clamp(o.left+dx*120,12,innerWidth-r.width-12)+"px";
+      d.style.top =clamp(o.top +dy*120,12,innerHeight-r.height-12)+"px";
       d.classList.add("dimmed");
     });
   }
@@ -384,24 +229,47 @@ body::before{
     dim.classList.remove("on");
     document.querySelectorAll(".doc").forEach(d=>{
       d.classList.remove("focused","dimmed");
-      const o = savedPos.get(d);
-      if(o){
-        d.style.left = o.left + "px";
-        d.style.top  = o.top  + "px";
-      }
+      const o=saved.get(d);
+      if(o){ d.style.left=o.left+"px"; d.style.top=o.top+"px"; }
     });
-    focused = null;
+    focused=null;
   }
 
-  dim.addEventListener("click", clearFocus);
-  document.addEventListener("keydown", e=>{
-    if(e.key === "Escape") clearFocus();
-  });
+  dim.onclick=clearFocus;
+  document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  // Build board
-  makeNameCard();
-  makePhotoDoc("./assets/designer1.jpg", "var(--pinRed)");
-  makePhotoDoc("./assets/designer2.jpg", "var(--pinBlue)");
+  /* Build docs */
+
+  const name=document.createElement("article");
+  name.className="doc doc--name";
+  name.style.setProperty("--rot",rand(-3,3)+"deg");
+  name.style.setProperty("--pin","var(--pinBlack)");
+  name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
+  board.appendChild(name);
+  name.style.left=(innerWidth-name.offsetWidth)/2+"px";
+  name.style.top="20px";
+  save(name); wire(name);
+
+  [
+    ["./assets/designer1.jpg","var(--pinRed)"],
+    ["./assets/designer2.jpg","var(--pinBlue)"]
+  ].forEach(([src,pin])=>{
+    const d=document.createElement("article");
+    d.className="doc doc--photo";
+    d.style.setProperty("--rot",rand(-6,6)+"deg");
+    d.style.setProperty("--pin",pin);
+    d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
+    board.appendChild(d);
+    d.querySelector("img").onload=()=>{
+      const w=d.querySelector("img").naturalWidth*0.5;
+      const h=d.querySelector("img").naturalHeight*0.5;
+      d.style.width=w+"px"; d.style.height=h+"px";
+      d.style.left=rand(40,innerWidth-w-40)+"px";
+      d.style.top =rand(80,innerHeight-h-40)+"px";
+      save(d);
+    };
+    wire(d);
+  });
 
 })();
 </script>
