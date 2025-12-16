@@ -92,15 +92,14 @@ body::before{
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
+  transform-origin: top left; /* important: avoids “shifting” when transforms change */
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
     top .45s cubic-bezier(.22,.61,.36,1),
-    transform .35s cubic-bezier(.22,.61,.36,1),
     filter .25s ease,
     opacity .25s ease;
   cursor:grab;
 
-  /* Make dragging reliable */
   user-select:none;
   -webkit-user-select:none;
   touch-action:none;
@@ -129,22 +128,18 @@ body::before{
 /* Photo docs */
 .doc img{
   display:block;
-  max-width:420px;
-  max-height:420px;
-  width:auto;
-  height:auto;
+  width:100%;
+  height:100%;
   box-shadow:var(--shadow);
 
-  /* Critical: stop Safari from treating it like a draggable file */
   pointer-events:none;
   -webkit-user-drag:none;
   user-drag:none;
 }
 
-/* Focused doc */
+/* Focused doc: DO NOT scale (so it won't move). Just brighten. */
 .doc.focused{
-  transform:rotate(0deg) scale(1.12);
-  filter:brightness(1.1) contrast(1.05);
+  filter:brightness(1.12) contrast(1.05);
   z-index:120;
   cursor:default;
 }
@@ -197,7 +192,7 @@ body::before{
 
   let focused = null;
 
-  // Stores the “current” resting positions (keeps up with dragging)
+  // Stores current resting positions (updates after dragging)
   const savedPos = new Map();
 
   // Drag state
@@ -206,7 +201,7 @@ body::before{
   let dragStartX = 0, dragStartY = 0;
   let dragStartLeft = 0, dragStartTop = 0;
   let didDrag = false;
-  const DRAG_THRESHOLD = 6; // px
+  const DRAG_THRESHOLD = 6;
 
   function savePosition(el){
     savedPos.set(el, {
@@ -221,13 +216,12 @@ body::before{
     d.style.setProperty("--rot", rand(-6,6).toFixed(2)+"deg");
     d.style.setProperty("--pin", photos[i]?.pin || pick(pins));
 
-    // draggable="false" is the nuclear option Safari respects
     d.innerHTML = `
       <span class="pin"></span>
       <img src="${photos[i].src}" alt="" draggable="false">
     `;
 
-    // Also block native drag on the element + image
+    // Stop native image drag (Safari)
     d.addEventListener("dragstart", (e) => e.preventDefault());
     d.querySelector("img").addEventListener("dragstart", (e) => e.preventDefault());
 
@@ -235,8 +229,21 @@ body::before{
 
     const img = d.querySelector("img");
     img.onload = () => {
-      const w = Math.min(img.naturalWidth,420);
-      const h = Math.min(img.naturalHeight,420);
+      // Half size, never upscale, still capped
+      const maxW = 420;
+      const maxH = 420;
+
+      const nw = img.naturalWidth || maxW;
+      const nh = img.naturalHeight || maxH;
+
+      const halfW = nw * 0.5;
+      const halfH = nh * 0.5;
+
+      // Clamp to max but keep aspect ratio
+      const scale = Math.min(maxW / halfW, maxH / halfH, 1);
+
+      const w = Math.round(halfW * scale);
+      const h = Math.round(halfH * scale);
 
       d.style.width = w+"px";
       d.style.height = h+"px";
@@ -247,7 +254,7 @@ body::before{
       savePosition(d);
     };
 
-    // Pointer drag
+    // Drag logic
     d.addEventListener("pointerdown", (e) => {
       if (focused) return;
 
@@ -307,18 +314,19 @@ body::before{
 
   function toggleFocus(doc){
     if (focused) { clearFocus(); return; }
+
     focused = doc;
     dim.classList.add("on");
+
+    // IMPORTANT: do not move the focused doc at all.
+    doc.classList.add("focused");
 
     const fr = doc.getBoundingClientRect();
     const fx = fr.left + fr.width/2;
     const fy = fr.top  + fr.height/2;
 
     document.querySelectorAll(".doc").forEach(d=>{
-      if(d === doc){
-        d.classList.add("focused");
-        return;
-      }
+      if(d === doc) return;
 
       const r = d.getBoundingClientRect();
       const cx = r.left + r.width/2;
