@@ -13,19 +13,25 @@
 :root{
   --wall:#e6e6e6;
   --wall2:#f2f2f2;
-
   --paper:#fbfbfb;
   --paper2:#f2f2f2;
-
   --shadow:0 18px 40px rgba(0,0,0,.22);
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
 }
 
-*{box-sizing:border-box}
-html,body{height:100%}
+/* ---- HARD STOP SAFARI SELECTION ---- */
+*{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+}
 
 body{
-  margin:0;
   overflow:hidden;
   background:
     radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.75), transparent 60%),
@@ -35,12 +41,14 @@ body{
   font-family:"Tinos", serif;
 }
 
+/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
 }
 
+/* Dim overlay */
 .focus-dim{
   position:fixed;
   inset:0;
@@ -55,18 +63,12 @@ body{
   pointer-events:auto;
 }
 
+/* Docs */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
   transform-origin: var(--pinX) 14px;
-
-  transition:
-    left .45s cubic-bezier(.22,.61,.36,1),
-    top .45s cubic-bezier(.22,.61,.36,1),
-    filter .25s ease,
-    opacity .25s ease;
   cursor:grab;
-  user-select:none;
   touch-action:none;
 }
 .doc:active{cursor:grabbing}
@@ -77,7 +79,8 @@ body{
   top:6px;
   left:var(--pinX);
   transform:translateX(-50%);
-  width:16px; height:16px;
+  width:16px;
+  height:16px;
   border-radius:50%;
   background:var(--pin);
   box-shadow:0 6px 14px rgba(0,0,0,.25);
@@ -92,7 +95,7 @@ body{
   background:rgba(255,255,255,.55);
 }
 
-/* Puncture shadow under pin (photos only) */
+/* Pin pressure */
 .doc--photo::after{
   content:"";
   position:absolute;
@@ -107,23 +110,26 @@ body{
   z-index:5;
 }
 
-/* Photos */
+/* Photo */
 .doc--photo img{
   display:block;
   width:100%;
   height:100%;
   box-shadow:var(--shadow);
-  pointer-events:none;
-  -webkit-user-drag:none;
+  border:1px solid #000; /* thin black frame */
 }
 
 /* Name card */
 .doc--name{
-  background:linear-gradient(180deg, var(--paper), var(--paper2));
+  background:linear-gradient(180deg,var(--paper),var(--paper2));
   border-radius:999px;
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
+}
+.doc--name h1,
+.doc--name p{
+  pointer-events:none;
 }
 .doc--name h1{
   margin:0;
@@ -137,7 +143,7 @@ body{
   font-family:system-ui;
 }
 
-/* Focus states */
+/* Focus */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
@@ -148,173 +154,99 @@ body{
 /* Hint */
 .hint{
   position:fixed;
-  bottom:14px; right:14px;
+  bottom:14px;
+  right:14px;
   padding:10px 14px;
   border-radius:999px;
   background:rgba(250,250,250,.9);
   font-size:12px;
-  font-family:system-ui;
   z-index:60;
 }
 </style>
 </head>
 
 <body>
+
 <div class="focus-dim" id="dim"></div>
 <main class="board" id="board"></main>
 <div class="hint">Drag · Click to focus · ESC to exit</div>
 
 <script>
-(function(){
+(() => {
   const board = document.getElementById("board");
   const dim = document.getElementById("dim");
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
-  const PIN_X_OPTIONS = ["16%","50%","84%"];
+  const PIN_X_OPTIONS=["16%","50%","84%"];
 
-  function pinPercent(pinX){
-    return parseFloat(String(pinX).replace("%","")) || 50;
-  }
+  const phys=new WeakMap();
+  const physDocs=new Set();
+  let rafOn=false,lastFrame=0;
 
-  // 0 when centered (50%), ~1 at 16%/84%
-  function pinOffsetMag(pinX){
-    const p = pinPercent(pinX);
-    return clamp(Math.abs((p - 50) / 34), 0, 1);
-  }
+  function pinPercent(x){return parseFloat(x)||50}
+  function pinOffset(x){return Math.abs((pinPercent(x)-50)/34)}
 
-  function randomGrayPin(){
-    const g = Math.floor(rand(40, 110));
+  function gray(){
+    const g=Math.floor(rand(45,105));
     return `rgb(${g},${g},${g})`;
   }
 
-  // Equilibrium tilt set by pin offset (left pin -> +deg, right pin -> -deg)
-  function baseAngleFromPin(pinX){
-    const p = pinPercent(pinX);
-    const offset = (p - 50) / 34; // ~-1..+1
-    const MAX_TILT = 9.5;
-    const base = -offset * MAX_TILT;
-
-    const wobble = (Math.random() - 0.5) * 2 * (0.25 + Math.abs(offset) * 0.9);
-    return clamp(base + wobble, -14, 14);
+  function baseAngle(pinX){
+    const off=(pinPercent(pinX)-50)/34;
+    return clamp(-off*9.5 + rand(-1,1)*(0.3+Math.abs(off)), -14,14);
   }
 
-  // --- Wiggle Physics (damped spring) ---
-  const phys = new WeakMap();
-  const physDocs = new Set();
-  let rafOn = false;
-  let lastFrame = 0;
-
-  function ensurePhysics(doc, baseAngle, offsetMag){
-    const st = {
-      base: baseAngle,
-      angle: baseAngle,
-      vel: 0,
-      target: baseAngle,
-      dragging: false,
-      lastX: 0,
-      lastT: 0,
-      offsetMag: offsetMag ?? 0
-    };
-    phys.set(doc, st);
-    physDocs.add(doc);
-    doc.style.setProperty("--rot", st.angle + "deg");
-    startRAF();
-    return st;
+  function ensurePhysics(d,base,off){
+    const st={base,angle:base,vel:0,target:base,drag:false,lastX:0,lastT:0,off};
+    phys.set(d,st); physDocs.add(d);
+    d.style.setProperty("--rot",base+"deg");
+    start();
   }
 
-  function startRAF(){
+  function start(){
     if(rafOn) return;
-    rafOn = true;
-    lastFrame = performance.now();
+    rafOn=true; lastFrame=performance.now();
     requestAnimationFrame(tick);
   }
 
   function tick(now){
-    const dt = Math.min(0.033, (now - lastFrame) / 1000);
-    lastFrame = now;
-
-    const STIFFNESS = 60;
-    const DAMPING   = 10;
-
-    const STOP_EPS_ANGLE = 0.02;
-    const STOP_EPS_VEL   = 0.05;
-
-    let anyActive = false;
-
-    physDocs.forEach(doc=>{
-      const st = phys.get(doc);
-      if(!st) return;
-
-      if(doc.classList.contains("focused")){
-        st.angle = st.base;
-        st.vel = 0;
-        st.target = st.base;
-        doc.style.setProperty("--rot", st.angle + "deg");
-        return;
+    const dt=Math.min(.033,(now-lastFrame)/1000);
+    lastFrame=now;
+    let active=false;
+    physDocs.forEach(d=>{
+      const p=phys.get(d);
+      if(!p) return;
+      if(d.classList.contains("focused")){
+        p.angle=p.base; p.vel=0; p.target=p.base;
+      }else{
+        const a=(p.target-p.angle)*60 - p.vel*10;
+        p.vel+=a*dt; p.angle+=p.vel*dt;
       }
-
-      const acc = (st.target - st.angle) * STIFFNESS - st.vel * DAMPING;
-      st.vel += acc * dt;
-      st.angle += st.vel * dt;
-
-      doc.style.setProperty("--rot", st.angle + "deg");
-
-      const nearRest =
-        Math.abs(st.angle - st.base) < STOP_EPS_ANGLE &&
-        Math.abs(st.vel) < STOP_EPS_VEL &&
-        !st.dragging;
-
-      if(!nearRest) anyActive = true;
+      d.style.setProperty("--rot",p.angle+"deg");
+      if(Math.abs(p.vel)>0.05 || Math.abs(p.angle-p.base)>0.02 || p.drag) active=true;
     });
-
-    if(anyActive){
-      requestAnimationFrame(tick);
-    }else{
-      rafOn = false;
-    }
+    if(active) requestAnimationFrame(tick);
+    else rafOn=false;
   }
 
-  // --- Focus logic ---
   let focused=null;
   const saved=new Map();
+  const save=d=>saved.set(d,{left:parseFloat(d.style.left),top:parseFloat(d.style.top)});
 
-  function save(el){
-    saved.set(el,{
-      left:parseFloat(el.style.left),
-      top:parseFloat(el.style.top)
-    });
-  }
-
-  function toggleFocus(doc){
-    if(focused){ clearFocus(); return; }
-    focused=doc;
-    dim.classList.add("on");
-    doc.classList.add("focused");
-
-    const isName = doc.classList.contains("doc--name");
-    const fr=doc.getBoundingClientRect();
-    const fx=fr.left+fr.width/2;
-    const fy=fr.top+fr.height/2;
-
-    document.querySelectorAll(".doc").forEach(d=>{
-      if(d===doc) return;
-      if(d.classList.contains("doc--name") && !isName) return;
-      if(isName) return;
-
-      const o=saved.get(d);
-      const r=d.getBoundingClientRect();
-      const cx=r.left+r.width/2;
-      const cy=r.top+r.height/2;
-
-      let dx=cx-fx, dy=cy-fy;
-      const mag=Math.hypot(dx,dy)||1;
-      dx/=mag; dy/=mag;
-
-      d.style.left=clamp(o.left+dx*120,12,innerWidth-r.width-12)+"px";
-      d.style.top =clamp(o.top +dy*120,12,innerHeight-r.height-12)+"px";
-      d.classList.add("dimmed");
+  function toggleFocus(d){
+    if(focused){clearFocus();return;}
+    focused=d; dim.classList.add("on"); d.classList.add("focused");
+    const r=d.getBoundingClientRect(),fx=r.left+r.width/2,fy=r.top+r.height/2;
+    document.querySelectorAll(".doc").forEach(o=>{
+      if(o===d||o.classList.contains("doc--name")) return;
+      const s=saved.get(o),b=o.getBoundingClientRect();
+      const dx=(b.left+b.width/2-fx),dy=(b.top+b.height/2-fy);
+      const m=Math.hypot(dx,dy)||1;
+      o.style.left=clamp(s.left+dx/m*120,12,innerWidth-b.width-12)+"px";
+      o.style.top =clamp(s.top +dy/m*120,12,innerHeight-b.height-12)+"px";
+      o.classList.add("dimmed");
     });
   }
 
@@ -322,8 +254,8 @@ body{
     dim.classList.remove("on");
     document.querySelectorAll(".doc").forEach(d=>{
       d.classList.remove("focused","dimmed");
-      const o=saved.get(d);
-      if(o){ d.style.left=o.left+"px"; d.style.top=o.top+"px"; }
+      const s=saved.get(d);
+      if(s){d.style.left=s.left+"px";d.style.top=s.top+"px";}
     });
     focused=null;
   }
@@ -331,132 +263,81 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  // --- Drag wiring with physics wiggle ---
   function wire(d){
-    let dragging=false, sx, sy, sl, st, moved=false;
-
+    let dragging=false,sx,sy,sl,st,moved=false;
     d.addEventListener("pointerdown",e=>{
       if(focused) return;
+      e.preventDefault();
       dragging=true; moved=false;
       sx=e.clientX; sy=e.clientY;
       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
       d.setPointerCapture(e.pointerId);
-
-      const p = phys.get(d);
-      if(p){
-        p.dragging = true;
-        p.lastX = e.clientX;
-        p.lastT = performance.now();
-        startRAF();
-      }
-    });
+      const p=phys.get(d);
+      if(p){p.drag=true;p.lastX=e.clientX;p.lastT=performance.now();start();}
+    },{passive:false});
 
     d.addEventListener("pointermove",e=>{
       if(!dragging) return;
-
-      const dx=e.clientX-sx, dy=e.clientY-sy;
+      e.preventDefault();
+      const dx=e.clientX-sx,dy=e.clientY-sy;
       if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
-
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
-
-      const p = phys.get(d);
+      const p=phys.get(d);
       if(p){
-        const now = performance.now();
-        const dtMs = Math.max(8, now - p.lastT);
-        const vx = (e.clientX - p.lastX) / dtMs; // px per ms
-        p.lastX = e.clientX;
-        p.lastT = now;
-
-        // Scale swing by pin offset: center ~ gentle, sides ~ stronger
-        const lever = 0.35 + p.offsetMag * 1.15; // 0.35..1.5
-
-        // Convert speed into angular target.
-        // Move right->left (vx negative) => swings right first (positive angle)
-        const SPEED_TO_ANGLE = 210;
-        const swing = clamp(-vx * SPEED_TO_ANGLE * lever, -18, 18);
-
-        p.target = p.base + swing;
-        startRAF();
+        const now=performance.now(),dt=Math.max(8,now-p.lastT);
+        const vx=(e.clientX-p.lastX)/dt;
+        p.lastX=e.clientX;p.lastT=now;
+        const lever=.35+p.off*1.15;
+        p.target=p.base+clamp(-vx*210*lever,-18,18);
+        start();
       }
-    });
+    },{passive:false});
 
     d.addEventListener("pointerup",()=>{
       if(dragging) save(d);
       dragging=false;
-
-      const p = phys.get(d);
-      if(p){
-        p.dragging = false;
-        p.target = p.base;   // settle back to equilibrium
-        startRAF();
-      }
+      const p=phys.get(d);
+      if(p){p.drag=false;p.target=p.base;start();}
     });
 
-    d.addEventListener("click",()=>{
-      if(moved) return;
-      toggleFocus(d);
-    });
+    d.addEventListener("click",()=>!moved&&toggleFocus(d));
   }
 
-  // --- Create Name card (pin centered, mild wiggle only) ---
+  /* Name */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
-  name.style.setProperty("--pin", randomGrayPin());
+  name.style.setProperty("--pin",gray());
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
-
-  const nameBase = rand(-2.0,2.0);
-  ensurePhysics(name, nameBase, 0);
-
+  ensurePhysics(name,rand(-2,2),0);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
-  save(name);
-  wire(name);
+  save(name); wire(name);
 
-  // --- Create Photos ---
-  [
-    ["./assets/designer1.jpg"],
-    ["./assets/designer2.jpg"],
-    ["./assets/designer3.jpg"]
-  ].forEach(([src])=>{
+  /* Photos */
+  ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
-
-    const pinX = PIN_X_OPTIONS[Math.floor(Math.random()*PIN_X_OPTIONS.length)];
-    const off = pinOffsetMag(pinX);
-    const base = baseAngleFromPin(pinX);
-
-    d.style.setProperty("--pinX", pinX);
-    d.style.setProperty("--pin", randomGrayPin());
-    d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
+    const pinX=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
+    d.style.setProperty("--pinX",pinX);
+    d.style.setProperty("--pin",gray());
+    d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
-
-    ensurePhysics(d, base, off);
-
+    const base=baseAngle(pinX),off=pinOffset(pinX);
+    ensurePhysics(d,base,off);
     const img=d.querySelector("img");
     img.onload=()=>{
-      const TARGET_WIDTH = 120;
-      const MAX_WIDTH = 150;
-
-      const nw=img.naturalWidth;
-      const nh=img.naturalHeight;
-
-      const scale=Math.min(TARGET_WIDTH/nw, MAX_WIDTH/nw, 1);
-      const w=Math.round(nw*scale);
-      const h=Math.round(nh*scale);
-
-      d.style.width=w+"px";
-      d.style.height=h+"px";
-      d.style.left=rand(40,innerWidth-w-40)+"px";
-      d.style.top =rand(80,innerHeight-h-40)+"px";
+      const s=Math.min(120/img.naturalWidth,150/img.naturalWidth,1);
+      d.style.width=Math.round(img.naturalWidth*s)+"px";
+      d.style.height=Math.round(img.naturalHeight*s)+"px";
+      d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
+      d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
       save(d);
     };
-
     wire(d);
   });
-
 })();
 </script>
 
