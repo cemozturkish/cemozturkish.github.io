@@ -61,7 +61,8 @@ body{
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
-  transform-origin: var(--pinX) -2px; /* rotate around pin center */
+  /* pin is ON the photo now, so the rotation pivot should be on the photo too */
+  transform-origin: var(--pinX) 14px;
 
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
@@ -74,12 +75,10 @@ body{
 }
 .doc:active{cursor:grabbing}
 
-/* --- Pin + hanging bits --- */
-
 /* Pin */
 .pin{
   position:absolute;
-  top:-10px;
+  top:6px; /* sits on the image */
   left:var(--pinX);
   transform:translateX(-50%);
   width:16px; height:16px;
@@ -97,39 +96,22 @@ body{
   background:rgba(255,255,255,.55);
 }
 
-/* String aligned with the pin (for photos only) */
-.doc--photo::before{
-  content:"";
-  position:absolute;
-  top:-46px;
-  left:var(--pinX);
-  transform:translateX(-50%);
-  width:2px;
-  height:46px;
-  background:rgba(0,0,0,.22);
-  border-radius:2px;
-  z-index:1;
-}
-
-/* A tiny “puncture/hole” under the pin, like it actually goes through */
+/* A tiny “puncture shadow” under the pin */
 .doc--photo::after{
   content:"";
   position:absolute;
   left:var(--pinX);
-  top:2px;                 /* sits right on the photo edge */
+  top:16px;                 /* right under the pin */
   transform:translateX(-50%);
-  width:10px;
-  height:6px;
+  width:12px;
+  height:7px;
   border-radius:999px;
-  background:rgba(0,0,0,.18);
-  filter:blur(.2px);
+  background:rgba(0,0,0,.16);
+  filter:blur(.25px);
   z-index:5;
 }
 
 /* Photos */
-.doc--photo{
-  padding-top:8px;          /* creates space so the pin can "pierce" above the photo */
-}
 .doc--photo img{
   display:block;
   width:100%;
@@ -201,10 +183,9 @@ body{
     return parseFloat(String(pinX).replace("%","")) || 50;
   }
 
-  // All pins are gray shades now
+  // Random gray pins
   function randomGrayPin(){
-    // darker grays look more like metal pins; keep highlight via ::after
-    const g = Math.floor(rand(40, 95)); // 40..95
+    const g = Math.floor(rand(40, 110));
     return `rgb(${g},${g},${g})`;
   }
 
@@ -214,17 +195,18 @@ body{
   // right  -> -deg (tilt down to the left)
   function hangAngleFromPin(pinX){
     const p = pinPercent(pinX);
-    const offset = (p - 50) / 34; // 16..84 maps roughly -1..+1
+    const offset = (p - 50) / 34; // ~-1..+1
 
-    const MAX_TILT = 8.5;
+    const MAX_TILT = 9.5;
     const base = -offset * MAX_TILT;
 
-    const wobble = (Math.random() - 0.5) * 2 * (0.4 + Math.abs(offset) * 1.6);
-    const rare = (Math.random() < 0.18)
-      ? (Math.random() - 0.5) * 2 * (Math.abs(offset) * 2.2)
+    // small imperfection, more when pin is off-center
+    const wobble = (Math.random() - 0.5) * 2 * (0.35 + Math.abs(offset) * 1.6);
+    const rare = (Math.random() < 0.15)
+      ? (Math.random() - 0.5) * 2 * (Math.abs(offset) * 2.0)
       : 0;
 
-    return clamp(base + wobble + rare, -14, 14);
+    return clamp(base + wobble + rare, -16, 16);
   }
 
   let focused=null;
@@ -311,12 +293,12 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  /* Name card: pin always top-center (gray) */
+  /* Name card: pin always top-center */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
   name.style.setProperty("--pin", randomGrayPin());
-  name.style.setProperty("--rot",rand(-2.2,2.2)+"deg");
+  name.style.setProperty("--rot",rand(-2.0,2.0)+"deg");
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
@@ -365,5 +347,6 @@ body{
 
 })();
 </script>
+
 </body>
 </html>
