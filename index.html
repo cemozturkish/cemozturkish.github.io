@@ -7,8 +7,8 @@
 
 <style>
 :root{
-  --board:#b07a4a;
-  --board2:#9f6a3d;
+  --wall:#e6e6e6;
+  --wall2:#f2f2f2;
   --pinRed:#d12a2a;
   --pinBlue:#1c4bd1;
   --pinBlack:#2a2a2a;
@@ -22,10 +22,10 @@ body{
   margin:0;
   overflow:hidden;
   background:
-    radial-gradient(1200px 900px at 12% 10%, rgba(255,255,255,.1), transparent 60%),
-    radial-gradient(1000px 800px at 88% 22%, rgba(0,0,0,.1), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 2px, transparent 2px 6px),
-    linear-gradient(135deg, var(--board), var(--board2));
+    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.7), transparent 60%),
+    radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 2px, transparent 2px 6px),
+    linear-gradient(135deg, var(--wall), var(--wall2));
   font-family: Georgia, serif;
 }
 
@@ -34,9 +34,9 @@ body::before{
   position:fixed; inset:0;
   pointer-events:none;
   background-image:
-    radial-gradient(rgba(0,0,0,.1) 1px, transparent 1px),
-    radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
-  background-size:28px 28px,34px 34px;
+    radial-gradient(rgba(0,0,0,.06) 1px, transparent 1px),
+    radial-gradient(rgba(255,255,255,.5) 1px, transparent 1px);
+  background-size:30px 30px,38px 38px;
   opacity:.35;
 }
 
@@ -47,9 +47,10 @@ body::before{
   transform:translateX(-50%);
   padding:14px 20px;
   border-radius:999px;
-  background:rgba(244,241,232,.9);
+  background:rgba(250,250,250,.9);
   z-index:50;
   text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
 }
 .masthead h1{
   margin:0;
@@ -72,11 +73,11 @@ body::before{
   padding-top:140px;
 }
 
-/* Darken overlay */
+/* Focus dim */
 .focus-dim{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.45);
+  background:rgba(0,0,0,.35);
   opacity:0;
   pointer-events:none;
   transition:opacity .35s ease;
@@ -92,12 +93,13 @@ body::before{
   position:absolute;
   transform:rotate(var(--rot));
   transition:
-    left .55s cubic-bezier(.22,.61,.36,1),
-    top .55s cubic-bezier(.22,.61,.36,1),
-    transform .55s cubic-bezier(.22,.61,.36,1),
-    filter .35s ease,
-    opacity .35s ease;
+    left .45s cubic-bezier(.22,.61,.36,1),
+    top .45s cubic-bezier(.22,.61,.36,1),
+    transform .35s cubic-bezier(.22,.61,.36,1),
+    filter .25s ease,
+    opacity .25s ease;
   cursor:grab;
+  user-select:none;
 }
 .doc:active{cursor:grabbing}
 
@@ -107,7 +109,7 @@ body::before{
   width:16px; height:16px;
   border-radius:50%;
   background:var(--pin);
-  box-shadow:0 8px 16px rgba(0,0,0,.3);
+  box-shadow:0 6px 14px rgba(0,0,0,.25);
   z-index:2;
 }
 .pin::after{
@@ -118,7 +120,7 @@ body::before{
   background:rgba(255,255,255,.6);
 }
 
-/* Photo documents */
+/* Photo docs */
 .doc img{
   display:block;
   max-width:420px;
@@ -128,7 +130,7 @@ body::before{
   box-shadow:var(--shadow);
 }
 
-/* Focused */
+/* Focused doc */
 .doc.focused{
   transform:rotate(0deg) scale(1.12);
   filter:brightness(1.1) contrast(1.05);
@@ -136,7 +138,7 @@ body::before{
   cursor:default;
 }
 
-/* Dimmed but still present */
+/* Other docs during focus */
 .doc.dimmed{
   opacity:.35;
 }
@@ -147,7 +149,7 @@ body::before{
   bottom:14px; right:14px;
   padding:10px 14px;
   border-radius:999px;
-  background:rgba(244,241,232,.9);
+  background:rgba(250,250,250,.9);
   font-size:12px;
   font-family:system-ui;
   z-index:60;
@@ -165,7 +167,7 @@ body::before{
 <div class="focus-dim" id="dim"></div>
 <main class="board" id="board"></main>
 
-<div class="hint">Click a document · ESC to exit</div>
+<div class="hint">Drag documents · Click to focus · ESC to exit</div>
 
 <script>
 (function(){
@@ -183,10 +185,10 @@ body::before{
 
   let focused = null;
   const original = new Map();
+  let dragging = null;
+  let dragStart = {};
 
-  function clamp(v,min,max){
-    return Math.max(min, Math.min(max, v));
-  }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   function makeDoc(i){
     const d = document.createElement("article");
@@ -217,7 +219,37 @@ body::before{
       });
     };
 
-    d.addEventListener("click", ()=>toggleFocus(d));
+    /* Drag logic */
+    d.addEventListener("pointerdown", e=>{
+      if(focused) return;
+      dragging = d;
+      dragStart = {
+        x: e.clientX,
+        y: e.clientY,
+        left: parseFloat(d.style.left),
+        top: parseFloat(d.style.top)
+      };
+      d.setPointerCapture(e.pointerId);
+      d.style.zIndex = 100;
+    });
+
+    d.addEventListener("pointermove", e=>{
+      if(dragging !== d) return;
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
+      d.style.left = clamp(dragStart.left + dx, 12, innerWidth - d.offsetWidth - 12) + "px";
+      d.style.top  = clamp(dragStart.top  + dy, 120, innerHeight - d.offsetHeight - 12) + "px";
+    });
+
+    d.addEventListener("pointerup", ()=>{
+      dragging = null;
+    });
+
+    d.addEventListener("click", ()=>{
+      if(dragging) return;
+      toggleFocus(d);
+    });
+
     return d;
   }
 
@@ -249,12 +281,12 @@ body::before{
       dx /= mag; dy /= mag;
 
       const push = 120;
-
       const o = original.get(d);
+
       let nx = o.left + dx * push;
       let ny = o.top  + dy * push;
 
-      nx = clamp(nx, 12, innerWidth  - r.width  - 12);
+      nx = clamp(nx, 12, innerWidth - r.width - 12);
       ny = clamp(ny, 120, innerHeight - r.height - 12);
 
       d.style.left = nx+"px";
