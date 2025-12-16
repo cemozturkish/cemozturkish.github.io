@@ -36,12 +36,14 @@ body{
   font-family: Georgia, serif;
 }
 
+/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
 }
 
+/* Dim overlay */
 .focus-dim{
   position:fixed;
   inset:0;
@@ -51,8 +53,12 @@ body{
   transition:opacity .35s ease;
   z-index:80;
 }
-.focus-dim.on{opacity:1;pointer-events:auto}
+.focus-dim.on{
+  opacity:1;
+  pointer-events:auto;
+}
 
+/* Documents */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
@@ -63,7 +69,6 @@ body{
     filter .25s ease,
     opacity .25s ease;
   cursor:grab;
-
   user-select:none;
   touch-action:none;
 }
@@ -124,6 +129,7 @@ body{
 }
 .doc.dimmed{opacity:.35}
 
+/* Hint */
 .hint{
   position:fixed;
   bottom:14px; right:14px;
@@ -198,15 +204,12 @@ body{
     doc.classList.add("focused");
 
     const isName = doc.classList.contains("doc--name");
-
     const fr=doc.getBoundingClientRect();
     const fx=fr.left+fr.width/2;
     const fy=fr.top+fr.height/2;
 
     document.querySelectorAll(".doc").forEach(d=>{
       if(d===doc) return;
-
-      /* NAME CARD EXCEPTION */
       if(d.classList.contains("doc--name") && !isName) return;
       if(isName) return;
 
@@ -238,8 +241,7 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
-  /* Build docs */
-
+  /* Name card */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--rot",rand(-3,3)+"deg");
@@ -248,8 +250,10 @@ body{
   board.appendChild(name);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
-  save(name); wire(name);
+  save(name);
+  wire(name);
 
+  /* Photos */
   [
     ["./assets/designer1.jpg","var(--pinRed)"],
     ["./assets/designer2.jpg","var(--pinBlue)"]
@@ -260,14 +264,26 @@ body{
     d.style.setProperty("--pin",pin);
     d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
     board.appendChild(d);
-    d.querySelector("img").onload=()=>{
-      const w=d.querySelector("img").naturalWidth*0.5;
-      const h=d.querySelector("img").naturalHeight*0.5;
-      d.style.width=w+"px"; d.style.height=h+"px";
+
+    const img=d.querySelector("img");
+    img.onload=()=>{
+      const TARGET_WIDTH = 320;
+      const MAX_WIDTH = 380;
+
+      const nw=img.naturalWidth;
+      const nh=img.naturalHeight;
+
+      const scale=Math.min(TARGET_WIDTH/nw, MAX_WIDTH/nw, 1);
+      const w=Math.round(nw*scale);
+      const h=Math.round(nh*scale);
+
+      d.style.width=w+"px";
+      d.style.height=h+"px";
       d.style.left=rand(40,innerWidth-w-40)+"px";
       d.style.top =rand(80,innerHeight-h-40)+"px";
       save(d);
     };
+
     wire(d);
   });
 
