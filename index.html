@@ -9,13 +9,10 @@
 :root{
   --board:#b07a4a;
   --board2:#9f6a3d;
-  --paper:#f4f1e8;
-  --paper2:#eee7d8;
   --pinRed:#d12a2a;
   --pinBlue:#1c4bd1;
   --pinBlack:#2a2a2a;
   --shadow:0 18px 40px rgba(0,0,0,.25);
-  --radius:18px;
 }
 
 *{box-sizing:border-box}
@@ -54,8 +51,18 @@ body::before{
   z-index:50;
   text-align:center;
 }
-.masthead h1{margin:0;font-size:28px;letter-spacing:.08em;text-transform:uppercase}
-.masthead p{margin:4px 0 0;font-size:13px;opacity:.7;font-family:system-ui}
+.masthead h1{
+  margin:0;
+  font-size:28px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.masthead p{
+  margin:4px 0 0;
+  font-size:13px;
+  opacity:.7;
+  font-family:system-ui;
+}
 
 /* Board */
 .board{
@@ -65,28 +72,31 @@ body::before{
   padding-top:140px;
 }
 
-/* Overlay darkener */
+/* Darken overlay */
 .focus-dim{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.45);
   opacity:0;
   pointer-events:none;
-  transition:opacity .4s ease;
-  z-index:90;
+  transition:opacity .35s ease;
+  z-index:80;
 }
-.focus-dim.on{opacity:1;pointer-events:auto}
+.focus-dim.on{
+  opacity:1;
+  pointer-events:auto;
+}
 
 /* Documents */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
   transition:
-    transform .6s cubic-bezier(.22,.61,.36,1),
-    filter .6s ease,
-    opacity .6s ease,
-    left .6s cubic-bezier(.22,.61,.36,1),
-    top .6s cubic-bezier(.22,.61,.36,1);
+    left .55s cubic-bezier(.22,.61,.36,1),
+    top .55s cubic-bezier(.22,.61,.36,1),
+    transform .55s cubic-bezier(.22,.61,.36,1),
+    filter .35s ease,
+    opacity .35s ease;
   cursor:grab;
 }
 .doc:active{cursor:grabbing}
@@ -108,12 +118,8 @@ body::before{
   background:rgba(255,255,255,.6);
 }
 
-/* Photo-only docs */
-.doc--photo{
-  background:none;
-  box-shadow:none;
-}
-.doc--photo img{
+/* Photo documents */
+.doc img{
   display:block;
   max-width:420px;
   max-height:420px;
@@ -122,18 +128,17 @@ body::before{
   box-shadow:var(--shadow);
 }
 
-/* Focused document */
+/* Focused */
 .doc.focused{
-  transform:rotate(0deg) scale(1.15);
+  transform:rotate(0deg) scale(1.12);
   filter:brightness(1.1) contrast(1.05);
   z-index:120;
   cursor:default;
 }
 
-/* Swooped away */
-.doc.away{
-  opacity:0;
-  pointer-events:none;
+/* Dimmed but still present */
+.doc.dimmed{
+  opacity:.35;
 }
 
 /* Hint */
@@ -177,12 +182,16 @@ body::before{
   const pick = a=>a[Math.floor(Math.random()*a.length)];
 
   let focused = null;
-  let states = new Map();
+  const original = new Map();
+
+  function clamp(v,min,max){
+    return Math.max(min, Math.min(max, v));
+  }
 
   function makeDoc(i){
     const d = document.createElement("article");
-    d.className="doc doc--photo";
-    d.style.setProperty("--rot", rand(-8,8)+"deg");
+    d.className = "doc";
+    d.style.setProperty("--rot", rand(-6,6)+"deg");
     d.style.setProperty("--pin", photos[i]?.pin || pick(pins));
 
     d.innerHTML = `
@@ -196,11 +205,16 @@ body::before{
     img.onload = () => {
       const w = Math.min(img.naturalWidth,420);
       const h = Math.min(img.naturalHeight,420);
+
       d.style.width = w+"px";
       d.style.height = h+"px";
       d.style.left = rand(40, innerWidth - w - 40)+"px";
       d.style.top  = rand(180, innerHeight - h - 40)+"px";
-      states.set(d, {left:d.style.left, top:d.style.top, rot:d.style.transform});
+
+      original.set(d,{
+        left: parseFloat(d.style.left),
+        top:  parseFloat(d.style.top)
+      });
     };
 
     d.addEventListener("click", ()=>toggleFocus(d));
@@ -215,26 +229,48 @@ body::before{
     focused = doc;
     dim.classList.add("on");
 
+    const fr = doc.getBoundingClientRect();
+    const fx = fr.left + fr.width/2;
+    const fy = fr.top  + fr.height/2;
+
     document.querySelectorAll(".doc").forEach(d=>{
-      if(d===doc){
+      if(d === doc){
         d.classList.add("focused");
-      } else {
-        d.classList.add("away");
-        const dir = Math.random()>0.5 ? -1 : 1;
-        d.style.left = (parseFloat(d.style.left)+dir*innerWidth*0.6)+"px";
-        d.style.top  = (parseFloat(d.style.top)+dir*innerHeight*0.6)+"px";
+        return;
       }
+
+      const r = d.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top  + r.height/2;
+
+      let dx = cx - fx;
+      let dy = cy - fy;
+      const mag = Math.hypot(dx,dy) || 1;
+      dx /= mag; dy /= mag;
+
+      const push = 120;
+
+      const o = original.get(d);
+      let nx = o.left + dx * push;
+      let ny = o.top  + dy * push;
+
+      nx = clamp(nx, 12, innerWidth  - r.width  - 12);
+      ny = clamp(ny, 120, innerHeight - r.height - 12);
+
+      d.style.left = nx+"px";
+      d.style.top  = ny+"px";
+      d.classList.add("dimmed");
     });
   }
 
   function clearFocus(){
     dim.classList.remove("on");
     document.querySelectorAll(".doc").forEach(d=>{
-      d.classList.remove("focused","away");
-      const s = states.get(d);
-      if(s){
-        d.style.left = s.left;
-        d.style.top  = s.top;
+      d.classList.remove("focused","dimmed");
+      const o = original.get(d);
+      if(o){
+        d.style.left = o.left+"px";
+        d.style.top  = o.top+"px";
       }
     });
     focused = null;
@@ -242,7 +278,7 @@ body::before{
 
   dim.addEventListener("click", clearFocus);
   document.addEventListener("keydown", e=>{
-    if(e.key==="Escape") clearFocus();
+    if(e.key === "Escape") clearFocus();
   });
 
   photos.forEach((_,i)=>makeDoc(i));
