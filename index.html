@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cem Öztürk</title>
+<title>Cem Ozturk</title>
 
 <style>
 :root{
@@ -36,12 +36,14 @@ body{
   font-family: Georgia, serif;
 }
 
+/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
 }
 
+/* Dim overlay */
 .focus-dim{
   position:fixed;
   inset:0;
@@ -56,10 +58,14 @@ body{
   pointer-events:auto;
 }
 
+/* Documents */
 .doc{
   position:absolute;
+
+  /* IMPORTANT: rotate around the pin point (so it "hangs") */
   transform:rotate(var(--rot));
-  transform-origin:top left;
+  transform-origin:22px 6px;
+
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
     top .45s cubic-bezier(.22,.61,.36,1),
@@ -79,6 +85,7 @@ body{
   background:var(--pin);
   box-shadow:0 6px 14px rgba(0,0,0,.25);
   pointer-events:none;
+  z-index:3;
 }
 .pin::after{
   content:"";
@@ -86,6 +93,24 @@ body{
   inset:4px;
   border-radius:50%;
   background:rgba(255,255,255,.6);
+}
+
+/* Photos */
+.doc--photo{
+  position:absolute;
+}
+
+/* little "string" above the photo so it reads as hanging */
+.doc--photo::before{
+  content:"";
+  position:absolute;
+  left:22px;         /* align with transform-origin/pin center */
+  top:-44px;
+  width:2px;
+  height:44px;
+  background:rgba(0,0,0,.25);
+  border-radius:2px;
+  z-index:1;
 }
 
 .doc--photo img{
@@ -97,6 +122,7 @@ body{
   -webkit-user-drag:none;
 }
 
+/* Name card */
 .doc--name{
   background:linear-gradient(180deg, var(--paper), var(--paper2));
   border-radius:999px;
@@ -116,6 +142,7 @@ body{
   font-family:system-ui;
 }
 
+/* Focus states */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
@@ -123,6 +150,7 @@ body{
 }
 .doc.dimmed{opacity:.35}
 
+/* Hint */
 .hint{
   position:fixed;
   bottom:14px; right:14px;
@@ -234,6 +262,7 @@ body{
   dim.onclick=clearFocus;
   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
 
+  /* Name card */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--rot",rand(-3,3)+"deg");
@@ -245,6 +274,7 @@ body{
   save(name);
   wire(name);
 
+  /* Photos */
   [
     ["./assets/designer1.jpg","var(--pinRed)"],
     ["./assets/designer2.jpg","var(--pinBlue)"],
