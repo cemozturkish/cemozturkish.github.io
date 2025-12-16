@@ -39,14 +39,12 @@ body{
   font-family:"Tinos", serif;
 }
 
-/* Board */
 .board{
   position:relative;
   width:100vw;
   height:100vh;
 }
 
-/* Dim overlay */
 .focus-dim{
   position:fixed;
   inset:0;
@@ -61,14 +59,10 @@ body{
   pointer-events:auto;
 }
 
-/* Documents */
 .doc{
   position:absolute;
-
-  /* Hanging physics: rotate around the pin X and pin center Y */
   transform:rotate(var(--rot));
-  transform-origin: var(--pinX) -2px; /* pin center is ~8px below top:-10px => -2px */
-
+  transform-origin: var(--pinX) -2px; /* rotate around pin center */
   transition:
     left .45s cubic-bezier(.22,.61,.36,1),
     top .45s cubic-bezier(.22,.61,.36,1),
@@ -80,7 +74,6 @@ body{
 }
 .doc:active{cursor:grabbing}
 
-/* Pin */
 .pin{
   position:absolute;
   top:-10px;
@@ -101,7 +94,6 @@ body{
   background:rgba(255,255,255,.6);
 }
 
-/* Photos: add a “string” aligned with the pin */
 .doc--photo::before{
   content:"";
   position:absolute;
@@ -124,7 +116,6 @@ body{
   -webkit-user-drag:none;
 }
 
-/* Name card */
 .doc--name{
   background:linear-gradient(180deg, var(--paper), var(--paper2));
   border-radius:999px;
@@ -144,7 +135,6 @@ body{
   font-family:system-ui;
 }
 
-/* Focus states */
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
   z-index:120;
@@ -152,7 +142,6 @@ body{
 }
 .doc.dimmed{opacity:.35}
 
-/* Hint */
 .hint{
   position:fixed;
   bottom:14px; right:14px;
@@ -179,8 +168,17 @@ body{
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
-  // Pin positions for photos (random each load)
+  // Photo pin positions: left / middle / right
   const PIN_X_OPTIONS = ["16%","50%","84%"];
+
+  // Bias rotation toward 0deg (hanging straight down) with tiny random sway.
+  // Produces mostly -2..+2 deg, sometimes up to about -5..+5.
+  function hangAngle(){
+    const sway = (Math.random() - 0.5) * 2; // -1..1
+    const tiny = sway * 2.2;               // mostly within ~±2.2deg
+    const rare = (Math.random() < 0.18) ? (sway * 3.0) : 0; // occasional extra sway
+    return (tiny + rare);
+  }
 
   let focused=null;
   const saved=new Map();
@@ -269,7 +267,7 @@ body{
   /* Name card: pin always top-center */
   const name=document.createElement("article");
   name.className="doc doc--name";
-  name.style.setProperty("--rot",rand(-3,3)+"deg");
+  name.style.setProperty("--rot",rand(-3,3)+"deg");     // name can still have some personality
   name.style.setProperty("--pin","var(--pinBlack)");
   name.style.setProperty("--pinX","50%");
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
@@ -287,10 +285,9 @@ body{
   ].forEach(([src,pin])=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
-    d.style.setProperty("--rot",rand(-6,6)+"deg");
+    d.style.setProperty("--rot",hangAngle()+"deg");     // <- gravity bias
     d.style.setProperty("--pin",pin);
 
-    // Random pin location per photo each load
     const pinX = PIN_X_OPTIONS[Math.floor(Math.random()*PIN_X_OPTIONS.length)];
     d.style.setProperty("--pinX", pinX);
 
@@ -321,6 +318,5 @@ body{
 
 })();
 </script>
-
 </body>
 </html>
