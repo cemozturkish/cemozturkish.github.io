@@ -1,95 +1,678 @@
- <!doctype html>
- <html lang="en">
- <head>
- <meta charset="utf-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1" />
- <title>Cem Ozturk</title>
- 
- <style>
- :root{
--  --wall:#e6e6e6;
--  --wall2:#f2f2f2;
+diff --git a/index.html b/index.html
+index 1fb5a43ecf1608a2b9613b7d91fecd590a05a56a..68ed9a5e90e69b27586b63e36af08f7199001160 100644
+--- a/index.html
++++ b/index.html
+@@ -1,589 +1,566 @@
+-diff --git a/index.html b/index.html
+-index a9ab994b38e7212d6d5d6136ac5d7c6b7f7fe752..68ed9a5e90e69b27586b63e36af08f7199001160 100644
+---- a/index.html
+-+++ b/index.html
+-@@ -1,294 +1,566 @@
+- <!doctype html>
+- <html lang="en">
+- <head>
+- <meta charset="utf-8" />
+- <meta name="viewport" content="width=device-width, initial-scale=1" />
+- <title>Cem Ozturk</title>
+- 
+- <style>
+- :root{
+--  --wall:#e6e6e6;
+--  --wall2:#f2f2f2;
+-+  --wall:#f1f0ed;
+-+  --wall2:#e7e5de;
+- 
+--  --paper:#fbfbfb;
+--  --paper2:#f2f2f2;
+--  --ink:#111;
+-+  --paper:#fafafa;
+-+  --paper2:#f4f2ee;
+-+  --ink:#101010;
+- 
+--  --pinRed:#d12a2a;
+-+  --accent:#b60000;
+-+  --pinRed:#b60000;
+-+  --pinGold:#c4a146;
+-   --pinBlue:#1c4bd1;
+--  --pinBlack:#2a2a2a;
+-+  --pinBlack:#1f1f1f;
+- 
+-   --shadow:0 18px 40px rgba(0,0,0,.22);
+-   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
+-+  --grain:repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 2px, transparent 2px 4px);
+- }
+- 
+- *{box-sizing:border-box}
+- html,body{height:100%}
+- 
+- body{
+-   margin:0;
+-   overflow:hidden;
+-   background:
+--    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.75), transparent 60%),
+--    radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
+--    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 2px, transparent 2px 7px),
+-+    radial-gradient(1000px 820px at 10% 10%, rgba(255,255,255,.6), transparent 60%),
+-+    radial-gradient(900px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
+-+    var(--grain),
+-+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 6px),
+-     linear-gradient(135deg, var(--wall), var(--wall2));
+--  font-family: Georgia, serif;
+-+  font-family: "Iowan Old Style", "Times New Roman", Georgia, serif;
+-+  color:var(--ink);
+- }
+- 
+- /* Board */
+- .board{
+-   position:relative;
+-   width:100vw;
+-   height:100vh;
+- }
+- 
+- /* Dim overlay */
+- .focus-dim{
+-   position:fixed;
+-   inset:0;
+-   background:rgba(0,0,0,.35);
+-   opacity:0;
+-   pointer-events:none;
+-   transition:opacity .35s ease;
+-   z-index:80;
+- }
+- .focus-dim.on{
+-   opacity:1;
+-   pointer-events:auto;
+- }
+- 
+- /* Documents */
+- .doc{
+-   position:absolute;
+-   transform:rotate(var(--rot));
+-   transform-origin:top left;
+-   transition:
+-     left .45s cubic-bezier(.22,.61,.36,1),
+-     top .45s cubic-bezier(.22,.61,.36,1),
+-     filter .25s ease,
+-     opacity .25s ease;
+-   cursor:grab;
+-   user-select:none;
+-   touch-action:none;
+- }
+- .doc:active{cursor:grabbing}
+- 
+-+.doc--clipping{
+-+  background:linear-gradient(180deg, var(--paper), var(--paper2));
+-+  border:1px solid rgba(0,0,0,.12);
+-+  box-shadow:var(--shadowSoft);
+-+  padding:18px 18px 22px;
+-+  width:min(320px, 38vw);
+-+  line-height:1.5;
+-+  letter-spacing:.01em;
+-+  font-size:15px;
+-+  max-width:360px;
+-+  position:relative;
+-+}
+-+.doc--clipping h2{
+-+  margin:0 0 6px;
+-+  font-size:18px;
+-+  letter-spacing:.08em;
+-+  text-transform:uppercase;
+-+}
+-+.doc--clipping .kicker{
+-+  display:inline-block;
+-+  font-family:"Courier New", Courier, monospace;
+-+  text-transform:uppercase;
+-+  letter-spacing:.08em;
+-+  font-size:11px;
+-+  padding:4px 7px;
+-+  border:1px dashed rgba(0,0,0,.4);
+-+  margin-bottom:10px;
+-+}
+-+.doc--clipping .lede{margin:6px 0 0; opacity:.86;}
+-+.doc--clipping .tags{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;}
+-+.doc--clipping .tag{
+-+  font-family:"Courier New", Courier, monospace;
+-+  font-size:11px;
+-+  background:rgba(0,0,0,.08);
+-+  padding:3px 7px;
+-+  border-radius:4px;
+-+}
+-+
+-+.doc--staff{
+-+  background:linear-gradient(180deg, var(--paper), var(--paper2));
+-+  border:1px solid rgba(0,0,0,.28);
+-+  box-shadow:var(--shadowSoft);
+-+  padding:16px 18px 18px;
+-+  width:min(280px, 34vw);
+-+  font-family:"Courier New", Courier, monospace;
+-+  letter-spacing:.04em;
+-+  position:relative;
+-+  overflow:hidden;
+-+}
+-+.doc--staff::before{
+-+  content:"";
+-+  position:absolute;
+-+  inset:14px 0 auto;
+-+  height:1px;
+-+  background:repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 8px, transparent 8px 14px);
+-+  opacity:.8;
+-+}
+-+.doc--staff h3{margin:18px 0 4px; font-size:17px; letter-spacing:.08em; text-transform:uppercase;}
+-+.doc--staff p{margin:2px 0; font-size:12px; opacity:.84;}
+-+.doc--staff .role{font-weight:bold; text-transform:uppercase; letter-spacing:.12em;}
+-+.doc--staff .line{margin-top:10px; font-size:12px; text-transform:uppercase; color:var(--accent); letter-spacing:.14em;}
+-+.doc--staff .tagline{margin-top:10px; font-size:12px;}
+-+
+- .pin{
+-   position:absolute;
+-   top:-10px; left:14px;
+-   width:16px; height:16px;
+-   border-radius:50%;
+-   background:var(--pin);
+-   box-shadow:0 6px 14px rgba(0,0,0,.25);
+-   pointer-events:none;
+- }
+- .pin::after{
+-   content:"";
+-   position:absolute;
+-   inset:4px;
+-   border-radius:50%;
+-   background:rgba(255,255,255,.6);
+- }
+- 
+- /* Photos */
+- .doc--photo img{
+-   display:block;
+-   width:100%;
+-   height:100%;
+-   box-shadow:var(--shadow);
+-   pointer-events:none;
+-   -webkit-user-drag:none;
+- }
+- 
+- /* Name card */
+- .doc--name{
+-   background:linear-gradient(180deg, var(--paper), var(--paper2));
+-   border-radius:999px;
+-   padding:14px 18px 12px;
+-   box-shadow:var(--shadowSoft);
+-   text-align:center;
+- }
+- .doc--name h1{
+-   margin:0;
+-   font-size:28px;
+-   letter-spacing:.08em;
+- }
+- .doc--name p{
+-   margin:4px 0 0;
+-   font-size:13px;
+-   opacity:.75;
+-   font-family:system-ui;
+- }
+- 
+-+.doc__note{
+-+  position:absolute;
+-+  left:12px;
+-+  right:12px;
+-+  bottom:12px;
+-+  padding:10px 12px;
+-+  background:rgba(12,12,12,.92);
+-+  color:#f7f6f2;
+-+  font-size:12px;
+-+  line-height:1.4;
+-+  border-radius:8px;
+-+  box-shadow:0 12px 22px rgba(0,0,0,.28);
+-+  font-family:"Courier New", Courier, monospace;
+-+}
+-+
+- /* Focus states */
+- .doc.focused{
+-   filter:brightness(1.12) contrast(1.05);
+-   z-index:120;
+-   cursor:default;
+- }
+- .doc.dimmed{opacity:.35}
+- 
+- /* Hint */
+- .hint{
+-   position:fixed;
+-   bottom:14px; right:14px;
+-   padding:10px 14px;
+-   border-radius:999px;
+--  background:rgba(250,250,250,.9);
+-+  background:rgba(12,12,12,.9);
+-+  color:#fdfbf7;
+-   font-size:12px;
+--  font-family:system-ui;
+-+  font-family:"Courier New", Courier, monospace;
+-+  letter-spacing:.06em;
+-+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+-   z-index:60;
+- }
+-+
+-+/* Desk panel */
+-+.desk{
+-+  position:fixed;
+-+  left:50%;
+-+  bottom:0;
+-+  transform:translate(-50%, 110%);
+-+  width:min(640px, 92vw);
+-+  background:#0f0f0f;
+-+  color:#fefdf8;
+-+  border-radius:14px 14px 0 0;
+-+  padding:18px 20px 24px;
+-+  box-shadow:0 -20px 40px rgba(0,0,0,.32);
+-+  transition:transform .4s ease;
+-+  z-index:140;
+-+  font-family:"Courier New", Courier, monospace;
+-+}
+-+.desk.on{transform:translate(-50%, 0);}
+-+.desk__header{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+-+.desk__light{width:12px; height:12px; border-radius:50%; background:var(--pinRed); box-shadow:0 0 0 4px rgba(255,255,255,.12), 0 8px 14px rgba(0,0,0,.3);}
+-+.desk__title{margin:0; letter-spacing:.06em; font-size:14px; text-transform:uppercase;}
+-+.desk__body{margin:6px 0 0; line-height:1.5; font-size:13px; color:#f2efe7; opacity:.94;}
+-+.desk__tags{margin:10px 0 0; display:flex; gap:6px; flex-wrap:wrap;}
+-+.desk__tag{background:#fefefe; color:#101010; padding:4px 7px; border-radius:4px; font-size:11px; letter-spacing:.04em; text-transform:uppercase;}
+- </style>
+- </head>
+- 
+- <body>
+- 
+- <div class="focus-dim" id="dim"></div>
+- <main class="board" id="board"></main>
+--<div class="hint">Drag · Click to focus · ESC to exit</div>
+-+<aside class="desk" id="desk">
+-+  <div class="desk__header">
+-+    <span class="desk__light"></span>
+-+    <p class="desk__title" id="deskTitle">Press any clipping for the assignment desk.</p>
+-+  </div>
+-+  <p class="desk__body" id="deskBody">Select a nameplate, portrait, or clipping to see the editor notes.
+-+  </p>
+-+  <div class="desk__tags" id="deskTags"></div>
+-+</aside>
+-+<div class="hint">Drag · Click to open notes · ESC to exit</div>
+- 
+- <script>
+- (function(){
+-   const board = document.getElementById("board");
+-   const dim = document.getElementById("dim");
+-+  const desk = document.getElementById("desk");
+-+  const deskTitle = document.getElementById("deskTitle");
+-+  const deskBody = document.getElementById("deskBody");
+-+  const deskTags = document.getElementById("deskTags");
+- 
+-   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+-   const rand=(a,b)=>Math.random()*(b-a)+a;
+- 
+-+  const DEFAULT_DESK = {
+-+    title:"Press any clipping for the assignment desk.",
+-+    body:"Select a nameplate, portrait, or clipping to see the editor notes.",
+-+    tags:[]
+-+  };
+-+
+-   let focused=null;
+-   const saved=new Map();
+- 
+-+  function setDetails(el,{title,body,tags}){
+-+    if(!el) return;
+-+    el.dataset.title=title||"";
+-+    el.dataset.body=body||"";
+-+    el.dataset.tags=(tags||[]).join("|");
+-+  }
+-+
+-+  function fillDesk({title,body,tags}){
+-+    desk.classList.add("on");
+-+    deskTitle.textContent=title;
+-+    deskBody.textContent=body;
+-+    deskTags.innerHTML="";
+-+    (tags||[]).forEach(t=>{
+-+      const chip=document.createElement("span");
+-+      chip.className="desk__tag";
+-+      chip.textContent=t;
+-+      deskTags.appendChild(chip);
+-+    });
+-+  }
+-+
+-+  function resetDesk(){
+-+    fillDesk(DEFAULT_DESK);
+-+    desk.classList.remove("on");
+-+  }
+-+
+-+  function clearNotes(){
+-+    document.querySelectorAll('.doc__note').forEach(n=>n.remove());
+-+  }
+-+
+-+  function attachNote(doc){
+-+    clearNotes();
+-+    const note=doc?.dataset?.note;
+-+    if(!note) return;
+-+    const box=document.createElement('div');
+-+    box.className='doc__note';
+-+    box.textContent=note;
+-+    doc.appendChild(box);
+-+  }
+-+
+-   function save(el){
+-     saved.set(el,{
+-       left:parseFloat(el.style.left),
+-       top:parseFloat(el.style.top)
+-     });
+-   }
+- 
+-   function wire(d){
+-     let dragging=false, sx, sy, sl, st, moved=false;
+- 
+-     d.addEventListener("pointerdown",e=>{
+-       if(focused) return;
+-       dragging=true; moved=false;
+-       sx=e.clientX; sy=e.clientY;
+-       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
+-       d.setPointerCapture(e.pointerId);
+-     });
+- 
+-     d.addEventListener("pointermove",e=>{
+-       if(!dragging) return;
+-       const dx=e.clientX-sx, dy=e.clientY-sy;
+-       if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
+-       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
+-       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
+-     });
+- 
+-     d.addEventListener("pointerup",()=>{
+-       if(dragging) save(d);
+-       dragging=false;
+-     });
+- 
+-     d.addEventListener("click",()=>{
+-       if(moved) return;
+-       toggleFocus(d);
+-     });
+-   }
+- 
+-   function toggleFocus(doc){
+--    if(focused){ clearFocus(); return; }
+-+    if(focused===doc){ clearFocus(); return; }
+-+    if(focused) clearFocus();
+-     focused=doc;
+-     dim.classList.add("on");
+-     doc.classList.add("focused");
+- 
+-+    const details={
+-+      title:doc.dataset.title||DEFAULT_DESK.title,
+-+      body:doc.dataset.body||DEFAULT_DESK.body,
+-+      tags:(doc.dataset.tags||"").split("|").filter(Boolean)
+-+    };
+-+    fillDesk(details);
+-+    attachNote(doc);
+-+
+-     const isName = doc.classList.contains("doc--name");
+-     const fr=doc.getBoundingClientRect();
+-     const fx=fr.left+fr.width/2;
+-     const fy=fr.top+fr.height/2;
+- 
+-     document.querySelectorAll(".doc").forEach(d=>{
+-       if(d===doc) return;
+-       if(d.classList.contains("doc--name") && !isName) return;
+-       if(isName) return;
+- 
+-       const o=saved.get(d);
+-       const r=d.getBoundingClientRect();
+-       const cx=r.left+r.width/2;
+-       const cy=r.top+r.height/2;
+- 
+-       let dx=cx-fx, dy=cy-fy;
+-       const mag=Math.hypot(dx,dy)||1;
+-       dx/=mag; dy/=mag;
+- 
+-       d.style.left=clamp(o.left+dx*120,12,innerWidth-r.width-12)+"px";
+-       d.style.top =clamp(o.top +dy*120,12,innerHeight-r.height-12)+"px";
+-       d.classList.add("dimmed");
+-     });
+-   }
+- 
+-   function clearFocus(){
+-     dim.classList.remove("on");
+-+    clearNotes();
+-     document.querySelectorAll(".doc").forEach(d=>{
+-       d.classList.remove("focused","dimmed");
+-       const o=saved.get(d);
+-       if(o){ d.style.left=o.left+"px"; d.style.top=o.top+"px"; }
+-     });
+-     focused=null;
+-+    resetDesk();
+-   }
+- 
+-   dim.onclick=clearFocus;
+-   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
+- 
+-   /* Name card */
+-   const name=document.createElement("article");
+-   name.className="doc doc--name";
+-   name.style.setProperty("--rot",rand(-3,3)+"deg");
+-   name.style.setProperty("--pin","var(--pinBlack)");
+-   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
+-   board.appendChild(name);
+-   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
+-   name.style.top="20px";
+-+  setDetails(name,{
+-+    title:"Masthead: Cem Ozturk",
+-+    body:"Currently blending research, design, and code to find new ways of thinking through products.",
+-+    tags:["editorial", "design lead", "systems"]
+-+  });
+-+  name.dataset.note="Pull quotes, drafts, and experiments circulate here before landing on the desk.";
+-   save(name);
+-   wire(name);
+- 
+-+  /* Staff roster */
+-+  const staff=[
+-+    {name:"Ada Yılmaz", role:"Research Editor", beat:"field notes", note:"Keeps a map of every interview, no matter how messy the scribbles.", tagline:"Triangulates stories from archive clippings and café conversations.", pin:"var(--pinGold)"},
+-+    {name:"Rafi Chen", role:"Product Desk", beat:"prototyping", note:"Wants a beta by Friday; doodles flows on the backs of receipts.", tagline:"Turns stray ideas into tangible experiments.", pin:"var(--pinBlack)"},
+-+    {name:"Mina Duarte", role:"Design Systems", beat:"grids & glue", note:"Obsessed with margins and the space between headlines.", tagline:"Keeps typography, tempo, and texture coherent across issues.", pin:"var(--pinRed)"},
+-+    {name:"Leo Okafor", role:"Photo", beat:"contact sheets", note:"Shoots first, catalogs later; loves high-contrast film.", tagline:"Collects textures to layer behind spreads and clippings.", pin:"var(--pinBlue)"}
+-+  ];
+-+
+-+  staff.forEach(person=>{
+-+    const d=document.createElement('article');
+-+    d.className='doc doc--staff';
+-+    d.style.setProperty('--rot',rand(-4,4)+'deg');
+-+    d.style.setProperty('--pin',person.pin);
+-+    d.innerHTML=`
+-+      <span class="pin"></span>
+-+      <p class="line">${person.beat}</p>
+-+      <h3>${person.name}</h3>
+-+      <p class="role">${person.role}</p>
+-+      <p class="tagline">${person.tagline}</p>
+-+    `;
+-+    board.appendChild(d);
+-+
+-+    const width=d.offsetWidth;
+-+    const height=d.offsetHeight;
+-+    d.style.left=rand(28,innerWidth-width-28)+"px";
+-+    d.style.top =rand(120,innerHeight-height-120)+"px";
+-+    setDetails(d,{title:`${person.role}: ${person.name}`, body:person.tagline, tags:[person.beat]});
+-+    d.dataset.note=person.note;
+-+    save(d);
+-+    wire(d);
+-+  });
+-+
+-   /* Photos */
+-   [
+--    ["./assets/designer1.jpg","var(--pinRed)"],
+--    ["./assets/designer2.jpg","var(--pinBlue)"]
+--  ].forEach(([src,pin])=>{
+-+    ["./assets/designer1.jpg","var(--pinRed)","Portrait: Morning desk","Warm-up sketches and coffee before the pages go to print.",["studio","analog"]],
+-+    ["./assets/designer2.jpg","var(--pinBlue)","Portrait: Field walk","Collecting references and textures out in the city.",["field","texture"]]
+-+  ].forEach(([src,pin,title,body,tags])=>{
+-     const d=document.createElement("article");
+-     d.className="doc doc--photo";
+-     d.style.setProperty("--rot",rand(-6,6)+"deg");
+-     d.style.setProperty("--pin",pin);
+-     d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
+-     board.appendChild(d);
+- 
+-     const img=d.querySelector("img");
+-     img.onload=()=>{
+-       const TARGET_WIDTH = 320;
+-       const MAX_WIDTH = 380;
+- 
+-       const nw=img.naturalWidth;
+-       const nh=img.naturalHeight;
+- 
+-       const scale=Math.min(TARGET_WIDTH/nw, MAX_WIDTH/nw, 1);
+-       const w=Math.round(nw*scale);
+-       const h=Math.round(nh*scale);
+- 
+-       d.style.width=w+"px";
+-       d.style.height=h+"px";
+-       d.style.left=rand(40,innerWidth-w-40)+"px";
+-       d.style.top =rand(80,innerHeight-h-40)+"px";
+-+      setDetails(d,{title,body,tags});
+-       save(d);
+-     };
+- 
+-     wire(d);
+-   });
+- 
+-+  /* Clippings */
+-+  const clippings=[
+-+    {
+-+      kicker:"Newsroom",
+-+      title:"Staff roster",
+-+      lede:"Mapping collaborators, potential co-conspirators, and the questions we chase.",
+-+      tags:["people","strategy","research"],
+-+      note:"We rotate beats monthly so new voices edit the leads.",
+-+      pin:"var(--pinGold)",
+-+    },
+-+    {
+-+      kicker:"Assignments",
+-+      title:"Active beats",
+-+      lede:"Interaction models, speculative products, embodied tools, and how they alter how we make decisions.",
+-+      tags:["decision-systems","prototyping","writing"],
+-+      note:"Ask who the story serves, then make the prototype for them.",
+-+      pin:"var(--pinRed)",
+-+    },
+-+    {
+-+      kicker:"Edition notes",
+-+      title:"Next issue",
+-+      lede:"A zine-like drop on visual research tools, stitched with code snippets and marginalia.",
+-+      tags:["print","code","experiments"],
+-+      note:"Drafting spreads with misregistered inks—embrace the imperfection.",
+-+      pin:"var(--pinBlue)",
+-+    }
+-+  ];
+-+
+-+  clippings.forEach((clip,i)=>{
+-+    const d=document.createElement("article");
+-+    d.className="doc doc--clipping";
+-+    d.style.setProperty("--rot",rand(-4,4)+"deg");
+-+    d.style.setProperty("--pin",clip.pin||"var(--pinBlack)");
+-+    d.innerHTML=`
+-+      <span class="pin"></span>
+-+      <span class="kicker">${clip.kicker}</span>
+-+      <h2>${clip.title}</h2>
+-+      <p class="lede">${clip.lede}</p>
+-+      <div class="tags">${(clip.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+-+    `;
+-+    board.appendChild(d);
+-+
+-+    const width=d.offsetWidth;
+-+    const height=d.offsetHeight;
+-+    d.style.left=rand(28,innerWidth-width-28)+"px";
+-+    d.style.top =rand(120,innerHeight-height-80)+"px";
+-+    setDetails(d,{title:`${clip.kicker}: ${clip.title}`,body:clip.lede,tags:clip.tags});
+-+    d.dataset.note=clip.note;
+-+    save(d);
+-+    wire(d);
+-+  });
+-+
+-+  resetDesk();
+-+
+- })();
+- </script>
+- 
+- </body>
+- </html>
++<!doctype html>
++<html lang="en">
++<head>
++<meta charset="utf-8" />
++<meta name="viewport" content="width=device-width, initial-scale=1" />
++<title>Cem Ozturk</title>
++
++<style>
++:root{
 +  --wall:#f1f0ed;
 +  --wall2:#e7e5de;
- 
--  --paper:#fbfbfb;
--  --paper2:#f2f2f2;
--  --ink:#111;
++
 +  --paper:#fafafa;
 +  --paper2:#f4f2ee;
 +  --ink:#101010;
- 
--  --pinRed:#d12a2a;
++
 +  --accent:#b60000;
 +  --pinRed:#b60000;
 +  --pinGold:#c4a146;
-   --pinBlue:#1c4bd1;
--  --pinBlack:#2a2a2a;
++  --pinBlue:#1c4bd1;
 +  --pinBlack:#1f1f1f;
- 
-   --shadow:0 18px 40px rgba(0,0,0,.22);
-   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
++
++  --shadow:0 18px 40px rgba(0,0,0,.22);
++  --shadowSoft:0 10px 24px rgba(0,0,0,.16);
 +  --grain:repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 2px, transparent 2px 4px);
- }
- 
- *{box-sizing:border-box}
- html,body{height:100%}
- 
- body{
-   margin:0;
-   overflow:hidden;
-   background:
--    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.75), transparent 60%),
--    radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
--    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 2px, transparent 2px 7px),
++}
++
++*{box-sizing:border-box}
++html,body{height:100%}
++
++body{
++  margin:0;
++  overflow:hidden;
++  background:
 +    radial-gradient(1000px 820px at 10% 10%, rgba(255,255,255,.6), transparent 60%),
 +    radial-gradient(900px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
 +    var(--grain),
 +    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 6px),
-     linear-gradient(135deg, var(--wall), var(--wall2));
--  font-family: Georgia, serif;
++    linear-gradient(135deg, var(--wall), var(--wall2));
 +  font-family: "Iowan Old Style", "Times New Roman", Georgia, serif;
 +  color:var(--ink);
- }
- 
- /* Board */
- .board{
-   position:relative;
-   width:100vw;
-   height:100vh;
- }
- 
- /* Dim overlay */
- .focus-dim{
-   position:fixed;
-   inset:0;
-   background:rgba(0,0,0,.35);
-   opacity:0;
-   pointer-events:none;
-   transition:opacity .35s ease;
-   z-index:80;
- }
- .focus-dim.on{
-   opacity:1;
-   pointer-events:auto;
- }
- 
- /* Documents */
- .doc{
-   position:absolute;
-   transform:rotate(var(--rot));
-   transform-origin:top left;
-   transition:
-     left .45s cubic-bezier(.22,.61,.36,1),
-     top .45s cubic-bezier(.22,.61,.36,1),
-     filter .25s ease,
-     opacity .25s ease;
-   cursor:grab;
-   user-select:none;
-   touch-action:none;
- }
- .doc:active{cursor:grabbing}
- 
++}
++
++/* Board */
++.board{
++  position:relative;
++  width:100vw;
++  height:100vh;
++}
++
++/* Dim overlay */
++.focus-dim{
++  position:fixed;
++  inset:0;
++  background:rgba(0,0,0,.35);
++  opacity:0;
++  pointer-events:none;
++  transition:opacity .35s ease;
++  z-index:80;
++}
++.focus-dim.on{
++  opacity:1;
++  pointer-events:auto;
++}
++
++/* Documents */
++.doc{
++  position:absolute;
++  transform:rotate(var(--rot));
++  transform-origin:top left;
++  transition:
++    left .45s cubic-bezier(.22,.61,.36,1),
++    top .45s cubic-bezier(.22,.61,.36,1),
++    filter .25s ease,
++    opacity .25s ease;
++  cursor:grab;
++  user-select:none;
++  touch-action:none;
++}
++.doc:active{cursor:grabbing}
++
 +.doc--clipping{
 +  background:linear-gradient(180deg, var(--paper), var(--paper2));
 +  border:1px solid rgba(0,0,0,.12);
@@ -153,53 +736,53 @@
 +.doc--staff .line{margin-top:10px; font-size:12px; text-transform:uppercase; color:var(--accent); letter-spacing:.14em;}
 +.doc--staff .tagline{margin-top:10px; font-size:12px;}
 +
- .pin{
-   position:absolute;
-   top:-10px; left:14px;
-   width:16px; height:16px;
-   border-radius:50%;
-   background:var(--pin);
-   box-shadow:0 6px 14px rgba(0,0,0,.25);
-   pointer-events:none;
- }
- .pin::after{
-   content:"";
-   position:absolute;
-   inset:4px;
-   border-radius:50%;
-   background:rgba(255,255,255,.6);
- }
- 
- /* Photos */
- .doc--photo img{
-   display:block;
-   width:100%;
-   height:100%;
-   box-shadow:var(--shadow);
-   pointer-events:none;
-   -webkit-user-drag:none;
- }
- 
- /* Name card */
- .doc--name{
-   background:linear-gradient(180deg, var(--paper), var(--paper2));
-   border-radius:999px;
-   padding:14px 18px 12px;
-   box-shadow:var(--shadowSoft);
-   text-align:center;
- }
- .doc--name h1{
-   margin:0;
-   font-size:28px;
-   letter-spacing:.08em;
- }
- .doc--name p{
-   margin:4px 0 0;
-   font-size:13px;
-   opacity:.75;
-   font-family:system-ui;
- }
- 
++.pin{
++  position:absolute;
++  top:-10px; left:14px;
++  width:16px; height:16px;
++  border-radius:50%;
++  background:var(--pin);
++  box-shadow:0 6px 14px rgba(0,0,0,.25);
++  pointer-events:none;
++}
++.pin::after{
++  content:"";
++  position:absolute;
++  inset:4px;
++  border-radius:50%;
++  background:rgba(255,255,255,.6);
++}
++
++/* Photos */
++.doc--photo img{
++  display:block;
++  width:100%;
++  height:100%;
++  box-shadow:var(--shadow);
++  pointer-events:none;
++  -webkit-user-drag:none;
++}
++
++/* Name card */
++.doc--name{
++  background:linear-gradient(180deg, var(--paper), var(--paper2));
++  border-radius:999px;
++  padding:14px 18px 12px;
++  box-shadow:var(--shadowSoft);
++  text-align:center;
++}
++.doc--name h1{
++  margin:0;
++  font-size:28px;
++  letter-spacing:.08em;
++}
++.doc--name p{
++  margin:4px 0 0;
++  font-size:13px;
++  opacity:.75;
++  font-family:system-ui;
++}
++
 +.doc__note{
 +  position:absolute;
 +  left:12px;
@@ -215,30 +798,28 @@
 +  font-family:"Courier New", Courier, monospace;
 +}
 +
- /* Focus states */
- .doc.focused{
-   filter:brightness(1.12) contrast(1.05);
-   z-index:120;
-   cursor:default;
- }
- .doc.dimmed{opacity:.35}
- 
- /* Hint */
- .hint{
-   position:fixed;
-   bottom:14px; right:14px;
-   padding:10px 14px;
-   border-radius:999px;
--  background:rgba(250,250,250,.9);
++/* Focus states */
++.doc.focused{
++  filter:brightness(1.12) contrast(1.05);
++  z-index:120;
++  cursor:default;
++}
++.doc.dimmed{opacity:.35}
++
++/* Hint */
++.hint{
++  position:fixed;
++  bottom:14px; right:14px;
++  padding:10px 14px;
++  border-radius:999px;
 +  background:rgba(12,12,12,.9);
 +  color:#fdfbf7;
-   font-size:12px;
--  font-family:system-ui;
++  font-size:12px;
 +  font-family:"Courier New", Courier, monospace;
 +  letter-spacing:.06em;
 +  box-shadow:0 8px 20px rgba(0,0,0,.25);
-   z-index:60;
- }
++  z-index:60;
++}
 +
 +/* Desk panel */
 +.desk{
@@ -263,14 +844,13 @@
 +.desk__body{margin:6px 0 0; line-height:1.5; font-size:13px; color:#f2efe7; opacity:.94;}
 +.desk__tags{margin:10px 0 0; display:flex; gap:6px; flex-wrap:wrap;}
 +.desk__tag{background:#fefefe; color:#101010; padding:4px 7px; border-radius:4px; font-size:11px; letter-spacing:.04em; text-transform:uppercase;}
- </style>
- </head>
- 
- <body>
- 
- <div class="focus-dim" id="dim"></div>
- <main class="board" id="board"></main>
--<div class="hint">Drag · Click to focus · ESC to exit</div>
++</style>
++</head>
++
++<body>
++
++<div class="focus-dim" id="dim"></div>
++<main class="board" id="board"></main>
 +<aside class="desk" id="desk">
 +  <div class="desk__header">
 +    <span class="desk__light"></span>
@@ -281,28 +861,28 @@
 +  <div class="desk__tags" id="deskTags"></div>
 +</aside>
 +<div class="hint">Drag · Click to open notes · ESC to exit</div>
- 
- <script>
- (function(){
-   const board = document.getElementById("board");
-   const dim = document.getElementById("dim");
++
++<script>
++(function(){
++  const board = document.getElementById("board");
++  const dim = document.getElementById("dim");
 +  const desk = document.getElementById("desk");
 +  const deskTitle = document.getElementById("deskTitle");
 +  const deskBody = document.getElementById("deskBody");
 +  const deskTags = document.getElementById("deskTags");
- 
-   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-   const rand=(a,b)=>Math.random()*(b-a)+a;
- 
++
++  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
++  const rand=(a,b)=>Math.random()*(b-a)+a;
++
 +  const DEFAULT_DESK = {
 +    title:"Press any clipping for the assignment desk.",
 +    body:"Select a nameplate, portrait, or clipping to see the editor notes.",
 +    tags:[]
 +  };
 +
-   let focused=null;
-   const saved=new Map();
- 
++  let focused=null;
++  const saved=new Map();
++
 +  function setDetails(el,{title,body,tags}){
 +    if(!el) return;
 +    el.dataset.title=title||"";
@@ -342,51 +922,50 @@
 +    doc.appendChild(box);
 +  }
 +
-   function save(el){
-     saved.set(el,{
-       left:parseFloat(el.style.left),
-       top:parseFloat(el.style.top)
-     });
-   }
- 
-   function wire(d){
-     let dragging=false, sx, sy, sl, st, moved=false;
- 
-     d.addEventListener("pointerdown",e=>{
-       if(focused) return;
-       dragging=true; moved=false;
-       sx=e.clientX; sy=e.clientY;
-       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
-       d.setPointerCapture(e.pointerId);
-     });
- 
-     d.addEventListener("pointermove",e=>{
-       if(!dragging) return;
-       const dx=e.clientX-sx, dy=e.clientY-sy;
-       if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
-       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
-       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
-     });
- 
-     d.addEventListener("pointerup",()=>{
-       if(dragging) save(d);
-       dragging=false;
-     });
- 
-     d.addEventListener("click",()=>{
-       if(moved) return;
-       toggleFocus(d);
-     });
-   }
- 
-   function toggleFocus(doc){
--    if(focused){ clearFocus(); return; }
++  function save(el){
++    saved.set(el,{
++      left:parseFloat(el.style.left),
++      top:parseFloat(el.style.top)
++    });
++  }
++
++  function wire(d){
++    let dragging=false, sx, sy, sl, st, moved=false;
++
++    d.addEventListener("pointerdown",e=>{
++      if(focused) return;
++      dragging=true; moved=false;
++      sx=e.clientX; sy=e.clientY;
++      sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
++      d.setPointerCapture(e.pointerId);
++    });
++
++    d.addEventListener("pointermove",e=>{
++      if(!dragging) return;
++      const dx=e.clientX-sx, dy=e.clientY-sy;
++      if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
++      d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
++      d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
++    });
++
++    d.addEventListener("pointerup",()=>{
++      if(dragging) save(d);
++      dragging=false;
++    });
++
++    d.addEventListener("click",()=>{
++      if(moved) return;
++      toggleFocus(d);
++    });
++  }
++
++  function toggleFocus(doc){
 +    if(focused===doc){ clearFocus(); return; }
 +    if(focused) clearFocus();
-     focused=doc;
-     dim.classList.add("on");
-     doc.classList.add("focused");
- 
++    focused=doc;
++    dim.classList.add("on");
++    doc.classList.add("focused");
++
 +    const details={
 +      title:doc.dataset.title||DEFAULT_DESK.title,
 +      body:doc.dataset.body||DEFAULT_DESK.body,
@@ -395,64 +974,64 @@
 +    fillDesk(details);
 +    attachNote(doc);
 +
-     const isName = doc.classList.contains("doc--name");
-     const fr=doc.getBoundingClientRect();
-     const fx=fr.left+fr.width/2;
-     const fy=fr.top+fr.height/2;
- 
-     document.querySelectorAll(".doc").forEach(d=>{
-       if(d===doc) return;
-       if(d.classList.contains("doc--name") && !isName) return;
-       if(isName) return;
- 
-       const o=saved.get(d);
-       const r=d.getBoundingClientRect();
-       const cx=r.left+r.width/2;
-       const cy=r.top+r.height/2;
- 
-       let dx=cx-fx, dy=cy-fy;
-       const mag=Math.hypot(dx,dy)||1;
-       dx/=mag; dy/=mag;
- 
-       d.style.left=clamp(o.left+dx*120,12,innerWidth-r.width-12)+"px";
-       d.style.top =clamp(o.top +dy*120,12,innerHeight-r.height-12)+"px";
-       d.classList.add("dimmed");
-     });
-   }
- 
-   function clearFocus(){
-     dim.classList.remove("on");
++    const isName = doc.classList.contains("doc--name");
++    const fr=doc.getBoundingClientRect();
++    const fx=fr.left+fr.width/2;
++    const fy=fr.top+fr.height/2;
++
++    document.querySelectorAll(".doc").forEach(d=>{
++      if(d===doc) return;
++      if(d.classList.contains("doc--name") && !isName) return;
++      if(isName) return;
++
++      const o=saved.get(d);
++      const r=d.getBoundingClientRect();
++      const cx=r.left+r.width/2;
++      const cy=r.top+r.height/2;
++
++      let dx=cx-fx, dy=cy-fy;
++      const mag=Math.hypot(dx,dy)||1;
++      dx/=mag; dy/=mag;
++
++      d.style.left=clamp(o.left+dx*120,12,innerWidth-r.width-12)+"px";
++      d.style.top =clamp(o.top +dy*120,12,innerHeight-r.height-12)+"px";
++      d.classList.add("dimmed");
++    });
++  }
++
++  function clearFocus(){
++    dim.classList.remove("on");
 +    clearNotes();
-     document.querySelectorAll(".doc").forEach(d=>{
-       d.classList.remove("focused","dimmed");
-       const o=saved.get(d);
-       if(o){ d.style.left=o.left+"px"; d.style.top=o.top+"px"; }
-     });
-     focused=null;
++    document.querySelectorAll(".doc").forEach(d=>{
++      d.classList.remove("focused","dimmed");
++      const o=saved.get(d);
++      if(o){ d.style.left=o.left+"px"; d.style.top=o.top+"px"; }
++    });
++    focused=null;
 +    resetDesk();
-   }
- 
-   dim.onclick=clearFocus;
-   document.onkeydown=e=>e.key==="Escape"&&clearFocus();
- 
-   /* Name card */
-   const name=document.createElement("article");
-   name.className="doc doc--name";
-   name.style.setProperty("--rot",rand(-3,3)+"deg");
-   name.style.setProperty("--pin","var(--pinBlack)");
-   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
-   board.appendChild(name);
-   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
-   name.style.top="20px";
++  }
++
++  dim.onclick=clearFocus;
++  document.onkeydown=e=>e.key==="Escape"&&clearFocus();
++
++  /* Name card */
++  const name=document.createElement("article");
++  name.className="doc doc--name";
++  name.style.setProperty("--rot",rand(-3,3)+"deg");
++  name.style.setProperty("--pin","var(--pinBlack)");
++  name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
++  board.appendChild(name);
++  name.style.left=(innerWidth-name.offsetWidth)/2+"px";
++  name.style.top="20px";
 +  setDetails(name,{
 +    title:"Masthead: Cem Ozturk",
 +    body:"Currently blending research, design, and code to find new ways of thinking through products.",
 +    tags:["editorial", "design lead", "systems"]
 +  });
 +  name.dataset.note="Pull quotes, drafts, and experiments circulate here before landing on the desk.";
-   save(name);
-   wire(name);
- 
++  save(name);
++  wire(name);
++
 +  /* Staff roster */
 +  const staff=[
 +    {name:"Ada Yılmaz", role:"Research Editor", beat:"field notes", note:"Keeps a map of every interview, no matter how messy the scribbles.", tagline:"Triangulates stories from archive clippings and café conversations.", pin:"var(--pinGold)"},
@@ -485,44 +1064,41 @@
 +    wire(d);
 +  });
 +
-   /* Photos */
-   [
--    ["./assets/designer1.jpg","var(--pinRed)"],
--    ["./assets/designer2.jpg","var(--pinBlue)"]
--  ].forEach(([src,pin])=>{
++  /* Photos */
++  [
 +    ["./assets/designer1.jpg","var(--pinRed)","Portrait: Morning desk","Warm-up sketches and coffee before the pages go to print.",["studio","analog"]],
 +    ["./assets/designer2.jpg","var(--pinBlue)","Portrait: Field walk","Collecting references and textures out in the city.",["field","texture"]]
 +  ].forEach(([src,pin,title,body,tags])=>{
-     const d=document.createElement("article");
-     d.className="doc doc--photo";
-     d.style.setProperty("--rot",rand(-6,6)+"deg");
-     d.style.setProperty("--pin",pin);
-     d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
-     board.appendChild(d);
- 
-     const img=d.querySelector("img");
-     img.onload=()=>{
-       const TARGET_WIDTH = 320;
-       const MAX_WIDTH = 380;
- 
-       const nw=img.naturalWidth;
-       const nh=img.naturalHeight;
- 
-       const scale=Math.min(TARGET_WIDTH/nw, MAX_WIDTH/nw, 1);
-       const w=Math.round(nw*scale);
-       const h=Math.round(nh*scale);
- 
-       d.style.width=w+"px";
-       d.style.height=h+"px";
-       d.style.left=rand(40,innerWidth-w-40)+"px";
-       d.style.top =rand(80,innerHeight-h-40)+"px";
++    const d=document.createElement("article");
++    d.className="doc doc--photo";
++    d.style.setProperty("--rot",rand(-6,6)+"deg");
++    d.style.setProperty("--pin",pin);
++    d.innerHTML=`<span class="pin"></span><img src="${src}" draggable="false">`;
++    board.appendChild(d);
++
++    const img=d.querySelector("img");
++    img.onload=()=>{
++      const TARGET_WIDTH = 320;
++      const MAX_WIDTH = 380;
++
++      const nw=img.naturalWidth;
++      const nh=img.naturalHeight;
++
++      const scale=Math.min(TARGET_WIDTH/nw, MAX_WIDTH/nw, 1);
++      const w=Math.round(nw*scale);
++      const h=Math.round(nh*scale);
++
++      d.style.width=w+"px";
++      d.style.height=h+"px";
++      d.style.left=rand(40,innerWidth-w-40)+"px";
++      d.style.top =rand(80,innerHeight-h-40)+"px";
 +      setDetails(d,{title,body,tags});
-       save(d);
-     };
- 
-     wire(d);
-   });
- 
++      save(d);
++    };
++
++    wire(d);
++  });
++
 +  /* Clippings */
 +  const clippings=[
 +    {
@@ -577,11 +1153,8 @@
 +
 +  resetDesk();
 +
- })();
- </script>
- 
- </body>
- </html>
- 
-EOF
-)
++})();
++</script>
++
++</body>
++</html>
