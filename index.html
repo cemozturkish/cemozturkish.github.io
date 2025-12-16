@@ -123,6 +123,9 @@ body{
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
+
+  /* ALWAYS on top */
+  z-index: 9999;
 }
 .doc--name h1,
 .doc--name p{
@@ -142,7 +145,6 @@ body{
 
 .doc.focused{
   filter:brightness(1.12) contrast(1.05);
-  z-index:120;
   cursor:default;
 }
 .doc.dimmed{opacity:.35}
@@ -175,6 +177,13 @@ body{
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
   const PIN_X_OPTIONS=["16%","50%","84%"];
+
+  // Z layering: photos go up as you interact, name card stays above all
+  let zTop = 100; // photo stack starts here
+  function bringToFront(el){
+    if(el.classList.contains("doc--name")) return; // monarch exemption
+    el.style.zIndex = String(++zTop);
+  }
 
   const phys=new WeakMap();
   const physDocs=new Set();
@@ -210,18 +219,23 @@ body{
     const dt=Math.min(.033,(now-lastFrame)/1000);
     lastFrame=now;
     let active=false;
+
     physDocs.forEach(d=>{
       const p=phys.get(d);
       if(!p) return;
+
       if(d.classList.contains("focused")){
         p.angle=p.base; p.vel=0; p.target=p.base;
       }else{
         const a=(p.target-p.angle)*60 - p.vel*10;
         p.vel+=a*dt; p.angle+=p.vel*dt;
       }
+
       d.style.setProperty("--rot",p.angle+"deg");
+
       if(Math.abs(p.vel)>0.05 || Math.abs(p.angle-p.base)>0.02 || p.drag) active=true;
     });
+
     if(active) requestAnimationFrame(tick);
     else rafOn=false;
   }
@@ -231,14 +245,27 @@ body{
   const save=d=>saved.set(d,{left:parseFloat(d.style.left),top:parseFloat(d.style.top)});
 
   function toggleFocus(d){
-    if(focused){clearFocus();return;}
-    focused=d; dim.classList.add("on"); d.classList.add("focused");
+    if(focused){ clearFocus(); return; }
+
+    // bring focused photo to front (but name card still above)
+    bringToFront(d);
+
+    focused=d;
+    dim.classList.add("on");
+    d.classList.add("focused");
+
     const r=d.getBoundingClientRect(),fx=r.left+r.width/2,fy=r.top+r.height/2;
+
     document.querySelectorAll(".doc").forEach(o=>{
-      if(o===d||o.classList.contains("doc--name")) return;
-      const s=saved.get(o),b=o.getBoundingClientRect();
+      if(o===d) return;
+      if(o.classList.contains("doc--name")) return; // name card never participates
+      const s=saved.get(o);
+      if(!s) return;
+
+      const b=o.getBoundingClientRect();
       const dx=(b.left+b.width/2-fx),dy=(b.top+b.height/2-fy);
       const m=Math.hypot(dx,dy)||1;
+
       o.style.left=clamp(s.left+dx/m*120,12,innerWidth-b.width-12)+"px";
       o.style.top =clamp(s.top +dy/m*120,12,innerHeight-b.height-12)+"px";
       o.classList.add("dimmed");
@@ -250,7 +277,7 @@ body{
     document.querySelectorAll(".doc").forEach(d=>{
       d.classList.remove("focused","dimmed");
       const s=saved.get(d);
-      if(s){d.style.left=s.left+"px";d.style.top=s.top+"px";}
+      if(s){ d.style.left=s.left+"px"; d.style.top=s.top+"px"; }
     });
     focused=null;
   }
@@ -264,28 +291,38 @@ body{
     d.addEventListener("pointerdown",e=>{
       if(focused) return;
       e.preventDefault();
+
+      // on grab, bring it to the top of the photo pile
+      bringToFront(d);
+
       dragging=true; moved=false;
       sx=e.clientX; sy=e.clientY;
       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
       d.setPointerCapture(e.pointerId);
+
       const p=phys.get(d);
-      if(p){p.drag=true;p.lastX=e.clientX;p.lastT=performance.now();start();}
+      if(p){ p.drag=true; p.lastX=e.clientX; p.lastT=performance.now(); start(); }
     },{passive:false});
 
     d.addEventListener("pointermove",e=>{
       if(!dragging) return;
       e.preventDefault();
+
       const dx=e.clientX-sx,dy=e.clientY-sy;
       if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
+
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
+
       const p=phys.get(d);
       if(p){
         const now=performance.now(),dt=Math.max(8,now-p.lastT);
         const vx=(e.clientX-p.lastX)/dt;
-        p.lastX=e.clientX;p.lastT=now;
+        p.lastX=e.clientX; p.lastT=now;
+
         const lever=.35+p.off*1.15;
-        /* FLIPPED SIGN HERE */
+
+        // inertia lag: drag right->left => swings right first
         p.target=p.base+clamp(vx*210*lever,-18,18);
         start();
       }
@@ -295,35 +332,48 @@ body{
       if(dragging) save(d);
       dragging=false;
       const p=phys.get(d);
-      if(p){p.drag=false;p.target=p.base;start();}
+      if(p){ p.drag=false; p.target=p.base; start(); }
     });
 
-    d.addEventListener("click",()=>!moved&&toggleFocus(d));
+    d.addEventListener("click",()=>{
+      if(moved) return;
+      // on click, bring clicked photo to front
+      bringToFront(d);
+      toggleFocus(d);
+    });
   }
 
-  /* Name */
+  /* Name card */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
   name.style.setProperty("--pin",gray());
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
+
   ensurePhysics(name,rand(-2,2),0);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
-  save(name); wire(name);
+  save(name);
+  wire(name);
 
   /* Photos */
   ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
+
     const pinX=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
     d.style.setProperty("--pinX",pinX);
     d.style.setProperty("--pin",gray());
     d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
+
     const base=baseAngle(pinX),off=pinOffset(pinX);
     ensurePhysics(d,base,off);
+
+    // give each photo an initial zIndex in the pile
+    bringToFront(d);
+
     const img=d.querySelector("img");
     img.onload=()=>{
       const s=Math.min(120/img.naturalWidth,150/img.naturalWidth,1);
@@ -333,6 +383,7 @@ body{
       d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
       save(d);
     };
+
     wire(d);
   });
 })();
