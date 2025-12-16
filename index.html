@@ -99,9 +99,10 @@ body::before{
     filter .25s ease,
     opacity .25s ease;
   cursor:grab;
-  user-select:none;
 
-  /* Critical for reliable pointer dragging */
+  /* Make dragging reliable */
+  user-select:none;
+  -webkit-user-select:none;
   touch-action:none;
   -webkit-user-drag:none;
 }
@@ -133,7 +134,11 @@ body::before{
   width:auto;
   height:auto;
   box-shadow:var(--shadow);
-  pointer-events:none; /* stop image from stealing drag */
+
+  /* Critical: stop Safari from treating it like a draggable file */
+  pointer-events:none;
+  -webkit-user-drag:none;
+  user-drag:none;
 }
 
 /* Focused doc */
@@ -164,6 +169,7 @@ body::before{
 </head>
 
 <body>
+
 <header class="masthead">
   <h1>Cem Ozturk</h1>
   <p>Student, researcher, designer</p>
@@ -215,10 +221,15 @@ body::before{
     d.style.setProperty("--rot", rand(-6,6).toFixed(2)+"deg");
     d.style.setProperty("--pin", photos[i]?.pin || pick(pins));
 
+    // draggable="false" is the nuclear option Safari respects
     d.innerHTML = `
       <span class="pin"></span>
-      <img src="${photos[i].src}" alt="">
+      <img src="${photos[i].src}" alt="" draggable="false">
     `;
+
+    // Also block native drag on the element + image
+    d.addEventListener("dragstart", (e) => e.preventDefault());
+    d.querySelector("img").addEventListener("dragstart", (e) => e.preventDefault());
 
     board.appendChild(d);
 
@@ -226,6 +237,7 @@ body::before{
     img.onload = () => {
       const w = Math.min(img.naturalWidth,420);
       const h = Math.min(img.naturalHeight,420);
+
       d.style.width = w+"px";
       d.style.height = h+"px";
 
@@ -237,12 +249,12 @@ body::before{
 
     // Pointer drag
     d.addEventListener("pointerdown", (e) => {
-      if (focused) return; // don’t drag in focus mode
+      if (focused) return;
+
       dragEl = d;
       dragPointerId = e.pointerId;
       didDrag = false;
 
-      // Raise above others while dragging
       d.style.zIndex = "110";
 
       dragStartX = e.clientX;
@@ -275,18 +287,16 @@ body::before{
 
     function endDrag(){
       if (!dragEl || dragEl !== d) return;
-      // Save wherever you dropped it so focus/ESC returns to THIS layout
       savePosition(d);
       dragEl = null;
       dragPointerId = null;
-      // let zIndex go back to normal stacking
       d.style.zIndex = "";
     }
 
     d.addEventListener("pointerup", endDrag);
     d.addEventListener("pointercancel", endDrag);
 
-    // Click to focus (but ignore clicks that were actually drags)
+    // Click to focus (ignore drags)
     d.addEventListener("click", () => {
       if (didDrag) return;
       toggleFocus(d);
@@ -296,10 +306,7 @@ body::before{
   }
 
   function toggleFocus(doc){
-    if (focused) {
-      clearFocus();
-      return;
-    }
+    if (focused) { clearFocus(); return; }
     focused = doc;
     dim.classList.add("on");
 
@@ -310,7 +317,6 @@ body::before{
     document.querySelectorAll(".doc").forEach(d=>{
       if(d === doc){
         d.classList.add("focused");
-        // Keep it exactly where it is, don’t “snap”
         return;
       }
 
