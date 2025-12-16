@@ -1,516 +1,253 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cem Ozturk</title>
-  <meta name="description" content="Newsroom corkboard portfolio." />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cem Ozturk</title>
 
-  <style>
-    :root{
-      --board:#b07a4a;
-      --board2:#9f6a3d;
-      --paper:#f4f1e8;
-      --paper2:#eee7d8;
-      --muted:#5c5c5c;
-      --pinRed:#d12a2a;
-      --pinBlue:#1c4bd1;
-      --pinBlack:#2a2a2a;
-      --shadow2:0 10px 22px rgba(0,0,0,.22);
-      --shadowBig:0 30px 90px rgba(0,0,0,.45);
-      --radius:18px;
-    }
+<style>
+:root{
+  --board:#b07a4a;
+  --board2:#9f6a3d;
+  --paper:#f4f1e8;
+  --paper2:#eee7d8;
+  --pinRed:#d12a2a;
+  --pinBlue:#1c4bd1;
+  --pinBlack:#2a2a2a;
+  --shadow:0 18px 40px rgba(0,0,0,.25);
+  --radius:18px;
+}
 
-    *{ box-sizing:border-box }
-    html,body{ height:100% }
+*{box-sizing:border-box}
+html,body{height:100%}
 
-    body{
-      margin:0;
-      overflow:hidden;
-      font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
-      background:
-        radial-gradient(1200px 900px at 12% 10%, rgba(255,255,255,.10), transparent 60%),
-        radial-gradient(1000px 800px at 88% 22%, rgba(0,0,0,.10), transparent 55%),
-        repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 2px, transparent 2px 6px),
-        linear-gradient(135deg, var(--board), var(--board2));
-    }
+body{
+  margin:0;
+  overflow:hidden;
+  background:
+    radial-gradient(1200px 900px at 12% 10%, rgba(255,255,255,.1), transparent 60%),
+    radial-gradient(1000px 800px at 88% 22%, rgba(0,0,0,.1), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 2px, transparent 2px 6px),
+    linear-gradient(135deg, var(--board), var(--board2));
+  font-family: Georgia, serif;
+}
 
-    body::before{
-      content:"";
-      position:fixed; inset:0;
-      pointer-events:none;
-      background-image:
-        radial-gradient(rgba(0,0,0,.10) 1px, transparent 1px),
-        radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
-      background-size:28px 28px,34px 34px;
-      background-position:0 0,12px 18px;
-      opacity:.35;
-      mix-blend-mode:multiply;
-    }
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  background-image:
+    radial-gradient(rgba(0,0,0,.1) 1px, transparent 1px),
+    radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
+  background-size:28px 28px,34px 34px;
+  opacity:.35;
+}
 
-    /* Masthead */
-    .masthead{
-      position:fixed;
-      top:18px;
-      left:50%;
-      transform:translateX(-50%);
-      width:min(980px, calc(100% - 28px));
-      z-index:50;
-      text-align:center;
-      padding:14px 18px 12px;
-      border-radius:999px;
-      background:rgba(244,241,232,.88);
-      border:1px solid rgba(0,0,0,.14);
-      box-shadow:0 14px 28px rgba(0,0,0,.18);
-      backdrop-filter: blur(6px);
-    }
-    .masthead h1{
-      margin:0;
-      font-size:clamp(20px,3vw,34px);
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      font-weight:900;
-    }
-    .masthead p{
-      margin:4px 0 0;
-      font-size:13px;
-      color:var(--muted);
-      font-family: ui-sans-serif, system-ui;
-    }
+/* Masthead */
+.masthead{
+  position:fixed;
+  top:18px; left:50%;
+  transform:translateX(-50%);
+  padding:14px 20px;
+  border-radius:999px;
+  background:rgba(244,241,232,.9);
+  z-index:50;
+  text-align:center;
+}
+.masthead h1{margin:0;font-size:28px;letter-spacing:.08em;text-transform:uppercase}
+.masthead p{margin:4px 0 0;font-size:13px;opacity:.7;font-family:system-ui}
 
-    .board{
-      position:relative;
-      height:100vh;
-      width:100vw;
-      padding-top:140px;
-    }
+/* Board */
+.board{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  padding-top:140px;
+}
 
-    /* Backdrop for expanded */
-    .backdrop{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.35);
-      z-index:180;
-      opacity:0;
-      visibility:hidden;
-      transition: opacity .18s ease, visibility .18s ease;
-    }
-    .backdrop.is-on{ opacity:1; visibility:visible; }
+/* Overlay darkener */
+.focus-dim{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .4s ease;
+  z-index:90;
+}
+.focus-dim.on{opacity:1;pointer-events:auto}
 
-    /* Default paper documents */
-    .doc{
-      position:absolute;
-      width:var(--w);
-      height:var(--h);
-      background:linear-gradient(180deg, var(--paper), var(--paper2));
-      border:1px solid rgba(0,0,0,.16);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow2);
-      transform:rotate(var(--rot));
-      user-select:none;
-      overflow:hidden;
-      cursor:grab;
-      touch-action:none;
-      will-change: transform, left, top;
-    }
-    .doc:active{ cursor:grabbing; }
+/* Documents */
+.doc{
+  position:absolute;
+  transform:rotate(var(--rot));
+  transition:
+    transform .6s cubic-bezier(.22,.61,.36,1),
+    filter .6s ease,
+    opacity .6s ease,
+    left .6s cubic-bezier(.22,.61,.36,1),
+    top .6s cubic-bezier(.22,.61,.36,1);
+  cursor:grab;
+}
+.doc:active{cursor:grabbing}
 
-    .doc::before{
-      content:"";
-      position:absolute; inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(700px 240px at 20% 15%, rgba(255,255,255,.34), transparent 55%),
-        repeating-linear-gradient(0deg, rgba(0,0,0,.03) 0 1px, transparent 1px 4px);
-      opacity:.55;
-      mix-blend-mode:multiply;
-    }
+.pin{
+  position:absolute;
+  top:-10px; left:14px;
+  width:16px; height:16px;
+  border-radius:50%;
+  background:var(--pin);
+  box-shadow:0 8px 16px rgba(0,0,0,.3);
+  z-index:2;
+}
+.pin::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:rgba(255,255,255,.6);
+}
 
-    /* Pin */
-    .pin{
-      position:absolute;
-      top:-10px;
-      left:18px;
-      width:16px;
-      height:16px;
-      border-radius:999px;
-      background:var(--pin);
-      border:2px solid rgba(0,0,0,.18);
-      box-shadow:0 10px 18px rgba(0,0,0,.28);
-      z-index:3;
-      pointer-events:none;
-    }
-    .pin::after{
-      content:"";
-      position:absolute;
-      inset:4px;
-      border-radius:999px;
-      background:rgba(255,255,255,.55);
-    }
+/* Photo-only docs */
+.doc--photo{
+  background:none;
+  box-shadow:none;
+}
+.doc--photo img{
+  display:block;
+  max-width:420px;
+  max-height:420px;
+  width:auto;
+  height:auto;
+  box-shadow:var(--shadow);
+}
 
-    .doc-inner{
-      position:relative;
-      z-index:2;
-      height:100%;
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .tag{
-      font-family: ui-sans-serif, system-ui;
-      font-size:11px;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      color:rgba(0,0,0,.6);
-    }
-    .headline{
-      margin:0;
-      font-size:18px;
-      font-weight:900;
-    }
-    .stub{
-      margin:0;
-      font-size:13.5px;
-      color:rgba(0,0,0,.68);
-    }
+/* Focused document */
+.doc.focused{
+  transform:rotate(0deg) scale(1.15);
+  filter:brightness(1.1) contrast(1.05);
+  z-index:120;
+  cursor:default;
+}
 
-    /* ===== Photo as the document (NO title, NO paper frame) ===== */
-    .doc--photoOnly{
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      overflow: visible; /* so pin + image shadow look natural */
-    }
-    .doc--photoOnly::before{ display:none; }
+/* Swooped away */
+.doc.away{
+  opacity:0;
+  pointer-events:none;
+}
 
-    .doc--photoOnly .pin{
-      left: 12px; /* feels more “pinned photo” */
-      top: -12px;
-    }
-
-    .doc-photo{
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit: contain; /* no distortion */
-      border-radius: 0;     /* no “frame” */
-      box-shadow: 0 14px 28px rgba(0,0,0,.28); /* photo shadow, not a card frame */
-      background: transparent;
-    }
-
-    /* Expanded state (works for paper + photo) */
-    .doc.is-expanded{
-      position:fixed !important;
-      left:50% !important;
-      top:54% !important;
-      width:min(90vw, 900px) !important;
-      height:min(84vh, 900px) !important;
-      transform: translate(-50%,-50%) rotate(0deg) !important;
-      z-index:200 !important;
-      cursor:default;
-    }
-
-    /* When a photo is expanded, keep it undistorted and centered */
-    .doc--photoOnly.is-expanded{
-      box-shadow: none;
-    }
-    .doc--photoOnly.is-expanded .doc-photo{
-      width:100%;
-      height:100%;
-      object-fit: contain;
-      box-shadow: var(--shadowBig);
-    }
-
-    /* Hint */
-    .hint{
-      position:fixed;
-      bottom:14px;
-      right:14px;
-      z-index:60;
-      background: rgba(244,241,232,.86);
-      border: 1px solid rgba(0,0,0,.14);
-      border-radius: 999px;
-      padding: 10px 12px;
-      box-shadow: 0 14px 28px rgba(0,0,0,.18);
-      font-size: 12px;
-      color: rgba(0,0,0,.65);
-      font-family: ui-sans-serif, system-ui;
-    }
-
-    /* Mobile: stack */
-    @media (max-width:820px){
-      body{ overflow:auto }
-      .board{ height:auto; min-height:100vh; padding-bottom: 22px; }
-      .doc{
-        position:relative !important;
-        left:auto !important;
-        top:auto !important;
-        transform:none !important;
-        margin:14px auto;
-        width:min(92vw,420px)!important;
-        height:auto!important;
-        aspect-ratio:1/1;
-        cursor:default;
-        touch-action:auto;
-      }
-      .doc--photoOnly{
-        width:min(92vw,520px)!important;
-        aspect-ratio:auto;
-        height:auto!important;
-      }
-      .doc--photoOnly .doc-photo{
-        width:100%;
-        height:auto;
-        object-fit:contain;
-      }
-      .hint{ display:none; }
-    }
-  </style>
+/* Hint */
+.hint{
+  position:fixed;
+  bottom:14px; right:14px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(244,241,232,.9);
+  font-size:12px;
+  font-family:system-ui;
+  z-index:60;
+}
+</style>
 </head>
 
 <body>
-  <header class="masthead">
-    <h1>Cem Ozturk</h1>
-    <p>Student, researcher, designer. Essays, maps, media, and other carefully curated chaos.</p>
-  </header>
 
-  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
-  <main class="board" id="board" aria-label="Newsroom bulletin board"></main>
+<header class="masthead">
+  <h1>Cem Ozturk</h1>
+  <p>Student, researcher, designer</p>
+</header>
 
-  <div class="hint">Drag to rearrange. Click to expand. Esc to close.</div>
+<div class="focus-dim" id="dim"></div>
+<main class="board" id="board"></main>
 
-  <script>
-  (function(){
-    const board = document.getElementById('board');
-    const backdrop = document.getElementById('backdrop');
-    if(!board || !backdrop) return;
+<div class="hint">Click a document · ESC to exit</div>
 
-    const DOC_COUNT = 12;
+<script>
+(function(){
+  const board = document.getElementById("board");
+  const dim = document.getElementById("dim");
 
-    // Your existing photos
-    const photos = [
-      { src:"./assets/designer1.jpg", pin:"var(--pinRed)" },
-      { src:"./assets/designer2.jpg", pin:"var(--pinBlue)" }
-    ];
+  const photos = [
+    {src:"./assets/designer1.jpg", pin:"var(--pinRed)"},
+    {src:"./assets/designer2.jpg", pin:"var(--pinBlue)"}
+  ];
 
-    const pins = ["var(--pinRed)","var(--pinBlue)","var(--pinBlack)"];
-    const rand = (a,b)=>Math.random()*(b-a)+a;
-    const pick = a=>a[Math.floor(Math.random()*a.length)];
+  const pins = ["var(--pinRed)","var(--pinBlue)","var(--pinBlack)"];
+  const rand = (a,b)=>Math.random()*(b-a)+a;
+  const pick = a=>a[Math.floor(Math.random()*a.length)];
 
-    let z = 80;
-    let expanded = null;
+  let focused = null;
+  let states = new Map();
 
-    function makeDoc(i){
-      const d = document.createElement("article");
-      d.className = "doc";
-      d.setAttribute("tabindex", "0");
+  function makeDoc(i){
+    const d = document.createElement("article");
+    d.className="doc doc--photo";
+    d.style.setProperty("--rot", rand(-8,8)+"deg");
+    d.style.setProperty("--pin", photos[i]?.pin || pick(pins));
 
-      // default square size (used for non-photo docs)
-      const size = Math.round(rand(220,320));
-      d.style.setProperty("--w", size+"px");
-      d.style.setProperty("--h", size+"px");
-      d.style.setProperty("--rot", rand(-8,8).toFixed(2)+"deg");
+    d.innerHTML = `
+      <span class="pin"></span>
+      <img src="${photos[i].src}">
+    `;
 
-      if(i < photos.length){
-        const p = photos[i];
-        d.classList.add("doc--photoOnly");
-        d.style.setProperty("--pin", p.pin);
+    board.appendChild(d);
 
-        // Photo-only content: pin + image, nothing else
-        d.innerHTML = `
-          <span class="pin" aria-hidden="true"></span>
-          <img class="doc-photo" src="${p.src}" alt="">
-        `;
+    const img = d.querySelector("img");
+    img.onload = () => {
+      const w = Math.min(img.naturalWidth,420);
+      const h = Math.min(img.naturalHeight,420);
+      d.style.width = w+"px";
+      d.style.height = h+"px";
+      d.style.left = rand(40, innerWidth - w - 40)+"px";
+      d.style.top  = rand(180, innerHeight - h - 40)+"px";
+      states.set(d, {left:d.style.left, top:d.style.top, rot:d.style.transform});
+    };
 
-        // Resize the doc to the image’s natural aspect ratio (scaled to fit nicely)
-        const img = d.querySelector("img");
-        img.addEventListener("load", () => {
-          if (window.matchMedia('(max-width:820px)').matches) return;
+    d.addEventListener("click", ()=>toggleFocus(d));
+    return d;
+  }
 
-          const maxW = 420;  // cap photo size on board
-          const maxH = 420;
+  function toggleFocus(doc){
+    if(focused){
+      clearFocus();
+      return;
+    }
+    focused = doc;
+    dim.classList.add("on");
 
-          const nw = img.naturalWidth || maxW;
-          const nh = img.naturalHeight || maxH;
-
-          const scale = Math.min(maxW / nw, maxH / nh, 1); // never upscale
-          const w = Math.round(nw * scale);
-          const h = Math.round(nh * scale);
-
-          d.style.setProperty("--w", w + "px");
-          d.style.setProperty("--h", h + "px");
-          d.style.width = w + "px";
-          d.style.height = h + "px";
-        });
-
+    document.querySelectorAll(".doc").forEach(d=>{
+      if(d===doc){
+        d.classList.add("focused");
       } else {
-        d.style.setProperty("--pin", pick(pins));
-        d.innerHTML = `
-          <span class="pin" aria-hidden="true"></span>
-          <div class="doc-inner">
-            <div class="tag">document ${String(i+1).padStart(2,"0")}</div>
-            <h2 class="headline">Important document</h2>
-            <p class="stub">Replace this with text, links, or buttons.</p>
-          </div>
-        `;
+        d.classList.add("away");
+        const dir = Math.random()>0.5 ? -1 : 1;
+        d.style.left = (parseFloat(d.style.left)+dir*innerWidth*0.6)+"px";
+        d.style.top  = (parseFloat(d.style.top)+dir*innerHeight*0.6)+"px";
       }
+    });
+  }
 
-      return d;
-    }
-
-    function place(){
-      board.innerHTML = "";
-      const w = innerWidth, h = innerHeight, top = 140, m = 18;
-      const placed = [];
-
-      const overlaps = (x,y,ww,hh) => placed.some(p =>
-        x < p.x + p.w + 18 && x + ww + 18 > p.x &&
-        y < p.y + p.h + 18 && y + hh + 18 > p.y
-      );
-
-      for(let i=0; i<DOC_COUNT; i++){
-        const d = makeDoc(i);
-        board.appendChild(d);
-
-        // Measure after append (important because photos can change size on load)
-        let ww = d.offsetWidth, hh = d.offsetHeight;
-
-        let x = m, y = top + m;
-        for(let t=0; t<60; t++){
-          ww = d.offsetWidth; hh = d.offsetHeight;
-          x = rand(m, Math.max(m, w - ww - m));
-          y = rand(top + m, Math.max(top + m, h - hh - m));
-          if(!overlaps(x,y,ww,hh)) break;
-        }
-
-        d.style.left = Math.round(x) + "px";
-        d.style.top  = Math.round(y) + "px";
-        d.style.zIndex = (++z).toString();
-
-        placed.push({x,y,w:ww,h:hh});
+  function clearFocus(){
+    dim.classList.remove("on");
+    document.querySelectorAll(".doc").forEach(d=>{
+      d.classList.remove("focused","away");
+      const s = states.get(d);
+      if(s){
+        d.style.left = s.left;
+        d.style.top  = s.top;
       }
-
-      wireInteractions();
-    }
-
-    // ------- Expand / collapse -------
-    function openDoc(el){
-      if (window.matchMedia('(max-width:820px)').matches) return;
-      if (expanded === el) return;
-      closeDoc();
-
-      expanded = el;
-      expanded.dataset.prevLeft = expanded.style.left || "";
-      expanded.dataset.prevTop  = expanded.style.top  || "";
-      expanded.dataset.prevZ    = expanded.style.zIndex || "";
-
-      backdrop.classList.add("is-on");
-      expanded.classList.add("is-expanded");
-      expanded.style.zIndex = "200";
-      expanded.focus({preventScroll:true});
-    }
-
-    function closeDoc(){
-      if(!expanded) return;
-      expanded.classList.remove("is-expanded");
-      expanded.style.left = expanded.dataset.prevLeft;
-      expanded.style.top  = expanded.dataset.prevTop;
-      expanded.style.zIndex = expanded.dataset.prevZ;
-      expanded = null;
-      backdrop.classList.remove("is-on");
-    }
-
-    backdrop.addEventListener("click", closeDoc);
-    document.addEventListener("keydown", (e) => {
-      if(e.key === "Escape") closeDoc();
     });
+    focused = null;
+  }
 
-    // ------- Dragging + Click-to-expand -------
-    function wireInteractions(){
-      const docs = Array.from(document.querySelectorAll(".doc"));
-      docs.forEach(doc => attachDragAndClick(doc));
-    }
+  dim.addEventListener("click", clearFocus);
+  document.addEventListener("keydown", e=>{
+    if(e.key==="Escape") clearFocus();
+  });
 
-    function attachDragAndClick(el){
-      let dragging = false;
-      let moved = 0;
-      let startX=0, startY=0;
-      let startL=0, startT=0;
+  photos.forEach((_,i)=>makeDoc(i));
+})();
+</script>
 
-      const onPointerDown = (e) => {
-        if (window.matchMedia('(max-width:820px)').matches) return;
-        if (expanded) return;
-
-        el.setPointerCapture?.(e.pointerId);
-        el.style.zIndex = (++z).toString();
-
-        dragging = true;
-        moved = 0;
-
-        startX = e.clientX;
-        startY = e.clientY;
-
-        const rect = el.getBoundingClientRect();
-        startL = rect.left;
-        startT = rect.top;
-
-        e.preventDefault();
-      };
-
-      const onPointerMove = (e) => {
-        if(!dragging) return;
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        moved = Math.max(moved, Math.abs(dx) + Math.abs(dy));
-
-        const ww = el.offsetWidth;
-        const hh = el.offsetHeight;
-
-        const left = Math.min(Math.max(startL + dx, 10), window.innerWidth - ww - 10);
-        const top  = Math.min(Math.max(startT + dy, 80), window.innerHeight - hh - 10);
-
-        el.style.left = Math.round(left) + "px";
-        el.style.top  = Math.round(top) + "px";
-      };
-
-      const onPointerUp = () => {
-        if(!dragging) return;
-        dragging = false;
-      };
-
-      const onClick = () => {
-        if (window.matchMedia('(max-width:820px)').matches) return;
-        if (moved > 8) return;
-        openDoc(el);
-      };
-
-      el.addEventListener("pointerdown", onPointerDown);
-      window.addEventListener("pointermove", onPointerMove);
-      window.addEventListener("pointerup", onPointerUp);
-      el.addEventListener("click", onClick);
-
-      el.addEventListener("keydown", (e) => {
-        if (window.matchMedia('(max-width:820px)').matches) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openDoc(el);
-        }
-      });
-    }
-
-    place();
-
-    let t=null;
-    addEventListener("resize", () => {
-      clearTimeout(t);
-      t = setTimeout(() => {
-        closeDoc();
-        place();
-      }, 160);
-    });
-  })();
-  </script>
 </body>
 </html>
