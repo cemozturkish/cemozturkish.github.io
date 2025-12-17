@@ -1,4 +1,6 @@
-<!doctype html>
+from pathlib import Path, PurePosixPath
+
+html = """<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -112,13 +114,19 @@ body{
   border:1px solid #000;
 }
 
+/* active photo (no filters, no gimmicks) */
+.doc.is-active img{
+  outline:2px solid rgba(0,0,0,.85);
+  outline-offset:6px;
+}
+
 .doc--name{
   background:linear-gradient(180deg,var(--paper),var(--paper2));
   border-radius:999px;
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
-  z-index:9999;
+  z-index:9999; /* reinforced in JS */
 }
 .doc--name h1,
 .doc--name p{pointer-events:none}
@@ -132,6 +140,13 @@ body{
   font-size:13px;
   opacity:.75;
   font-family:system-ui;
+}
+
+/* let people copy your name, radical concept */
+.doc--name h1,
+.doc--name p{
+  user-select:text;
+  -webkit-user-select:text;
 }
 
 .hint{
@@ -162,6 +177,7 @@ body{
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
   const PIN_X_OPTIONS=["16%","50%","84%"];
+  const NAME_Z = 999999;
 
   /* -------- Physics core -------- */
   const phys=new WeakMap(), physDocs=new Set();
@@ -220,6 +236,16 @@ body{
 
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
+  const clearActive=()=>{
+    document.querySelectorAll(".doc.is-active")
+      .forEach(el=>el.classList.remove("is-active"));
+  };
+
+  /* Clear selection when clicking empty board */
+  board.addEventListener("pointerdown", e => {
+    if(e.target === board) clearActive();
+  });
+
   /* -------- Name card (ROTATION ONLY) -------- */
   const name=document.createElement("article");
   name.className="doc doc--name";
@@ -227,6 +253,8 @@ body{
   name.style.setProperty("--pin",gray());
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
+
+  name.style.zIndex = NAME_Z;
 
   const baseAngle=rand(-3,3);
   makePhys(name,baseAngle,{k:55,damp:8});
@@ -282,9 +310,10 @@ body{
 
     const img=d.querySelector("img");
     img.onload=()=>{
-      const s=Math.min(120/img.naturalWidth,150/img.naturalWidth,1);
-      d.style.width=Math.round(img.naturalWidth*s)+"px";
-      d.style.height=Math.round(img.naturalHeight*s)+"px";
+      const maxW = 260;
+      const scale = Math.min(maxW / img.naturalWidth, 1);
+      d.style.width=Math.round(img.naturalWidth*scale)+"px";
+      d.style.height=Math.round(img.naturalHeight*scale)+"px";
       d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
       d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
     };
@@ -292,6 +321,10 @@ body{
     let dragging=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
       e.preventDefault();
+
+      clearActive();
+      d.classList.add("is-active");
+
       bringToFront(d);
       dragging=true;
       sx=e.clientX; sy=e.clientY;
@@ -306,7 +339,7 @@ body{
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
       const p=phys.get(d);
-      p.target=p.base+clamp(dx*0.15,-18,18);
+      p.target=p.base+clamp(dx*0.1,-12,12);
       start();
     });
 
@@ -324,3 +357,7 @@ body{
 
 </body>
 </html>
+"""
+out_path = Path("/mnt/data/index.html")
+out_path.write_text(html, encoding="utf-8")
+str(out_path)
