@@ -17,11 +17,9 @@
   --paper2:#f2f2f2;
   --shadow:0 18px 40px rgba(0,0,0,.22);
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
-  --scale:1;
-  --tx:0px;
-  --ty:0px;
 }
 
+/* stop selection */
 *{
   -webkit-user-select:none;
   user-select:none;
@@ -43,22 +41,13 @@ body{
   font-family:"Tinos", serif;
 }
 
-.viewport{
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-}
-
 .board{
-  position:absolute;
-  inset:0;
+  position:relative;
   width:100vw;
   height:100vh;
-  transform-origin:0 0;
-  transform:translate(var(--tx),var(--ty)) scale(var(--scale));
-  transition:transform 420ms cubic-bezier(.22,.61,.36,1);
 }
 
+/* docs */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
@@ -90,6 +79,7 @@ body{
   background:rgba(255,255,255,.55);
 }
 
+/* pin pressure */
 .doc--photo::after{
   content:"";
   position:absolute;
@@ -104,6 +94,7 @@ body{
   z-index:5;
 }
 
+/* photo */
 .doc--photo img{
   display:block;
   width:100%;
@@ -112,6 +103,7 @@ body{
   border:1px solid #000;
 }
 
+/* name card */
 .doc--name{
   background:linear-gradient(180deg,var(--paper),var(--paper2));
   border-radius:999px;
@@ -149,22 +141,25 @@ body{
 
 <body>
 
-<div class="viewport">
-  <main class="board" id="board"></main>
-</div>
-
-<div class="hint">Drag · Card swings from pin · ESC to reset zoom</div>
+<main class="board" id="board"></main>
+<div class="hint">Drag photos · Name card swings from pin</div>
 
 <script>
 (() => {
-  const board = document.getElementById("board");
+  const board=document.getElementById("board");
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
+  const PIN_X=["16%","50%","84%"];
 
-  const PIN_X_OPTIONS=["16%","50%","84%"];
+  /* z-index */
+  let zTop=100;
+  const bringToFront=d=>{
+    if(d.classList.contains("doc--name")) return;
+    d.style.zIndex=++zTop;
+  };
 
-  /* -------- Physics core -------- */
-  const phys=new WeakMap(), physDocs=new Set();
+  /* physics */
+  const phys=new WeakMap(), all=new Set();
   let raf=false,last=0;
 
   function start(){
@@ -177,50 +172,28 @@ body{
     const dt=Math.min(.033,(t-last)/1000);
     last=t;
     let active=false;
-
-    physDocs.forEach(d=>{
+    all.forEach(d=>{
       const p=phys.get(d);
-      if(!p) return;
-
-      const acc=(p.target-p.angle)*p.k - p.vel*p.damp;
-      p.vel+=acc*dt;
+      const a=(p.target-p.angle)*p.k-p.vel*p.d;
+      p.vel+=a*dt;
       p.angle+=p.vel*dt;
-
       d.style.setProperty("--rot",p.angle+"deg");
-
-      if(Math.abs(p.vel)>0.03 || Math.abs(p.angle-p.base)>0.03 || p.drag)
+      if(Math.abs(p.vel)>0.03||Math.abs(p.angle-p.base)>0.03||p.drag)
         active=true;
     });
-
-    if(active) requestAnimationFrame(tick);
-    else raf=false;
+    if(active) requestAnimationFrame(tick); else raf=false;
   }
 
-  function makePhys(d,base,{k=60,damp=10}={}){
-    phys.set(d,{
-      base,
-      angle:base,
-      target:base,
-      vel:0,
-      drag:false,
-      k,
-      damp
-    });
-    physDocs.add(d);
+  function makePhys(d,base,k=60,d=10){
+    phys.set(d,{base,angle:base,target:base,vel:0,drag:false,k,d});
+    all.add(d);
     d.style.setProperty("--rot",base+"deg");
     start();
   }
 
-  /* -------- Utilities -------- */
-  let zTop=100;
-  const bringToFront=el=>{
-    if(el.classList.contains("doc--name")) return;
-    el.style.zIndex=++zTop;
-  };
-
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
-  /* -------- Name card (ROTATION ONLY) -------- */
+  /* name card (rotation only) */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
@@ -228,21 +201,15 @@ body{
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
 
-  const baseAngle=rand(-3,3);
-  makePhys(name,baseAngle,{k:55,damp:8});
-
+  makePhys(name,rand(-3,3),55,8);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
 
   let pivot=null;
-
   name.addEventListener("pointerdown",e=>{
     e.preventDefault();
     const r=name.getBoundingClientRect();
-    pivot={
-      x:r.left+r.width/2,
-      y:r.top+14
-    };
+    pivot={x:r.left+r.width/2,y:r.top+14};
     const p=phys.get(name);
     p.drag=true;
     name.setPointerCapture(e.pointerId);
@@ -266,18 +233,18 @@ body{
     start();
   });
 
-  /* -------- Photos -------- */
+  /* photos */
   ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
-    const px=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
+    const px=PIN_X[Math.floor(Math.random()*3)];
     d.style.setProperty("--pinX",px);
     d.style.setProperty("--pin",gray());
     d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
 
     const off=Math.abs((parseFloat(px)-50)/34);
-    makePhys(d,(-off*9+rand(-1,1)),{k:60,damp:10});
+    makePhys(d,-off*9+rand(-1,1));
     bringToFront(d);
 
     const img=d.querySelector("img");
@@ -289,11 +256,11 @@ body{
       d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
     };
 
-    let dragging=false,sx,sy,sl,st;
+    let drag=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
       e.preventDefault();
       bringToFront(d);
-      dragging=true;
+      drag=true;
       sx=e.clientX; sy=e.clientY;
       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
       d.setPointerCapture(e.pointerId);
@@ -301,7 +268,7 @@ body{
     });
 
     d.addEventListener("pointermove",e=>{
-      if(!dragging) return;
+      if(!drag) return;
       const dx=e.clientX-sx,dy=e.clientY-sy;
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
@@ -311,7 +278,7 @@ body{
     });
 
     d.addEventListener("pointerup",()=>{
-      dragging=false;
+      drag=false;
       const p=phys.get(d);
       p.drag=false;
       p.target=p.base;
