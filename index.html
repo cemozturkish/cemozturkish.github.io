@@ -15,9 +15,6 @@
   --paper2:#f2f2f2;
   --shadow:0 18px 40px rgba(0,0,0,.22);
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
-  --scale:1;
-  --tx:0px;
-  --ty:0px;
 }
 
 *{
@@ -33,28 +30,12 @@ html,body{
 
 body{
   overflow:hidden;
-  /* NEW: newspaper-like background */
   background:
-    /* paper fibers */
-    repeating-linear-gradient(
-      0deg,
-      rgba(0,0,0,0.025) 0px,
-      rgba(0,0,0,0.025) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(0,0,0,0.018) 0px,
-      rgba(0,0,0,0.018) 1px,
-      transparent 1px,
-      transparent 6px
-    ),
-    /* ink blotches / age stains */
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.018) 0 1px, transparent 1px 6px),
     radial-gradient(circle at 12% 18%, rgba(0,0,0,0.06), transparent 45%),
     radial-gradient(circle at 82% 72%, rgba(0,0,0,0.05), transparent 50%),
     radial-gradient(circle at 55% 40%, rgba(0,0,0,0.04), transparent 55%),
-    /* base paper tone */
     linear-gradient(180deg, #f6f5f2, #e9e7e2);
   font-family:"Tinos", serif;
 }
@@ -70,9 +51,6 @@ body{
   inset:0;
   width:100vw;
   height:100vh;
-  transform-origin:0 0;
-  transform:translate(var(--tx),var(--ty)) scale(var(--scale));
-  transition:transform 420ms cubic-bezier(.22,.61,.36,1);
 }
 
 .doc{
@@ -84,7 +62,6 @@ body{
 }
 .doc:active{cursor:grabbing}
 
-/* pin */
 .pin{
   position:absolute;
   top:6px;
@@ -97,27 +74,6 @@ body{
   box-shadow:0 6px 14px rgba(0,0,0,.25);
   pointer-events:none;
   z-index:6;
-}
-.pin::after{
-  content:"";
-  position:absolute;
-  inset:4px;
-  border-radius:50%;
-  background:rgba(255,255,255,.55);
-}
-
-.doc--photo::after{
-  content:"";
-  position:absolute;
-  left:var(--pinX);
-  top:16px;
-  transform:translateX(-50%);
-  width:12px;
-  height:7px;
-  border-radius:999px;
-  background:rgba(0,0,0,.16);
-  filter:blur(.25px);
-  z-index:5;
 }
 
 .doc--photo img{
@@ -136,30 +92,6 @@ body{
   text-align:center;
   z-index:9999;
 }
-.doc--name h1,
-.doc--name p{pointer-events:none}
-.doc--name h1{
-  margin:0;
-  font-size:28px;
-  letter-spacing:.03em; /* less shouty */
-}
-.doc--name p{
-  margin:4px 0 0;
-  font-size:13px;
-  opacity:.75;
-  font-family:system-ui;
-}
-
-.hint{
-  position:fixed;
-  bottom:14px;
-  right:14px;
-  padding:10px 14px;
-  border-radius:999px;
-  background:rgba(250,250,250,.9);
-  font-size:12px;
-  z-index:60;
-}
 </style>
 </head>
 
@@ -169,17 +101,13 @@ body{
   <main class="board" id="board"></main>
 </div>
 
-<div class="hint">Drag · Card swings from pin · ESC to reset zoom</div>
-
 <script>
 (() => {
   const board = document.getElementById("board");
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
-
   const PIN_X_OPTIONS=["16%","50%","84%"];
 
-  /* -------- Physics core -------- */
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
 
@@ -196,16 +124,11 @@ body{
 
     physDocs.forEach(d=>{
       const p=phys.get(d);
-      if(!p) return;
-
       const acc=(p.target-p.angle)*p.k - p.vel*p.damp;
       p.vel+=acc*dt;
       p.angle+=p.vel*dt;
-
       d.style.setProperty("--rot",p.angle+"deg");
-
-      if(Math.abs(p.vel)>0.03 || Math.abs(p.angle-p.base)>0.03 || p.drag)
-        active=true;
+      if(Math.abs(p.vel)>0.03 || p.drag) active=true;
     });
 
     if(active) requestAnimationFrame(tick);
@@ -213,73 +136,26 @@ body{
   }
 
   function makePhys(d,base,{k=60,damp=10}={}){
-    phys.set(d,{
-      base,
-      angle:base,
-      target:base,
-      vel:0,
-      drag:false,
-      k,
-      damp
-    });
+    phys.set(d,{base,angle:base,target:base,vel:0,drag:false,k,damp});
     physDocs.add(d);
     d.style.setProperty("--rot",base+"deg");
     start();
   }
 
-  /* -------- Utilities -------- */
-  let zTop=100;
-  const bringToFront=el=>{
-    if(el.classList.contains("doc--name")) return;
-    el.style.zIndex=++zTop;
-  };
-
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
-  /* -------- Name card (ROTATION ONLY) -------- */
+  /* Name card */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
   name.style.setProperty("--pin",gray());
   name.innerHTML=`<span class="pin"></span><h1>Cem Ozturk</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
-
-  const baseAngle=rand(-3,3);
-  makePhys(name,baseAngle,{k:55,damp:8});
-
+  makePhys(name,rand(-3,3),{k:55,damp:8});
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
 
-  let pivot=null;
-
-  name.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    const r=name.getBoundingClientRect();
-    pivot={ x:r.left+r.width/2, y:r.top+14 };
-    const p=phys.get(name);
-    p.drag=true;
-    name.setPointerCapture(e.pointerId);
-  });
-
-  name.addEventListener("pointermove",e=>{
-    const p=phys.get(name);
-    if(!p.drag) return;
-    const dx=e.clientX-pivot.x;
-    const dy=e.clientY-pivot.y;
-    const ang=Math.atan2(dx,dy)*180/Math.PI;
-    p.angle=ang;
-    p.target=ang;
-    start();
-  });
-
-  name.addEventListener("pointerup",()=>{
-    const p=phys.get(name);
-    p.drag=false;
-    p.target=p.base;
-    start();
-  });
-
-  /* -------- Photos (DRAGGABLE) -------- */
+  /* Photos */
   ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
@@ -290,28 +166,23 @@ body{
     d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
 
-    /* FIX: signed gravity tilt depends on pin side */
-    const pinVal = parseFloat(px);                 // 16, 50, 84
-    const off = Math.abs((pinVal - 50) / 34);      // 0..~1
-    const dir = pinVal < 50 ? 1 : (pinVal > 50 ? -1 : 0); // left pin -> tilt right, right pin -> tilt left
-    const base = dir * (off * 9) + rand(-1, 1);    // signed tilt + tiny randomness
-
-    makePhys(d, base, { k:60, damp:10 });
-    bringToFront(d);
+    const pinVal=parseFloat(px);
+    const off=Math.abs((pinVal-50)/34);
+    const dir=pinVal<50?1:pinVal>50?-1:0;
+    makePhys(d,dir*(off*9)+rand(-1,1));
 
     const img=d.querySelector("img");
     img.onload=()=>{
-      const s=Math.min(120/img.naturalWidth,150/img.naturalWidth,1);
+      const scale = src === "designer1.jpg" ? 2 : 1;   // ⭐ HERE
+      const s=Math.min(120/img.naturalWidth,1)*scale;
       d.style.width=Math.round(img.naturalWidth*s)+"px";
       d.style.height=Math.round(img.naturalHeight*s)+"px";
       d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
-      d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
+      d.style.top=rand(80,innerHeight-d.offsetHeight-40)+"px";
     };
 
     let dragging=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
-      e.preventDefault();
-      bringToFront(d);
       dragging=true;
       sx=e.clientX; sy=e.clientY;
       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
@@ -324,20 +195,17 @@ body{
       const dx=e.clientX-sx,dy=e.clientY-sy;
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
-      const p=phys.get(d);
-      p.target=p.base+clamp(dx*0.15,-18,18);
+      phys.get(d).target=phys.get(d).base+clamp(dx*0.15,-18,18);
       start();
     });
 
     d.addEventListener("pointerup",()=>{
       dragging=false;
-      const p=phys.get(d);
-      p.drag=false;
-      p.target=p.base;
+      phys.get(d).drag=false;
+      phys.get(d).target=phys.get(d).base;
       start();
     });
   });
-
 })();
 </script>
 
