@@ -30,20 +30,29 @@ html,body{
 
 body{
   overflow:hidden;
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(90deg, rgba(0,0,0,0.018) 0 1px, transparent 1px 6px),
-    radial-gradient(circle at 12% 18%, rgba(0,0,0,0.06), transparent 45%),
-    radial-gradient(circle at 82% 72%, rgba(0,0,0,0.05), transparent 50%),
-    radial-gradient(circle at 55% 40%, rgba(0,0,0,0.04), transparent 55%),
-    linear-gradient(180deg, #f6f5f2, #e9e7e2);
+  position:relative;
+  background-image:url("./assets/newspaper-bg.jpg");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-color:#e9e7e2;
   font-family:"Tinos", serif;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(245,243,238,0.75);
+  pointer-events:none;
+  z-index:0;
 }
 
 .viewport{
   position:fixed;
   inset:0;
   overflow:hidden;
+  z-index:1;
 }
 
 .board{
@@ -173,7 +182,10 @@ body{
 
     const img=d.querySelector("img");
     img.onload=()=>{
-      const scale = src === "designer1.jpg" ? 2 : 1;   // ⭐ HERE
+      let scale = 1;
+      if (src === "designer1.jpg") scale = 1.7;   // slightly smaller
+      if (src === "designer2.jpg") scale = 1.25;  // slightly bigger
+
       const s=Math.min(120/img.naturalWidth,1)*scale;
       d.style.width=Math.round(img.naturalWidth*s)+"px";
       d.style.height=Math.round(img.naturalHeight*s)+"px";
