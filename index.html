@@ -34,6 +34,7 @@ html,body{
 body{
   overflow:hidden;
   background:
+    /* paper fibers */
     repeating-linear-gradient(
       0deg,
       rgba(0,0,0,0.025) 0px,
@@ -48,9 +49,11 @@ body{
       transparent 1px,
       transparent 6px
     ),
+    /* ink stains */
     radial-gradient(circle at 12% 18%, rgba(0,0,0,0.06), transparent 45%),
     radial-gradient(circle at 82% 72%, rgba(0,0,0,0.05), transparent 50%),
     radial-gradient(circle at 55% 40%, rgba(0,0,0,0.04), transparent 55%),
+    /* base paper */
     linear-gradient(180deg, #f6f5f2, #e9e7e2);
   font-family:"Tinos", serif;
 }
@@ -80,6 +83,7 @@ body{
 }
 .doc:active{cursor:grabbing}
 
+/* pin */
 .pin{
   position:absolute;
   top:6px;
@@ -131,17 +135,14 @@ body{
   text-align:center;
   z-index:9999;
 }
-
 .doc--name h1,
 .doc--name p{pointer-events:none}
-
 .doc--name h1{
   margin:0;
   font-size:28px;
   letter-spacing:.03em; /* less shouty */
   font-weight:700;
 }
-
 .doc--name p{
   margin:4px 0 0;
   font-size:13px;
@@ -178,6 +179,7 @@ body{
 
   const PIN_X_OPTIONS=["16%","50%","84%"];
 
+  /* -------- Physics core -------- */
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
 
@@ -199,6 +201,7 @@ body{
       const acc=(p.target-p.angle)*p.k - p.vel*p.damp;
       p.vel+=acc*dt;
       p.angle+=p.vel*dt;
+
       d.style.setProperty("--rot",p.angle+"deg");
 
       if(Math.abs(p.vel)>0.03 || Math.abs(p.angle-p.base)>0.03 || p.drag)
@@ -224,6 +227,7 @@ body{
     start();
   }
 
+  /* -------- Utilities -------- */
   let zTop=100;
   const bringToFront=el=>{
     if(el.classList.contains("doc--name")) return;
@@ -232,6 +236,7 @@ body{
 
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
+  /* -------- Name card (ROTATION ONLY) -------- */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
@@ -250,7 +255,7 @@ body{
   name.addEventListener("pointerdown",e=>{
     e.preventDefault();
     const r=name.getBoundingClientRect();
-    pivot={x:r.left+r.width/2,y:r.top+14};
+    pivot={ x:r.left+r.width/2, y:r.top+14 };
     const p=phys.get(name);
     p.drag=true;
     name.setPointerCapture(e.pointerId);
@@ -272,6 +277,59 @@ body{
     p.drag=false;
     p.target=p.base;
     start();
+  });
+
+  /* -------- Photos (RESTORED) -------- */
+  ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
+    const d=document.createElement("article");
+    d.className="doc doc--photo";
+    const px=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
+    d.style.setProperty("--pinX",px);
+    d.style.setProperty("--pin",gray());
+    d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
+    board.appendChild(d);
+
+    const off=Math.abs((parseFloat(px)-50)/34);
+    makePhys(d,(-off*9+rand(-1,1)),{k:60,damp:10});
+    bringToFront(d);
+
+    const img=d.querySelector("img");
+    img.onload=()=>{
+      const s=Math.min(120/img.naturalWidth,150/img.naturalWidth,1);
+      d.style.width=Math.round(img.naturalWidth*s)+"px";
+      d.style.height=Math.round(img.naturalHeight*s)+"px";
+      d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
+      d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
+    };
+
+    let dragging=false,sx,sy,sl,st;
+    d.addEventListener("pointerdown",e=>{
+      e.preventDefault();
+      bringToFront(d);
+      dragging=true;
+      sx=e.clientX; sy=e.clientY;
+      sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
+      d.setPointerCapture(e.pointerId);
+      phys.get(d).drag=true;
+    });
+
+    d.addEventListener("pointermove",e=>{
+      if(!dragging) return;
+      const dx=e.clientX-sx,dy=e.clientY-sy;
+      d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
+      d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
+      const p=phys.get(d);
+      p.target=p.base+clamp(dx*0.15,-18,18);
+      start();
+    });
+
+    d.addEventListener("pointerup",()=>{
+      dragging=false;
+      const p=phys.get(d);
+      p.drag=false;
+      p.target=p.base;
+      start();
+    });
   });
 
 })();
