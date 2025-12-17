@@ -120,7 +120,7 @@ body::before{
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
-  z-index:9999;
+  z-index:9999; /* card visit always on top */
 }
 .doc--name h1{
   margin:0;
@@ -151,6 +151,13 @@ body::before{
 
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
+
+  /* NEW: z-index manager for photos */
+  let zTop = 10;
+  function bringToFront(el){
+    if(el.classList.contains("doc--name")) return; // never mess with card visit
+    el.style.zIndex = ++zTop;
+  }
 
   function start(){
     if(raf) return;
@@ -261,6 +268,9 @@ body::before{
     d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
 
+    // give each photo an initial stacking order
+    bringToFront(d);
+
     const pinVal=parseFloat(px);
     const off=Math.abs((pinVal-50)/34);
     const dir=pinVal<50?1:pinVal>50?-1:0;
@@ -283,6 +293,10 @@ body::before{
     let dragging=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
       e.preventDefault();
+
+      /* NEW: when you grab a photo, it goes on top (card visit excluded) */
+      bringToFront(d);
+
       dragging=true;
       sx=e.clientX;sy=e.clientY;
       sl=parseFloat(d.style.left);st=parseFloat(d.style.top);
