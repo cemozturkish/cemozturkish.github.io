@@ -147,10 +147,7 @@ body::before{
   const board = document.getElementById("board");
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
-
   const PIN_X_OPTIONS=["16%","50%","84%"];
-
-  const GLOBAL_SCALE = 1.15;
 
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
@@ -188,16 +185,63 @@ body::before{
 
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
-  /* Name card */
+  /* Name card – pull to swing, pin fixed */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
   name.style.setProperty("--pin",gray());
   name.innerHTML=`<span class="pin"></span><h1>Cem Ozturk</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
-  makePhys(name,rand(-3,3),{k:55,damp:8});
+
+  const baseAngle=rand(-3,3);
+  makePhys(name,baseAngle,{k:55,damp:8});
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
+
+  let pivot=null,lastRaw=null,unwrapped=null;
+
+  name.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    const r=name.getBoundingClientRect();
+    pivot={x:r.left+r.width/2,y:r.top+14};
+    const p=phys.get(name);
+    p.drag=true;
+    unwrapped=p.angle;
+    lastRaw=null;
+    name.setPointerCapture(e.pointerId);
+    start();
+  });
+
+  name.addEventListener("pointermove",e=>{
+    const p=phys.get(name);
+    if(!p.drag||!pivot) return;
+    const dx=e.clientX-pivot.x;
+    const dy=e.clientY-pivot.y;
+    const raw=Math.atan2(dx,dy)*180/Math.PI;
+
+    if(lastRaw===null){
+      const k=Math.round((unwrapped-raw)/360);
+      unwrapped=raw+360*k;
+    }else{
+      let delta=raw-lastRaw;
+      if(delta>180) delta-=360;
+      if(delta<-180) delta+=360;
+      unwrapped+=delta;
+    }
+
+    lastRaw=raw;
+    p.angle=unwrapped;
+    p.target=unwrapped;
+    start();
+  });
+
+  name.addEventListener("pointerup",()=>{
+    const p=phys.get(name);
+    p.drag=false;
+    p.target=p.base;
+    pivot=null;lastRaw=null;unwrapped=null;
+    start();
+  });
 
   /* Photos */
   [
@@ -224,29 +268,24 @@ body::before{
 
     const img=d.querySelector("img");
     img.onload=()=>{
-      let scale = GLOBAL_SCALE;
-
-      if (src === "designer1.jpg") scale *= 1.45;
-      if (src === "designer2.jpg") scale *= 1.2;
-      if (
-        src === "designer4.jpg" ||
-        src === "designer5.jpg" ||
-        src === "events1.jpg"
-      ) scale *= 1.15; // ⭐ slightly bigger
+      let scale=1;
+      if(src==="designer1.jpg") scale=1.7;
+      if(src==="designer2.jpg") scale=1.25;
+      if(src==="designer4.jpg"||src==="designer5.jpg"||src==="events1.jpg") scale=1.15;
 
       const s=Math.min(120/img.naturalWidth,1)*scale;
       d.style.width=Math.round(img.naturalWidth*s)+"px";
       d.style.height=Math.round(img.naturalHeight*s)+"px";
       d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
-      d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
+      d.style.top=rand(80,innerHeight-d.offsetHeight-40)+"px";
     };
 
     let dragging=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
       e.preventDefault();
       dragging=true;
-      sx=e.clientX; sy=e.clientY;
-      sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
+      sx=e.clientX;sy=e.clientY;
+      sl=parseFloat(d.style.left);st=parseFloat(d.style.top);
       d.setPointerCapture(e.pointerId);
       phys.get(d).drag=true;
     });
@@ -255,15 +294,16 @@ body::before{
       if(!dragging) return;
       const dx=e.clientX-sx,dy=e.clientY-sy;
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
-      d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
+      d.style.top=clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
       phys.get(d).target=phys.get(d).base+clamp(dx*0.15,-18,18);
       start();
     });
 
     d.addEventListener("pointerup",()=>{
       dragging=false;
-      phys.get(d).drag=false;
-      phys.get(d).target=phys.get(d).base;
+      const p=phys.get(d);
+      p.drag=false;
+      p.target=p.base;
       start();
     });
   });
