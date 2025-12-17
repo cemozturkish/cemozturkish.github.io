@@ -11,8 +11,6 @@
 
 <style>
 :root{
-  --wall:#e6e6e6;
-  --wall2:#f2f2f2;
   --paper:#fbfbfb;
   --paper2:#f2f2f2;
   --shadow:0 18px 40px rgba(0,0,0,.22);
@@ -36,10 +34,27 @@ html,body{
 body{
   overflow:hidden;
   background:
-    radial-gradient(900px 700px at 10% 10%, rgba(255,255,255,.75), transparent 60%),
-    radial-gradient(800px 600px at 90% 20%, rgba(0,0,0,.08), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 2px, transparent 2px 7px),
-    linear-gradient(135deg, var(--wall), var(--wall2));
+    /* paper fibers */
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.025) 0px,
+      rgba(0,0,0,0.025) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,0.018) 0px,
+      rgba(0,0,0,0.018) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    /* ink stains */
+    radial-gradient(circle at 12% 18%, rgba(0,0,0,0.06), transparent 45%),
+    radial-gradient(circle at 82% 72%, rgba(0,0,0,0.05), transparent 50%),
+    radial-gradient(circle at 55% 40%, rgba(0,0,0,0.04), transparent 55%),
+    /* base paper */
+    linear-gradient(180deg, #f6f5f2, #e9e7e2);
   font-family:"Tinos", serif;
 }
 
@@ -68,7 +83,6 @@ body{
 }
 .doc:active{cursor:grabbing}
 
-/* pin */
 .pin{
   position:absolute;
   top:6px;
@@ -163,7 +177,6 @@ body{
 
   const PIN_X_OPTIONS=["16%","50%","84%"];
 
-  /* -------- Physics core -------- */
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
 
@@ -211,7 +224,6 @@ body{
     start();
   }
 
-  /* -------- Utilities -------- */
   let zTop=100;
   const bringToFront=el=>{
     if(el.classList.contains("doc--name")) return;
@@ -220,7 +232,6 @@ body{
 
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
-  /* -------- Name card (ROTATION ONLY) -------- */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
@@ -239,10 +250,7 @@ body{
   name.addEventListener("pointerdown",e=>{
     e.preventDefault();
     const r=name.getBoundingClientRect();
-    pivot={
-      x:r.left+r.width/2,
-      y:r.top+14
-    };
+    pivot={x:r.left+r.width/2,y:r.top+14};
     const p=phys.get(name);
     p.drag=true;
     name.setPointerCapture(e.pointerId);
@@ -266,7 +274,6 @@ body{
     start();
   });
 
-  /* -------- Photos -------- */
   ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
@@ -318,7 +325,6 @@ body{
       start();
     });
   });
-
 })();
 </script>
 
