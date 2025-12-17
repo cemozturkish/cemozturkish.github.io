@@ -18,15 +18,12 @@
   --shadow:0 18px 40px rgba(0,0,0,.22);
   --shadowSoft:0 10px 24px rgba(0,0,0,.16);
 
-  --scale: 1;
-  --tx: 0px;
-  --ty: 0px;
-
-  --spotX: 50vw;
-  --spotY: 50vh;
+  --scale:1;
+  --tx:0px;
+  --ty:0px;
 }
 
-/* Kill Safari selection */
+/* Stop browser selection nonsense */
 *{
   -webkit-user-select:none;
   user-select:none;
@@ -48,51 +45,28 @@ body{
   font-family:"Tinos", serif;
 }
 
-/* Viewport wrapper (we zoom the board inside this) */
+/* Zoom container */
 .viewport{
   position:fixed;
   inset:0;
   overflow:hidden;
 }
 
-/* Board */
 .board{
   position:absolute;
   inset:0;
   width:100vw;
   height:100vh;
-  transform-origin: 0 0;
-  transform: translate(var(--tx), var(--ty)) scale(var(--scale));
-  transition: transform 420ms cubic-bezier(.22,.61,.36,1);
-}
-
-/* Flashlight overlay */
-.spotlight{
-  position:fixed;
-  inset:0;
-  opacity:0;
-  pointer-events:none;
-  transition: opacity 380ms ease;
-  z-index: 5000;
-  /* “flashlight beam”: bright in center, fades into dark */
-  background:
-    radial-gradient(circle 160px at var(--spotX) var(--spotY),
-      rgba(255,255,255,.95) 0%,
-      rgba(255,255,255,.35) 45%,
-      rgba(0,0,0,.55) 78%,
-      rgba(0,0,0,.78) 100%);
-}
-
-.spotlight.on{
-  opacity:1;
-  pointer-events:auto; /* click-to-exit */
+  transform-origin:0 0;
+  transform:translate(var(--tx),var(--ty)) scale(var(--scale));
+  transition:transform 420ms cubic-bezier(.22,.61,.36,1);
 }
 
 /* Docs */
 .doc{
   position:absolute;
   transform:rotate(var(--rot));
-  transform-origin: var(--pinX) 14px;
+  transform-origin:var(--pinX) 14px;
   cursor:grab;
   touch-action:none;
 }
@@ -151,10 +125,10 @@ body{
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
-  z-index: 9999; /* always above everything */
+  z-index:9999;
 }
 .doc--name h1,
-.doc--name p{ pointer-events:none; }
+.doc--name p{pointer-events:none}
 .doc--name h1{
   margin:0;
   font-size:28px;
@@ -166,12 +140,6 @@ body{
   opacity:.75;
   font-family:system-ui;
 }
-
-.doc.focused{
-  filter:brightness(1.12) contrast(1.05);
-  cursor:default;
-}
-.doc.dimmed{opacity:.35}
 
 .hint{
   position:fixed;
@@ -188,266 +156,163 @@ body{
 
 <body>
 
-<div class="spotlight" id="spotlight"></div>
-
-<div class="viewport" id="viewport">
+<div class="viewport">
   <main class="board" id="board"></main>
 </div>
 
-<div class="hint">Drag · Click photo to focus · ESC to exit</div>
+<div class="hint">Drag · Click photo to zoom · ESC to exit</div>
 
 <script>
 (() => {
-  const board = document.getElementById("board");
-  const viewport = document.getElementById("viewport");
-  const spotlight = document.getElementById("spotlight");
+  const board=document.getElementById("board");
 
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
 
   const PIN_X_OPTIONS=["16%","50%","84%"];
 
-  // Z layering: photos go up as you interact, name card stays above all
-  let zTop = 100;
-  function bringToFront(el){
+  /* z-order */
+  let zTop=100;
+  const bringToFront=el=>{
     if(el.classList.contains("doc--name")) return;
-    el.style.zIndex = String(++zTop);
-  }
+    el.style.zIndex=++zTop;
+  };
 
-  // --- physics (wiggle) ---
-  const phys=new WeakMap();
-  const physDocs=new Set();
-  let rafOn=false,lastFrame=0;
+  /* physics */
+  const phys=new WeakMap(), physDocs=new Set();
+  let rafOn=false,last=0;
 
-  function pinPercent(x){return parseFloat(x)||50}
-  function pinOffset(x){return Math.abs((pinPercent(x)-50)/34)}
+  const pinPct=x=>parseFloat(x)||50;
+  const pinOff=x=>Math.abs((pinPct(x)-50)/34);
 
-  function gray(){
-    const g=Math.floor(rand(45,105));
-    return `rgb(${g},${g},${g})`;
-  }
+  const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
-  function baseAngle(pinX){
-    const off=(pinPercent(pinX)-50)/34;
-    return clamp(-off*9.5 + rand(-1,1)*(0.3+Math.abs(off)), -14,14);
-  }
+  const baseAngle=x=>{
+    const o=(pinPct(x)-50)/34;
+    return clamp(-o*9.5+rand(-1,1)*(0.3+Math.abs(o)),-14,14);
+  };
 
-  function ensurePhysics(d,base,off){
-    const st={base,angle:base,vel:0,target:base,drag:false,lastX:0,lastT:0,off};
-    phys.set(d,st); physDocs.add(d);
-    d.style.setProperty("--rot",base+"deg");
-    start();
+  function ensurePhys(d,b,o){
+    phys.set(d,{b,a:b,v:0,t:b,d:false,x:0,t0:0,o});
+    physDocs.add(d);
+    d.style.setProperty("--rot",b+"deg");
+    if(!rafOn) start();
   }
 
   function start(){
-    if(rafOn) return;
-    rafOn=true; lastFrame=performance.now();
+    rafOn=true; last=performance.now();
     requestAnimationFrame(tick);
   }
 
-  function tick(now){
-    const dt=Math.min(.033,(now-lastFrame)/1000);
-    lastFrame=now;
-    let active=false;
-
+  function tick(n){
+    const dt=Math.min(.033,(n-last)/1000); last=n;
+    let live=false;
     physDocs.forEach(d=>{
       const p=phys.get(d);
-      if(!p) return;
-
-      if(d.classList.contains("focused")){
-        p.angle=p.base; p.vel=0; p.target=p.base;
-      }else{
-        const a=(p.target-p.angle)*60 - p.vel*10;
-        p.vel+=a*dt; p.angle+=p.vel*dt;
-      }
-
-      d.style.setProperty("--rot",p.angle+"deg");
-
-      if(Math.abs(p.vel)>0.05 || Math.abs(p.angle-p.base)>0.02 || p.drag) active=true;
+      const acc=(p.t-p.a)*60-p.v*10;
+      p.v+=acc*dt; p.a+=p.v*dt;
+      d.style.setProperty("--rot",p.a+"deg");
+      if(Math.abs(p.v)>0.05||Math.abs(p.a-p.b)>0.02||p.d) live=true;
     });
-
-    if(active) requestAnimationFrame(tick);
-    else rafOn=false;
+    if(live) requestAnimationFrame(tick); else rafOn=false;
   }
 
-  // --- focus / zoom / spotlight ---
-  let focused=null;
-  let focusPoint=null; // board-local coords {x,y}
-  const saved=new Map();
-  const save=d=>saved.set(d,{left:parseFloat(d.style.left),top:parseFloat(d.style.top)});
+  /* zoom */
+  let focused=null, focusPt=null;
 
-  function applyZoom(on){
+  function zoom(on){
     if(!on){
       document.documentElement.style.setProperty("--scale","1");
       document.documentElement.style.setProperty("--tx","0px");
       document.documentElement.style.setProperty("--ty","0px");
-      spotlight.classList.remove("on");
       return;
     }
-    const scale = 1.2;
-
-    // center focusPoint in viewport
-    const cx = viewport.clientWidth / 2;
-    const cy = viewport.clientHeight / 2;
-
-    const tx = cx - scale * focusPoint.x;
-    const ty = cy - scale * focusPoint.y;
-
-    document.documentElement.style.setProperty("--scale", String(scale));
-    document.documentElement.style.setProperty("--tx", `${tx}px`);
-    document.documentElement.style.setProperty("--ty", `${ty}px`);
-
-    // spotlight position in viewport coords = scaled board coord + translation
-    const spotX = scale * focusPoint.x + tx;
-    const spotY = scale * focusPoint.y + ty;
-    document.documentElement.style.setProperty("--spotX", `${spotX}px`);
-    document.documentElement.style.setProperty("--spotY", `${spotY}px`);
-
-    spotlight.classList.add("on");
+    const s=1.2;
+    const cx=innerWidth/2, cy=innerHeight/2;
+    const tx=cx-s*focusPt.x, ty=cy-s*focusPt.y;
+    document.documentElement.style.setProperty("--scale",s);
+    document.documentElement.style.setProperty("--tx",tx+"px");
+    document.documentElement.style.setProperty("--ty",ty+"px");
   }
 
-  function setFocusPointFromRects(doc){
-    // board-local coordinates BEFORE transform math: element rect relative to board rect
-    const b = board.getBoundingClientRect();
-    const r = doc.getBoundingClientRect();
-    focusPoint = {
-      x: (r.left - b.left) + r.width/2,
-      y: (r.top  - b.top ) + r.height/2
-    };
-  }
-
-  function toggleFocus(d){
-    // Only photos get the newsroom spotlight treatment
-    if(!d.classList.contains("doc--photo")) return;
-
-    if(focused){ clearFocus(); return; }
-
-    bringToFront(d);
-
-    focused=d;
-    d.classList.add("focused");
-
-    // dim other photos (name card excluded)
-    document.querySelectorAll(".doc").forEach(o=>{
-      if(o===d) return;
-      if(o.classList.contains("doc--name")) return;
-      o.classList.add("dimmed");
-    });
-
-    // compute focus point, then zoom + spotlight
-    setFocusPointFromRects(d);
-    applyZoom(true);
+  function focusPoint(d){
+    const br=board.getBoundingClientRect(), r=d.getBoundingClientRect();
+    focusPt={x:(r.left-br.left)+r.width/2,y:(r.top-br.top)+r.height/2};
   }
 
   function clearFocus(){
-    applyZoom(false);
-    document.querySelectorAll(".doc").forEach(d=>{
-      d.classList.remove("focused","dimmed");
-      const s=saved.get(d);
-      if(s){ d.style.left=s.left+"px"; d.style.top=s.top+"px"; }
-    });
+    zoom(false);
     focused=null;
-    focusPoint=null;
   }
 
-  spotlight.addEventListener("click", clearFocus);
-  document.addEventListener("keydown", e => {
-    if(e.key === "Escape") clearFocus();
-  });
+  document.addEventListener("keydown",e=>e.key==="Escape"&&clearFocus());
 
-  window.addEventListener("resize", () => {
-    if(!focused || !focusPoint) return;
-    applyZoom(true);
-  });
-
-  // --- dragging ---
+  /* drag */
   function wire(d){
-    let dragging=false,sx,sy,sl,st,moved=false;
-
+    let drag=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
       if(focused) return;
       e.preventDefault();
-
       bringToFront(d);
-
-      dragging=true; moved=false;
+      drag=true;
       sx=e.clientX; sy=e.clientY;
       sl=parseFloat(d.style.left); st=parseFloat(d.style.top);
       d.setPointerCapture(e.pointerId);
-
-      const p=phys.get(d);
-      if(p){ p.drag=true; p.lastX=e.clientX; p.lastT=performance.now(); start(); }
+      const p=phys.get(d); if(p){p.d=true;p.x=e.clientX;p.t0=performance.now();}
     },{passive:false});
 
     d.addEventListener("pointermove",e=>{
-      if(!dragging) return;
+      if(!drag) return;
       e.preventDefault();
-
       const dx=e.clientX-sx,dy=e.clientY-sy;
-      if(Math.abs(dx)+Math.abs(dy)>6) moved=true;
-
       d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
       d.style.top =clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
-
       const p=phys.get(d);
       if(p){
-        const now=performance.now(),dt=Math.max(8,now-p.lastT);
-        const vx=(e.clientX-p.lastX)/dt;
-        p.lastX=e.clientX; p.lastT=now;
-
-        const lever=.35+p.off*1.15;
-
-        // inertia lag (the version you liked): drag right->left => swings right first
-        p.target=p.base+clamp(vx*210*lever,-18,18);
-        start();
+        const n=performance.now(),dt=Math.max(8,n-p.t0);
+        const vx=(e.clientX-p.x)/dt;
+        p.x=e.clientX;p.t0=n;
+        p.t=p.b+clamp(vx*210*(.35+p.o*1.15),-18,18);
       }
     },{passive:false});
 
     d.addEventListener("pointerup",()=>{
-      if(dragging) save(d);
-      dragging=false;
-      const p=phys.get(d);
-      if(p){ p.drag=false; p.target=p.base; start(); }
+      drag=false;
+      const p=phys.get(d); if(p){p.d=false;p.t=p.b;}
     });
 
     d.addEventListener("click",()=>{
-      if(moved) return;
+      if(!d.classList.contains("doc--photo")) return;
+      focused=d;
       bringToFront(d);
-      toggleFocus(d);
+      focusPoint(d);
+      zoom(true);
     });
   }
 
-  // --- create name card ---
+  /* name */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
   name.style.setProperty("--pin",gray());
   name.innerHTML=`<span class="pin"></span><h1>CEM OZTURK</h1><p>Student, researcher, designer</p>`;
   board.appendChild(name);
-
-  ensurePhysics(name,rand(-2,2),0);
-
+  ensurePhys(name,rand(-2,2),0);
   name.style.left=(innerWidth-name.offsetWidth)/2+"px";
   name.style.top="20px";
-  save(name);
   wire(name);
 
-  // --- photos ---
+  /* photos */
   ["designer1.jpg","designer2.jpg","designer3.jpg"].forEach(src=>{
     const d=document.createElement("article");
     d.className="doc doc--photo";
-
-    const pinX=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
-    d.style.setProperty("--pinX",pinX);
+    const px=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
+    d.style.setProperty("--pinX",px);
     d.style.setProperty("--pin",gray());
     d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
-
-    const base=baseAngle(pinX),off=pinOffset(pinX);
-    ensurePhysics(d,base,off);
-
+    ensurePhys(d,baseAngle(px),pinOff(px));
     bringToFront(d);
-
     const img=d.querySelector("img");
     img.onload=()=>{
       const s=Math.min(120/img.naturalWidth,150/img.naturalWidth,1);
@@ -455,9 +320,7 @@ body{
       d.style.height=Math.round(img.naturalHeight*s)+"px";
       d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
       d.style.top =rand(80,innerHeight-d.offsetHeight-40)+"px";
-      save(d);
     };
-
     wire(d);
   });
 })();
