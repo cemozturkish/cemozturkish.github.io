@@ -27,11 +27,11 @@ body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(245,243,238,0.25); /* slightly less fade */
+  background:rgba(245,243,238,0.25);
   pointer-events:none;
 }
 
-/* MAIN HERO TEXT */
+/* HERO TEXT */
 .hero{
   position:absolute;
   left:40px;
@@ -41,46 +41,39 @@ body::before{
 
 .hero h1{
   margin:0;
-  font-size:64px;
+  font-size:52px;         /* smaller than before */
   letter-spacing:.04em;
   line-height:1;
+  color:rgba(255,255,255,0.82);  /* white + slightly transparent */
 }
 
 .hero p{
   margin:10px 0 0;
-  font-size:20px;
-  opacity:.85;
+  font-size:18px;
+  color:rgba(255,255,255,0.70);  /* white + more transparent */
+  letter-spacing:.02em;
 }
 
-/* RIGHT-SIDE TEXT NAV */
-.sideNav{
-  position:fixed;
-  right:22px;
-  top:50%;
-  transform:translateY(-50%);
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  z-index:2;
-}
-
-.sideNav a{
+/* LINK STYLING (only for the clickable words) */
+.hero a{
+  color:rgba(255,255,255,0.78);
   text-decoration:none;
-  color:#111;
-  font-size:28px;
-  letter-spacing:.01em;
 }
 
-.sideNav a:hover{
+.hero a:hover{
   text-decoration:underline;
 }
 
+/* keep commas looking normal even when links */
+.hero .sep{
+  opacity:0.9;
+}
+
+/* MOBILE */
 @media (max-width: 700px){
   .hero{left:18px; right:18px}
-  .hero h1{font-size:44px}
+  .hero h1{font-size:40px}
   .hero p{font-size:16px}
-  .sideNav{right:12px}
-  .sideNav a{font-size:22px}
 }
 </style>
 </head>
@@ -88,12 +81,11 @@ body::before{
 <body>
   <div class="hero">
     <h1>Cem Öztürk</h1>
-    <p>Designs & events</p>
+    <p>
+      <a href="./designs.html">Designer</a><span class="sep">,</span>
+      researcher<span class="sep">,</span>
+      <a href="./events.html">event manager</a>
+    </p>
   </div>
-
-  <nav class="sideNav" aria-label="Site navigation">
-    <a href="./designs.html">Designs</a>
-    <a href="./events.html">Events</a>
-  </nav>
 </body>
 </html>
