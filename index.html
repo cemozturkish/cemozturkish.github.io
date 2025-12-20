@@ -47,22 +47,28 @@ body::before{
   color:rgba(255,255,255,0.82);
 }
 
-/* INTERACTIVE LINE */
+/* INTERACTIVE LINE (locked vertically) */
 .hero p{
   margin:12px 0 0;
   font-size:18px;
   color:rgba(255,255,255,0.70);
   letter-spacing:.02em;
+
   display:flex;
-  align-items:baseline;
   gap:6px;
+
+  /* the fix */
+  height:30px;             /* locks row height so it doesn't jump */
+  align-items:center;       /* stable vertical alignment */
+  line-height:30px;         /* prevents font-size changes from pushing vertically */
+  overflow:visible;
 }
 
 /* each word */
 .word{
   display:inline-block;
   font-size:1em;
-  line-height:1;
+  line-height:1;            /* keep individual words from changing row metrics */
   white-space:nowrap;
   cursor:pointer;
   transition:
@@ -74,9 +80,10 @@ body::before{
 /* commas */
 .sep{
   opacity:0.8;
+  line-height:1;
 }
 
-/* hover = REAL layout change */
+/* hover = pushes horizontally, row stays locked */
 .word:hover{
   font-size:1.45em;
   letter-spacing:.04em;
@@ -88,7 +95,6 @@ body::before{
   color:inherit;
   text-decoration:none;
 }
-
 .word a:hover{
   text-decoration:none;
 }
@@ -97,7 +103,11 @@ body::before{
 @media (max-width: 700px){
   .hero{left:18px; right:18px}
   .hero h1{font-size:40px}
-  .hero p{font-size:16px}
+  .hero p{
+    font-size:16px;
+    height:26px;
+    line-height:26px;
+  }
 }
 </style>
 </head>
