@@ -31,7 +31,7 @@ html,body{
 body{
   overflow:hidden;
   position:relative;
-  background-image:url("./assets/newspaper-bg.jpg");
+  background-image:url("./assets/background.jpg");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -120,7 +120,7 @@ body::before{
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
-  z-index:9999; /* card visit always on top */
+  z-index:9999;
 }
 .doc--name h1{
   margin:0;
@@ -152,10 +152,9 @@ body::before{
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
 
-  /* NEW: z-index manager for photos */
   let zTop = 10;
   function bringToFront(el){
-    if(el.classList.contains("doc--name")) return; // never mess with card visit
+    if(el.classList.contains("doc--name")) return;
     el.style.zIndex = ++zTop;
   }
 
@@ -192,7 +191,6 @@ body::before{
 
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
-  /* Name card – pull to swing, pin fixed */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
@@ -250,7 +248,6 @@ body::before{
     start();
   });
 
-  /* Photos */
   [
     "designer1.jpg",
     "designer2.jpg",
@@ -268,7 +265,6 @@ body::before{
     d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
     board.appendChild(d);
 
-    // give each photo an initial stacking order
     bringToFront(d);
 
     const pinVal=parseFloat(px);
@@ -293,10 +289,7 @@ body::before{
     let dragging=false,sx,sy,sl,st;
     d.addEventListener("pointerdown",e=>{
       e.preventDefault();
-
-      /* NEW: when you grab a photo, it goes on top (card visit excluded) */
       bringToFront(d);
-
       dragging=true;
       sx=e.clientX;sy=e.clientY;
       sl=parseFloat(d.style.left);st=parseFloat(d.style.top);
