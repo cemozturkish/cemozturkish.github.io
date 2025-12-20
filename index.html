@@ -54,20 +54,21 @@ body::before{
   color:rgba(255,255,255,0.70);
   letter-spacing:.02em;
   display:flex;
-  align-items:center;
+  align-items:baseline;
   gap:6px;
 }
 
 /* each word */
 .word{
   display:inline-block;
-  transition:
-    transform 0.25s ease,
-    font-size 0.25s ease,
-    color 0.25s ease;
-  transform-origin:left center;
-  cursor:pointer;
+  font-size:1em;
+  line-height:1;
   white-space:nowrap;
+  cursor:pointer;
+  transition:
+    font-size 0.25s ease,
+    letter-spacing 0.25s ease,
+    color 0.25s ease;
 }
 
 /* commas */
@@ -75,13 +76,14 @@ body::before{
   opacity:0.8;
 }
 
-/* hover behavior */
+/* hover = REAL layout change */
 .word:hover{
-  transform:scale(1.35);
+  font-size:1.45em;
+  letter-spacing:.04em;
   color:rgba(255,255,255,0.95);
 }
 
-/* links */
+/* links inherit behavior */
 .word a{
   color:inherit;
   text-decoration:none;
