@@ -1,12 +1,80 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Designs</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Designs | Cem Ozturk</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+html,body{
+  margin:0;
+  min-height:100%;
+}
+body{
+  font-family:"Tinos", serif;
+  background-image:url("./assets/background.jpg");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-color:#e9e7e2;
+  position:relative;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(245,243,238,0.35);
+  pointer-events:none;
+}
+
+.wrap{
+  position:relative;
+  max-width:1100px;
+  padding:40px;
+}
+
+h1{
+  margin:0 0 10px 0;
+  font-size:42px;
+}
+a{
+  font-size:18px;
+  color:#111;
+  text-decoration:none;
+}
+a:hover{text-decoration:underline}
+
+.gallery{
+  margin-top:30px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:24px;
+}
+
+.gallery img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+</style>
 </head>
+
 <body>
-  <h1>Designs</h1>
-  <p>Coming soon.</p>
-  <a href="./index.html">← Back home</a>
+  <div class="wrap">
+    <h1>Designs</h1>
+    <a href="./index.html">← Back home</a>
+
+    <div class="gallery">
+      <img src="./assets/designer1.jpg" alt="Design 1">
+      <img src="./assets/designer2.jpg" alt="Design 2">
+      <img src="./assets/designer3.jpg" alt="Design 3">
+      <img src="./assets/designer4.jpg" alt="Design 4">
+      <img src="./assets/designer5.jpg" alt="Design 5">
+    </div>
+  </div>
 </body>
 </html>
