@@ -3,33 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cem Ozturk</title>
+<title>Cem Öztürk</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --paper:#fbfbfb;
-  --paper2:#f2f2f2;
-  --shadow:0 18px 40px rgba(0,0,0,.22);
-  --shadowSoft:0 10px 24px rgba(0,0,0,.16);
-}
-
-*{
-  -webkit-user-select:none;
-  user-select:none;
-  -webkit-user-drag:none;
-}
-
-html,body{
-  height:100%;
-  margin:0;
-}
+html,body{height:100%;margin:0}
 
 body{
-  overflow:hidden;
   position:relative;
   background-image:url("./assets/background.jpg");
   background-size:cover;
@@ -37,80 +20,36 @@ body{
   background-repeat:no-repeat;
   background-color:#e9e7e2;
   font-family:"Tinos", serif;
+  overflow:hidden;
 }
 
 body::before{
   content:"";
   position:fixed;
   inset:0;
-  /* less faded background */
-  background:rgba(245,243,238,0.35);
+  background:rgba(245,243,238,0.25); /* slightly less fade */
   pointer-events:none;
-  z-index:0;
 }
 
-.viewport{
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-  z-index:1;
-}
-
-.board{
+/* MAIN HERO TEXT */
+.hero{
   position:absolute;
-  inset:0;
-  width:100vw;
-  height:100vh;
+  left:40px;
+  top:34px;
+  z-index:2;
 }
 
-.doc{
-  position:absolute;
-  transform:rotate(var(--rot));
-  transform-origin:var(--pinX) 14px;
-  cursor:grab;
-  touch-action:none;
-}
-.doc:active{cursor:grabbing}
-
-.pin{
-  position:absolute;
-  top:6px;
-  left:var(--pinX);
-  transform:translateX(-50%);
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  background:var(--pin);
-  box-shadow:0 6px 14px rgba(0,0,0,.25);
-  pointer-events:none;
-  z-index:6;
-}
-.pin::after{
-  content:"";
-  position:absolute;
-  inset:4px;
-  border-radius:50%;
-  background:rgba(255,255,255,.55);
-}
-
-.doc--name{
-  background:linear-gradient(180deg,var(--paper),var(--paper2));
-  border-radius:999px;
-  padding:14px 18px 12px;
-  box-shadow:var(--shadowSoft);
-  text-align:center;
-  z-index:9999;
-}
-.doc--name h1{
+.hero h1{
   margin:0;
-  font-size:28px;
-  letter-spacing:.03em;
+  font-size:64px;
+  letter-spacing:.04em;
+  line-height:1;
 }
-.doc--name p{
-  margin:4px 0 0;
-  font-size:13px;
-  opacity:.75;
-  font-family:system-ui;
+
+.hero p{
+  margin:10px 0 0;
+  font-size:20px;
+  opacity:.85;
 }
 
 /* RIGHT-SIDE TEXT NAV */
@@ -119,17 +58,16 @@ body::before{
   right:22px;
   top:50%;
   transform:translateY(-50%);
-  z-index:9998;
   display:flex;
   flex-direction:column;
   gap:14px;
-  font-family:"Tinos", serif;
+  z-index:2;
 }
 
 .sideNav a{
   text-decoration:none;
   color:#111;
-  font-size:24px;
+  font-size:28px;
   letter-spacing:.01em;
 }
 
@@ -137,127 +75,25 @@ body::before{
   text-decoration:underline;
 }
 
-@media (max-width: 600px){
-  .sideNav{
-    right:12px;
-  }
+@media (max-width: 700px){
+  .hero{left:18px; right:18px}
+  .hero h1{font-size:44px}
+  .hero p{font-size:16px}
+  .sideNav{right:12px}
+  .sideNav a{font-size:22px}
 }
 </style>
 </head>
 
 <body>
+  <div class="hero">
+    <h1>Cem Öztürk</h1>
+    <p>Designs & events</p>
+  </div>
 
-<nav class="sideNav" aria-label="Site navigation">
-  <a href="./designs.html">Designs</a>
-  <a href="./events.html">Events</a>
-</nav>
-
-<div class="viewport">
-  <main class="board" id="board"></main>
-</div>
-
-<script>
-(() => {
-  const board = document.getElementById("board");
-  const rand=(a,b)=>Math.random()*(b-a)+a;
-
-  const phys=new WeakMap(), physDocs=new Set();
-  let raf=false,last=0;
-
-  function start(){
-    if(raf) return;
-    raf=true; last=performance.now();
-    requestAnimationFrame(tick);
-  }
-
-  function tick(t){
-    const dt=Math.min(.033,(t-last)/1000);
-    last=t;
-    let active=false;
-
-    physDocs.forEach(d=>{
-      const p=phys.get(d);
-      const acc=(p.target-p.angle)*p.k - p.vel*p.damp;
-      p.vel+=acc*dt;
-      p.angle+=p.vel*dt;
-      d.style.setProperty("--rot",p.angle+"deg");
-      if(Math.abs(p.vel)>0.03 || p.drag) active=true;
-    });
-
-    if(active) requestAnimationFrame(tick);
-    else raf=false;
-  }
-
-  function makePhys(d,base,{k=60,damp=10}={}){
-    phys.set(d,{base,angle:base,target:base,vel:0,drag:false,k,damp});
-    physDocs.add(d);
-    d.style.setProperty("--rot",base+"deg");
-    start();
-  }
-
-  const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
-
-  /* Name card */
-  const name=document.createElement("article");
-  name.className="doc doc--name";
-  name.style.setProperty("--pinX","50%");
-  name.style.setProperty("--pin",gray());
-  name.innerHTML=`<span class="pin"></span><h1>Cem Ozturk</h1><p>Student, researcher, designer</p>`;
-  board.appendChild(name);
-
-  const baseAngle=rand(-3,3);
-  makePhys(name,baseAngle,{k:55,damp:8});
-  name.style.left=(innerWidth-name.offsetWidth)/2+"px";
-  name.style.top="20px";
-
-  let pivot=null,lastRaw=null,unwrapped=null;
-
-  name.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    const r=name.getBoundingClientRect();
-    pivot={x:r.left+r.width/2,y:r.top+14};
-    const p=phys.get(name);
-    p.drag=true;
-    unwrapped=p.angle;
-    lastRaw=null;
-    name.setPointerCapture(e.pointerId);
-    start();
-  });
-
-  name.addEventListener("pointermove",e=>{
-    const p=phys.get(name);
-    if(!p.drag||!pivot) return;
-    const dx=e.clientX-pivot.x;
-    const dy=e.clientY-pivot.y;
-    const raw=Math.atan2(dx,dy)*180/Math.PI;
-
-    if(lastRaw===null){
-      const k=Math.round((unwrapped-raw)/360);
-      unwrapped=raw+360*k;
-    }else{
-      let delta=raw-lastRaw;
-      if(delta>180) delta-=360;
-      if(delta<-180) delta+=360;
-      unwrapped+=delta;
-    }
-
-    lastRaw=raw;
-    p.angle=unwrapped;
-    p.target=unwrapped;
-    start();
-  });
-
-  name.addEventListener("pointerup",()=>{
-    const p=phys.get(name);
-    p.drag=false;
-    p.target=p.base;
-    pivot=null;lastRaw=null;unwrapped=null;
-    start();
-  });
-
-  /* No photos on home page by design */
-})();
-</script>
-
+  <nav class="sideNav" aria-label="Site navigation">
+    <a href="./designs.html">Designs</a>
+    <a href="./events.html">Events</a>
+  </nav>
 </body>
 </html>
