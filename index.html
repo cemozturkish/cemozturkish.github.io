@@ -43,7 +43,8 @@ body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(245,243,238,0.75);
+  /* less faded background (was 0.75) */
+  background:rgba(245,243,238,0.35);
   pointer-events:none;
   z-index:0;
 }
@@ -92,35 +93,13 @@ body::before{
   background:rgba(255,255,255,.55);
 }
 
-.doc--photo::after{
-  content:"";
-  position:absolute;
-  left:var(--pinX);
-  top:16px;
-  transform:translateX(-50%);
-  width:12px;
-  height:7px;
-  border-radius:999px;
-  background:rgba(0,0,0,.16);
-  filter:blur(.25px);
-  z-index:5;
-}
-
-.doc--photo img{
-  display:block;
-  width:100%;
-  height:100%;
-  box-shadow:var(--shadow);
-  border:1px solid #000;
-}
-
 .doc--name{
   background:linear-gradient(180deg,var(--paper),var(--paper2));
   border-radius:999px;
   padding:14px 18px 12px;
   box-shadow:var(--shadowSoft);
   text-align:center;
-  z-index:9999;
+  z-index:9999; /* card visit always on top */
 }
 .doc--name h1{
   margin:0;
@@ -133,10 +112,53 @@ body::before{
   opacity:.75;
   font-family:system-ui;
 }
+
+/* RIGHT-SIDE VERTICAL NAV */
+.sideNav{
+  position:fixed;
+  right:22px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:9998; /* under the name card */
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  font-family:system-ui;
+}
+
+.sideNav a{
+  display:inline-block;
+  text-decoration:none;
+  color:#111;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.70);
+  border:1px solid rgba(0,0,0,0.15);
+  box-shadow:0 10px 24px rgba(0,0,0,.12);
+}
+
+.sideNav a:hover{
+  background:rgba(255,255,255,0.90);
+}
+
+@media (max-width: 600px){
+  .sideNav{
+    right:12px;
+  }
+  .sideNav a{
+    padding:9px 12px;
+  }
+}
 </style>
 </head>
 
 <body>
+
+<!-- right-side vertical links -->
+<nav class="sideNav" aria-label="Site sections">
+  <a href="./designs.html">Designs</a>
+  <a href="./events.html">Events</a>
+</nav>
 
 <div class="viewport">
   <main class="board" id="board"></main>
@@ -145,18 +167,10 @@ body::before{
 <script>
 (() => {
   const board = document.getElementById("board");
-  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
-  const PIN_X_OPTIONS=["16%","50%","84%"];
 
   const phys=new WeakMap(), physDocs=new Set();
   let raf=false,last=0;
-
-  let zTop = 10;
-  function bringToFront(el){
-    if(el.classList.contains("doc--name")) return;
-    el.style.zIndex = ++zTop;
-  }
 
   function start(){
     if(raf) return;
@@ -191,6 +205,7 @@ body::before{
 
   const gray=()=>{const g=Math.floor(rand(45,105));return`rgb(${g},${g},${g})`;};
 
+  /* Name card – pull to swing, pin fixed */
   const name=document.createElement("article");
   name.className="doc doc--name";
   name.style.setProperty("--pinX","50%");
@@ -248,72 +263,7 @@ body::before{
     start();
   });
 
-  [
-    "designer1.jpg",
-    "designer2.jpg",
-    "designer3.jpg",
-    "designer4.jpg",
-    "designer5.jpg",
-    "events1.jpg"
-  ].forEach(src=>{
-    const d=document.createElement("article");
-    d.className="doc doc--photo";
-
-    const px=PIN_X_OPTIONS[Math.floor(Math.random()*3)];
-    d.style.setProperty("--pinX",px);
-    d.style.setProperty("--pin",gray());
-    d.innerHTML=`<span class="pin"></span><img src="./assets/${src}">`;
-    board.appendChild(d);
-
-    bringToFront(d);
-
-    const pinVal=parseFloat(px);
-    const off=Math.abs((pinVal-50)/34);
-    const dir=pinVal<50?1:pinVal>50?-1:0;
-    makePhys(d,dir*(off*9)+rand(-1,1));
-
-    const img=d.querySelector("img");
-    img.onload=()=>{
-      let scale=1;
-      if(src==="designer1.jpg") scale=1.7;
-      if(src==="designer2.jpg") scale=1.25;
-      if(src==="designer4.jpg"||src==="designer5.jpg"||src==="events1.jpg") scale=1.15;
-
-      const s=Math.min(120/img.naturalWidth,1)*scale;
-      d.style.width=Math.round(img.naturalWidth*s)+"px";
-      d.style.height=Math.round(img.naturalHeight*s)+"px";
-      d.style.left=rand(40,innerWidth-d.offsetWidth-40)+"px";
-      d.style.top=rand(80,innerHeight-d.offsetHeight-40)+"px";
-    };
-
-    let dragging=false,sx,sy,sl,st;
-    d.addEventListener("pointerdown",e=>{
-      e.preventDefault();
-      bringToFront(d);
-      dragging=true;
-      sx=e.clientX;sy=e.clientY;
-      sl=parseFloat(d.style.left);st=parseFloat(d.style.top);
-      d.setPointerCapture(e.pointerId);
-      phys.get(d).drag=true;
-    });
-
-    d.addEventListener("pointermove",e=>{
-      if(!dragging) return;
-      const dx=e.clientX-sx,dy=e.clientY-sy;
-      d.style.left=clamp(sl+dx,12,innerWidth-d.offsetWidth-12)+"px";
-      d.style.top=clamp(st+dy,12,innerHeight-d.offsetHeight-12)+"px";
-      phys.get(d).target=phys.get(d).base+clamp(dx*0.15,-18,18);
-      start();
-    });
-
-    d.addEventListener("pointerup",()=>{
-      dragging=false;
-      const p=phys.get(d);
-      p.drag=false;
-      p.target=p.base;
-      start();
-    });
-  });
+  /* Photos removed from main page on purpose. */
 })();
 </script>
 
