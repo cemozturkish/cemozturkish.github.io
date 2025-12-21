@@ -71,10 +71,14 @@ body::before{
   line-height:1;            /* keep individual words from changing row metrics */
   white-space:nowrap;
   cursor:pointer;
+
+  /* added */
+  transform-origin:left center;
   transition:
     font-size 0.25s ease,
     letter-spacing 0.25s ease,
-    color 0.25s ease;
+    color 0.25s ease,
+    margin 0.25s ease;
 }
 
 /* commas */
@@ -88,6 +92,9 @@ body::before{
   font-size:1.45em;
   letter-spacing:.04em;
   color:rgba(255,255,255,0.95);
+
+  /* added */
+  margin-right:6px;
 }
 
 /* links inherit behavior */
@@ -99,6 +106,12 @@ body::before{
   text-decoration:none;
 }
 
+/* added: keyboard accessibility */
+.word a:focus-visible{
+  outline:1px solid rgba(255,255,255,0.6);
+  outline-offset:4px;
+}
+
 /* MOBILE */
 @media (max-width: 700px){
   .hero{left:18px; right:18px}
@@ -107,6 +120,16 @@ body::before{
     font-size:16px;
     height:26px;
     line-height:26px;
+
+    /* added */
+    padding-top:4px;
+  }
+}
+
+/* added: reduce motion preference */
+@media (prefers-reduced-motion: reduce){
+  .word{
+    transition:none;
   }
 }
 </style>
