@@ -16,18 +16,21 @@ html,body{
 }
 body{
   font-family:"Tinos", serif;
-  background-image:url("./assets/background.jpg");
+
+  /* CHANGED BACKGROUND */
+  background-image:url("./assets/events-bg.jpg");
+
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
-  background-color:#e9e7e2;
+  background-color:#111;
   position:relative;
 }
 body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(245,243,238,0.35);
+  background:rgba(0,0,0,0.25); /* slightly darker overlay */
   pointer-events:none;
 }
 
