@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Events | Cem Ozturk</title>
+<title>Designs | Cem Ozturk</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,10 +50,13 @@ a:hover{text-decoration:underline}
 
 .gallery{
   margin-top:30px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:24px;
 }
 
 .gallery img{
-  max-width:100%;
+  width:100%;
   height:auto;
   display:block;
 }
@@ -62,11 +65,14 @@ a:hover{text-decoration:underline}
 
 <body>
   <div class="wrap">
-    <h1>Events</h1>
-    <a href="./index.html">← Back home</a>
+    <h1>DESIGNS</h1>
 
     <div class="gallery">
-      <img src="./assets/events1.jpg" alt="Event photo">
+      <img src="./assets/designer1.jpg" alt="Design 1">
+      <img src="./assets/designer2.jpg" alt="Design 2">
+      <img src="./assets/designer3.jpg" alt="Design 3">
+      <img src="./assets/designer4.jpg" alt="Design 4">
+      <img src="./assets/designer5.jpg" alt="Design 5">
     </div>
   </div>
 </body>
