@@ -16,10 +16,7 @@ html,body{
 }
 body{
   font-family:"Tinos", serif;
-
-  /* CHANGED BACKGROUND */
   background-image:url("./assets/events-bg.jpg");
-
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -30,7 +27,7 @@ body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.25); /* slightly darker overlay */
+  background:rgba(0,0,0,0.25);
   pointer-events:none;
 }
 
@@ -46,12 +43,13 @@ h1{
   font-weight:400;
 }
 
+/* title link styling — matched to index */
 h1 a{
-  color:inherit;
+  color:rgba(255,255,255,0.82);
   text-decoration:none;
 }
 h1 a:hover{
-  color:#000;
+  color:rgba(255,255,255,0.95);
 }
 
 .gallery{
