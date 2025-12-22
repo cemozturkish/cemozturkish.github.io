@@ -11,56 +11,53 @@
 
 <style>
 html,body{height:100%;margin:0}
-
 body{
-  position:relative;
-  background-image:url("./assets/background.jpg");
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  background-color:#e9e7e2;
   font-family:"Tinos", serif;
-  overflow:hidden;
+  overflow-x:hidden;
+  color:#fff;
+  background:#111;
 }
 
-body::before{
-  content:"";
+/* fixed background layers */
+.bg{
   position:fixed;
   inset:0;
-  background:rgba(245,243,238,0.25);
-  pointer-events:none;
-}
-
-/* next background layer for crossfade */
-#bg-next{
-  position:fixed;
-  inset:0;
-  background-image:url("./assets/events-bg.jpg");
+  z-index:-2;
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
-  opacity:0;
-  transition:opacity 600ms ease;
-  pointer-events:none;
-  z-index:0;
 }
+#bgA{ background-image:url("./assets/background.jpg"); opacity:1; }
+#bgB{ background-image:url("./assets/events-bg.jpg"); opacity:0; }
 
-/* optional overlay tint on next bg to match your inner pages */
-#bg-next::after{
-  content:"";
-  position:absolute;
+/* overlays for readability */
+.bgOverlayA,
+.bgOverlayB{
+  position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.25);
+  pointer-events:none;
+  z-index:-1;
+}
+.bgOverlayA{ background:rgba(245,243,238,0.25); }
+.bgOverlayB{ background:rgba(0,0,0,0.25); opacity:0; } /* fades in with bgB */
+
+main{
+  position:relative;
 }
 
-/* HERO */
+/* sections */
+.section{
+  min-height:100vh;
+  padding:40px;
+  box-sizing:border-box;
+  display:flex;
+  align-items:flex-start;
+}
+
+/* HOME */
 .hero{
-  position:absolute;
-  left:40px;
-  top:34px;
-  z-index:2;
+  margin-top:34px;
 }
-
 .hero h1{
   margin:0;
   font-size:52px;
@@ -68,41 +65,7 @@ body::before{
   line-height:1;
   color:rgba(255,255,255,0.82);
   font-weight:400;
-
-  transform-origin:left top;
-  transition:transform 550ms ease, opacity 550ms ease;
 }
-
-/* title link */
-.hero h1 a{
-  color:inherit;
-  text-decoration:none;
-}
-.hero h1 a:hover{
-  color:rgba(255,255,255,0.95);
-}
-
-/* DESIGNS "morph" label (overlay) */
-.morph-label{
-  position:absolute;
-  left:40px;
-  top:34px;
-  z-index:3;
-  margin:0;
-  font-size:42px;
-  letter-spacing:.04em;
-  line-height:1;
-  color:rgba(255,255,255,0.82);
-  font-weight:400;
-
-  opacity:0;
-  transform:translateY(6px) scale(0.98);
-  transform-origin:left top;
-  transition:opacity 420ms ease, transform 420ms ease;
-  pointer-events:none;
-}
-
-/* INTERACTIVE LINE (locked vertically) */
 .hero p{
   margin:12px 0 0;
   font-size:18px;
@@ -116,18 +79,13 @@ body::before{
   align-items:center;
   line-height:30px;
   overflow:visible;
-
-  transition:opacity 350ms ease;
 }
-
-/* each word */
 .word{
   display:inline-block;
   font-size:1em;
   line-height:1;
   white-space:nowrap;
   cursor:pointer;
-
   transform-origin:left center;
   transition:
     font-size 0.25s ease,
@@ -135,60 +93,73 @@ body::before{
     color 0.25s ease,
     margin 0.25s ease;
 }
-
-/* commas */
-.sep{
-  opacity:0.8;
-  line-height:1;
-}
-
-/* hover = pushes horizontally, row stays locked */
+.sep{ opacity:0.8; line-height:1; }
 .word:hover{
   font-size:1.45em;
   letter-spacing:.04em;
   color:rgba(255,255,255,0.95);
   margin-right:6px;
 }
-
-/* links inherit behavior */
 .word a{
   color:inherit;
   text-decoration:none;
 }
-.word a:hover{
-  text-decoration:none;
-}
-
 .word a:focus-visible{
   outline:1px solid rgba(255,255,255,0.6);
   outline-offset:4px;
 }
 
-/* EXIT STATE */
-body.is-exiting .hero h1{
-  transform:scale(0.78);
-  opacity:0.70;
-}
-body.is-exiting .hero p{
-  opacity:0.0;
-}
-body.is-exiting #bg-next{
-  opacity:1;
-}
-body.is-exiting .morph-label{
-  opacity:1;
-  transform:translateY(0) scale(1);
+/* SECTION HEADERS */
+.sectionTitle{
+  margin:0 0 18px 0;
+  font-size:42px;
+  letter-spacing:.04em;
+  line-height:1;
+  font-weight:400;
+  color:rgba(255,255,255,0.82);
 }
 
-/* MOBILE */
+/* content wrapper for inner sections */
+.wrap{
+  width:100%;
+  max-width:1400px;
+}
+
+/* 4-column symmetrical grid (your request) */
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:24px;
+}
+
+/* rise-in on scroll */
+.reveal{
+  opacity:0;
+  transform:translateY(60px);
+  transition:opacity 650ms ease, transform 650ms ease;
+  will-change:transform, opacity;
+}
+.reveal.is-visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.gallery img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+/* responsive */
+@media (max-width: 1200px){
+  .gallery{ grid-template-columns:repeat(3, 1fr); }
+}
+@media (max-width: 900px){
+  .gallery{ grid-template-columns:repeat(2, 1fr); }
+}
 @media (max-width: 700px){
-  .hero{left:18px; right:18px}
-  .hero h1{font-size:40px}
-  .morph-label{
-    left:18px;
-    top:34px;
-    font-size:34px;
-  }
+  .section{ padding:18px; }
+  .hero h1{ font-size:40px; }
   .hero p{
     font-size:16px;
     height:26px;
@@ -196,57 +167,124 @@ body.is-exiting .morph-label{
     padding-top:4px;
   }
 }
+@media (max-width: 500px){
+  .gallery{ grid-template-columns:1fr; }
+}
 
 /* reduce motion */
 @media (prefers-reduced-motion: reduce){
-  #bg-next,
-  .hero h1,
-  .hero p,
-  .morph-label{
-    transition:none;
-  }
+  .word{ transition:none; }
+  .reveal{ transition:none; opacity:1; transform:none; }
 }
 </style>
 </head>
 
 <body>
-  <div id="bg-next" aria-hidden="true"></div>
+  <!-- background layers -->
+  <div id="bgA" class="bg" aria-hidden="true"></div>
+  <div id="bgB" class="bg" aria-hidden="true"></div>
+  <div class="bgOverlayA" aria-hidden="true"></div>
+  <div id="overlayB" class="bgOverlayB" aria-hidden="true"></div>
 
-  <!-- morph label (only used during exit) -->
-  <h1 class="morph-label" id="morphLabel" aria-hidden="true">DESIGNS</h1>
+  <main>
+    <!-- HOME -->
+    <section id="home" class="section">
+      <div class="hero">
+        <h1>CEM ÖZTÜRK</h1>
+        <p>
+          <span class="word"><a href="#designs">Designer</a></span>
+          <span class="sep">,</span>
+          <span class="word">researcher</span>
+          <span class="sep">,</span>
+          <span class="word"><a href="#events">event coordinator</a></span>
+        </p>
+      </div>
+    </section>
 
-  <div class="hero">
-    <h1><a href="./index.html">CEM ÖZTÜRK</a></h1>
-    <p>
-      <span class="word"><a id="linkDesigner" href="./designs.html">Designer</a></span>
-      <span class="sep">,</span>
-      <span class="word">researcher</span>
-      <span class="sep">,</span>
-      <span class="word"><a href="./events.html">event coordinator</a></span>
-    </p>
-  </div>
+    <!-- DESIGNS -->
+    <section id="designs" class="section">
+      <div class="wrap">
+        <h2 class="sectionTitle">DESIGNS</h2>
+        <div class="gallery">
+          <img class="reveal" src="./assets/designer1.jpg" alt="Design 1">
+          <img class="reveal" src="./assets/designer2.jpg" alt="Design 2">
+          <img class="reveal" src="./assets/designer3.jpg" alt="Design 3">
+          <img class="reveal" src="./assets/designer4.jpg" alt="Design 4">
+          <img class="reveal" src="./assets/designer5.jpg" alt="Design 5">
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="events" class="section">
+      <div class="wrap">
+        <h2 class="sectionTitle">EVENTS</h2>
+        <div class="gallery">
+          <img class="reveal" src="./assets/events1.jpg" alt="Event 1">
+          <img class="reveal" src="./assets/events2.jpg" alt="Event 2">
+          <img class="reveal" src="./assets/events3.jpg" alt="Event 3">
+        </div>
+      </div>
+    </section>
+  </main>
 
 <script>
-(function(){
-  const designerLink = document.getElementById('linkDesigner');
-  if (!designerLink) return;
-
-  designerLink.addEventListener('click', (e) => {
-    // respect new tab / cmd-click / middle click
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
-
+/* Smooth-ish anchor scroll (native is fine, this just makes it less jumpy) */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    const id = a.getAttribute('href');
+    const el = document.querySelector(id);
+    if(!el) return;
     e.preventDefault();
-
-    // Start exit animation
-    document.body.classList.add('is-exiting');
-
-    // Navigate after animation completes
-    // (keep this aligned with CSS timing)
-    window.setTimeout(() => {
-      window.location.href = designerLink.getAttribute('href');
-    }, 620);
+    el.scrollIntoView({behavior:'smooth', block:'start'});
   });
-})();
+});
+
+/* Background crossfade based on scroll position */
+const bgB = document.getElementById('bgB');
+const overlayB = document.getElementById('overlayB');
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+function updateBackgroundFade(){
+  // Fade starts after leaving the home section and finishes by the end of the Designs section
+  const home = document.getElementById('home');
+  const designs = document.getElementById('designs');
+
+  const homeRect = home.getBoundingClientRect();
+  const designsRect = designs.getBoundingClientRect();
+
+  // home bottom crossing the top of viewport is our "start"
+  const start = 0; // viewport top
+  const homeBottom = homeRect.bottom;
+
+  // by the time we're halfway through designs, fully switched
+  const designsMid = designsRect.top + (designs.offsetHeight * 0.5);
+
+  // Compute progress: when homeBottom is near top -> begin; when designsMid near top -> end
+  const p = (start - homeBottom) / (start - designsMid);
+  const t = clamp01(p);
+
+  bgB.style.opacity = t.toFixed(3);
+  overlayB.style.opacity = t.toFixed(3);
+}
+
+window.addEventListener('scroll', updateBackgroundFade, {passive:true});
+window.addEventListener('resize', updateBackgroundFade);
+updateBackgroundFade();
+
+/* Reveal images as they enter viewport (rise-in) */
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('is-visible');
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+revealEls.forEach(el => io.observe(el));
 </script>
 </body>
 </html>
