@@ -300,9 +300,14 @@ function initVerticalChaos(){
   const imgs = Array.from(document.querySelectorAll('.gallery .reveal'));
   const title = document.getElementById('designsTitle');
 
+  // Stronger movement settings (you asked for it)
+  const speedScale = 0.22;   // higher = faster vertical movement per scroll (was ~0.07-ish)
+  const baseRange  = 120;    // higher = bigger initial vertical spread (was ~23)
+
   imgs.forEach((img, i) => {
-    const speedY = (((i % 7) - 3) * 0.07);   // -0.21..+0.21
-    const baseY = ((i * 53) % 46) - 23;      // -23..+23
+    // gives a mix of upward/downward scroll response
+    const speedY = (((i % 7) - 3) * speedScale);      // e.g. -0.66..+0.66
+    const baseY  = ((i * 53) % (baseRange*2)) - baseRange; // -baseRange..+baseRange
     img.dataset.speedY = String(speedY);
     img.dataset.baseY  = String(baseY);
   });
@@ -311,25 +316,22 @@ function initVerticalChaos(){
     const vh = window.innerHeight || 800;
     const scrollY = window.scrollY || window.pageYOffset || 0;
 
-    // === DESIGNS title slide-in AND alignment driver (same progress) ===
+    // title progress drives alignment
     let titleProgress = 0;
     if (title){
       const tr = title.getBoundingClientRect();
-
-      // Start/end chosen so it "feels" right: title begins entering near lower viewport, finishes around mid.
-      const start = vh * 0.85;  // hidden below
-      const end   = vh * 0.55;  // settled (translateX 0)
+      const start = vh * 0.85;
+      const end   = vh * 0.55;
 
       titleProgress = smoothstep(start, end, tr.top); // 0..1
 
-      const x = (-42 * (1 - titleProgress)); // -42px -> 0px
+      const x = (-42 * (1 - titleProgress));
       title.style.opacity = titleProgress.toFixed(3);
       title.style.transform = `translateX(${x.toFixed(2)}px)`;
     }
 
-    // Sweet spot alignment is exactly when titleProgress === 1
     const alignFactor = titleProgress;      // 0 = chaos, 1 = aligned
-    const chaosFactor = 1 - alignFactor;    // inverse
+    const chaosFactor = 1 - alignFactor;
 
     imgs.forEach((img) => {
       if (!img.classList.contains('is-visible')) return;
@@ -337,6 +339,7 @@ function initVerticalChaos(){
       const speedY = parseFloat(img.dataset.speedY || "0");
       const baseY  = parseFloat(img.dataset.baseY  || "0");
 
+      // BIGGER motion: baseY + scrollY*speedY
       const y = (baseY + scrollY * speedY) * chaosFactor;
 
       img.style.setProperty('--parY', `${y.toFixed(2)}px`);
