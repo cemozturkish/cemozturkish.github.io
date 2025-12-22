@@ -30,7 +30,7 @@ body{
 #bgA{ background-image:url("./assets/background.jpg"); opacity:1; }
 #bgB{ background-image:url("./assets/events-bg.jpg"); opacity:0; }
 
-/* overlays for readability */
+/* overlays */
 .bgOverlayA,
 .bgOverlayB{
   position:fixed;
@@ -102,7 +102,13 @@ main{ position:relative; }
   outline-offset:4px;
 }
 
-/* SECTION HEADERS */
+/* content wrapper */
+.wrap{
+  width:100%;
+  max-width:1400px;
+}
+
+/* titles */
 .sectionTitle{
   margin:0 0 18px 0;
   font-size:42px;
@@ -112,10 +118,12 @@ main{ position:relative; }
   color:rgba(255,255,255,0.82);
 }
 
-/* content wrapper */
-.wrap{
-  width:100%;
-  max-width:1400px;
+/* DESIGNS title: scroll-in from left */
+.sectionTitle.slideIn{
+  opacity:0;
+  transform:translateX(-42px);
+  transition:opacity 400ms ease;
+  will-change:transform, opacity;
 }
 
 /* 4-column symmetrical grid */
@@ -125,14 +133,13 @@ main{ position:relative; }
   gap:24px;
 }
 
-/* Parallax + reveal system (composed transforms) */
+/* reveal + vertical parallax composition */
 .reveal{
   --revealY: 60px;
-  --parX: 0px;
   --parY: 0px;
 
   opacity:0;
-  transform: translate3d(var(--parX), calc(var(--revealY) + var(--parY)), 0);
+  transform: translate3d(0, calc(var(--revealY) + var(--parY)), 0);
   transition: opacity 650ms ease, transform 650ms ease;
   will-change: transform, opacity;
 }
@@ -141,7 +148,6 @@ main{ position:relative; }
   --revealY: 0px;
 }
 
-/* images stay honest */
 .gallery img{
   width:100%;
   height:auto;
@@ -176,8 +182,11 @@ main{ position:relative; }
     transition:none;
     opacity:1;
     --revealY:0px;
-    --parX:0px;
     --parY:0px;
+  }
+  .sectionTitle.slideIn{
+    opacity:1;
+    transform:none;
   }
 }
 </style>
@@ -208,7 +217,7 @@ main{ position:relative; }
     <!-- DESIGNS -->
     <section id="designs" class="section">
       <div class="wrap">
-        <h2 class="sectionTitle">DESIGNS</h2>
+        <h2 id="designsTitle" class="sectionTitle slideIn">DESIGNS</h2>
         <div class="gallery">
           <img class="reveal" src="./assets/designer1.jpg" alt="Design 1">
           <img class="reveal" src="./assets/designer2.jpg" alt="Design 2">
@@ -244,7 +253,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   });
 });
 
-/* Background crossfade based on scroll position */
+/* Background crossfade */
 const bgB = document.getElementById('bgB');
 const overlayB = document.getElementById('overlayB');
 
@@ -262,8 +271,6 @@ function updateBackgroundFade(){
   const designsRect = designs.getBoundingClientRect();
 
   const homeBottom = homeRect.bottom;
-
-  // fully switched by mid-designs
   const designsMid = designsRect.top + (designs.offsetHeight * 0.5);
 
   const p = (0 - homeBottom) / (0 - designsMid);
@@ -285,68 +292,64 @@ const io = new IntersectionObserver((entries)=>{
 }, { threshold: 0.15 });
 revealEls.forEach(el => io.observe(el));
 
-/* Aesthetic chaos parallax that snaps to alignment at a "sweet spot" */
-function initParallaxChaos(){
+/* Vertical-only aesthetic chaos that settles at a sweet spot */
+function initVerticalChaos(){
   const imgs = Array.from(document.querySelectorAll('.gallery .reveal'));
 
-  // Assign each image a unique parallax profile
   imgs.forEach((img, i) => {
-    // speed: negative/positive mix, small enough to stay tasteful
-    const speedY = ( (i % 7) - 3 ) * 0.06;         // -0.18 .. +0.18
-    const speedX = ( (i % 5) - 2 ) * 0.03;         // -0.06 .. +0.06
-
-    // base drift offsets for “chaos” (pixels)
-    const baseX = ((i * 37) % 25) - 12;            // -12..+12
-    const baseY = ((i * 53) % 35) - 17;            // -17..+17
+    // vertical speed variation
+    const speedY = (((i % 7) - 3) * 0.07);   // -0.21..+0.21
+    // base vertical offsets for "chaos"
+    const baseY = ((i * 53) % 46) - 23;      // -23..+23
 
     img.dataset.speedY = String(speedY);
-    img.dataset.speedX = String(speedX);
-    img.dataset.baseX = String(baseX);
-    img.dataset.baseY = String(baseY);
+    img.dataset.baseY  = String(baseY);
   });
 
   function update(){
     const vh = window.innerHeight || 800;
-    const sweetCenter = vh * 0.52;   // "sweet spot" around middle-ish
-    const sweetRadius = vh * 0.28;   // how wide the calm zone is
+    const sweetCenter = vh * 0.52;
+    const sweetRadius = vh * 0.28;
+
+    const scrollY = window.scrollY || window.pageYOffset || 0;
 
     imgs.forEach((img) => {
-      // If image isn't visible yet, don't bother animating it
       if (!img.classList.contains('is-visible')) return;
 
       const section = img.closest('.section');
       if (!section) return;
 
-      // How close is this SECTION's center to the viewport center?
       const r = section.getBoundingClientRect();
       const sectionCenter = r.top + r.height * 0.5;
-
       const dist = Math.abs(sectionCenter - sweetCenter);
 
-      // alignFactor: 1 near sweet spot (perfect alignment), 0 far away (chaos)
+      // 1 = aligned, 0 = chaos
       const alignFactor = 1 - smoothstep(0, sweetRadius, dist);
-
-      // chaosFactor is inverse
       const chaosFactor = 1 - alignFactor;
 
-      // Parallax driven by scroll position, but scaled down
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-
       const speedY = parseFloat(img.dataset.speedY || "0");
-      const speedX = parseFloat(img.dataset.speedX || "0");
-      const baseX  = parseFloat(img.dataset.baseX  || "0");
       const baseY  = parseFloat(img.dataset.baseY  || "0");
 
-      // Compute chaotic offsets
-      const x = (baseX + scrollY * speedX) * chaosFactor;
       const y = (baseY + scrollY * speedY) * chaosFactor;
 
-      img.style.setProperty('--parX', `${x.toFixed(2)}px`);
       img.style.setProperty('--parY', `${y.toFixed(2)}px`);
     });
+
+    // DESIGNS title slide-in from left as you scroll into it
+    const title = document.getElementById('designsTitle');
+    if (title){
+      const tr = title.getBoundingClientRect();
+      const start = vh * 0.85;  // below this, hidden
+      const end   = vh * 0.55;  // by here, fully in
+
+      const t = smoothstep(start, end, tr.top); // 0..1
+      const x = (-42 * (1 - t));                // -42px -> 0px
+
+      title.style.opacity = t.toFixed(3);
+      title.style.transform = `translateX(${x.toFixed(2)}px)`;
+    }
   }
 
-  // run on scroll/resize using rAF so it doesn't stutter
   let ticking = false;
   function onScroll(){
     if (ticking) return;
@@ -366,8 +369,7 @@ window.addEventListener('scroll', updateBackgroundFade, {passive:true});
 window.addEventListener('resize', updateBackgroundFade);
 updateBackgroundFade();
 
-// start parallax system after initial paint
-initParallaxChaos();
+initVerticalChaos();
 </script>
 </body>
 </html>
