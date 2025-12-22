@@ -22,7 +22,7 @@ body{
 .bg{
   position:fixed;
   inset:0;
-  z-index:-2;
+  z-index:-3;
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -30,16 +30,27 @@ body{
 #bgA{ background-image:url("./assets/background.jpg"); opacity:1; }
 #bgB{ background-image:url("./assets/events-bg.jpg"); opacity:0; }
 
-/* overlays */
+/* overlays (readability tints for each bg aesthetic) */
 .bgOverlayA,
 .bgOverlayB{
   position:fixed;
   inset:0;
   pointer-events:none;
-  z-index:-1;
+  z-index:-2;
 }
 .bgOverlayA{ background:rgba(245,243,238,0.25); }
 .bgOverlayB{ background:rgba(0,0,0,0.25); opacity:0; }
+
+/* NEW: global darkener that increases with scroll */
+#darken{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:rgba(0,0,0,1);
+  opacity:0; /* controlled by JS */
+  transition:opacity 80ms linear;
+}
 
 main{ position:relative; }
 
@@ -188,6 +199,7 @@ main{ position:relative; }
     opacity:1;
     transform:none;
   }
+  #darken{ transition:none; }
 }
 </style>
 </head>
@@ -198,6 +210,9 @@ main{ position:relative; }
   <div id="bgB" class="bg" aria-hidden="true"></div>
   <div class="bgOverlayA" aria-hidden="true"></div>
   <div id="overlayB" class="bgOverlayB" aria-hidden="true"></div>
+
+  <!-- NEW: progressive darkening overlay -->
+  <div id="darken" aria-hidden="true"></div>
 
   <main>
     <!-- HOME -->
@@ -253,15 +268,16 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   });
 });
 
-/* Background crossfade */
-const bgB = document.getElementById('bgB');
-const overlayB = document.getElementById('overlayB');
-
+/* Helpers */
 function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 function smoothstep(edge0, edge1, x){
   const t = clamp01((x - edge0) / (edge1 - edge0));
   return t * t * (3 - 2 * t);
 }
+
+/* Background crossfade */
+const bgB = document.getElementById('bgB');
+const overlayB = document.getElementById('overlayB');
 
 function updateBackgroundFade(){
   const home = document.getElementById('home');
@@ -278,6 +294,23 @@ function updateBackgroundFade(){
 
   bgB.style.opacity = t.toFixed(3);
   overlayB.style.opacity = t.toFixed(3);
+}
+
+/* NEW: progressive darkening as you scroll down the whole page */
+const darken = document.getElementById('darken');
+function updateDarkening(){
+  const scrollY = window.scrollY || window.pageYOffset || 0;
+  const doc = document.documentElement;
+  const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
+
+  // overall scroll progress 0..1
+  const progress = clamp01(scrollY / maxScroll);
+
+  // max darkness: tweak this number
+  const maxDark = 0.60; // 0.0 = none, 1.0 = black hole
+  const eased = smoothstep(0.00, 1.00, progress);
+
+  darken.style.opacity = (eased * maxDark).toFixed(3);
 }
 
 /* Reveal images on entry */
@@ -300,14 +333,13 @@ function initVerticalChaos(){
   const imgs = Array.from(document.querySelectorAll('.gallery .reveal'));
   const title = document.getElementById('designsTitle');
 
-  // Stronger movement settings (you asked for it)
-  const speedScale = 0.22;   // higher = faster vertical movement per scroll (was ~0.07-ish)
-  const baseRange  = 120;    // higher = bigger initial vertical spread (was ~23)
+  // Stronger movement settings
+  const speedScale = 0.22;
+  const baseRange  = 120;
 
   imgs.forEach((img, i) => {
-    // gives a mix of upward/downward scroll response
-    const speedY = (((i % 7) - 3) * speedScale);      // e.g. -0.66..+0.66
-    const baseY  = ((i * 53) % (baseRange*2)) - baseRange; // -baseRange..+baseRange
+    const speedY = (((i % 7) - 3) * speedScale);
+    const baseY  = ((i * 53) % (baseRange*2)) - baseRange;
     img.dataset.speedY = String(speedY);
     img.dataset.baseY  = String(baseY);
   });
@@ -323,14 +355,14 @@ function initVerticalChaos(){
       const start = vh * 0.85;
       const end   = vh * 0.55;
 
-      titleProgress = smoothstep(start, end, tr.top); // 0..1
+      titleProgress = smoothstep(start, end, tr.top);
 
       const x = (-42 * (1 - titleProgress));
       title.style.opacity = titleProgress.toFixed(3);
       title.style.transform = `translateX(${x.toFixed(2)}px)`;
     }
 
-    const alignFactor = titleProgress;      // 0 = chaos, 1 = aligned
+    const alignFactor = titleProgress;
     const chaosFactor = 1 - alignFactor;
 
     imgs.forEach((img) => {
@@ -339,9 +371,7 @@ function initVerticalChaos(){
       const speedY = parseFloat(img.dataset.speedY || "0");
       const baseY  = parseFloat(img.dataset.baseY  || "0");
 
-      // BIGGER motion: baseY + scrollY*speedY
       const y = (baseY + scrollY * speedY) * chaosFactor;
-
       img.style.setProperty('--parY', `${y.toFixed(2)}px`);
     });
   }
@@ -361,10 +391,16 @@ function initVerticalChaos(){
   update();
 }
 
-window.addEventListener('scroll', updateBackgroundFade, {passive:true});
-window.addEventListener('resize', updateBackgroundFade);
-updateBackgroundFade();
+/* single scroll handler */
+function onScrollAll(){
+  updateBackgroundFade();
+  updateDarkening();
+}
+window.addEventListener('scroll', onScrollAll, {passive:true});
+window.addEventListener('resize', () => { updateBackgroundFade(); updateDarkening(); });
 
+updateBackgroundFade();
+updateDarkening();
 initVerticalChaos();
 </script>
 </body>
