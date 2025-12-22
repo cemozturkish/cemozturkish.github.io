@@ -33,7 +33,7 @@ body::before{
 
 .wrap{
   position:relative;
-  max-width:1400px; /* wider to support 4 columns */
+  max-width:1400px;
   margin:0 auto;
   padding:40px;
 }
@@ -52,37 +52,58 @@ h1 a:hover{
   color:rgba(255,255,255,0.95);
 }
 
-/* SYMMETRICAL GRID */
+/* 4-column symmetrical grid */
 .gallery{
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:24px;
-  justify-content:center;
 }
 
-/* images stay honest */
+/* entrance animation */
 .gallery img{
   width:100%;
   height:auto;
   display:block;
+
+  opacity:0;
+  transform:translateY(60px);
+  transition:opacity 650ms ease, transform 650ms ease;
+  will-change:transform, opacity;
 }
 
-/* RESPONSIVE FALLBACKS */
+/* when loaded, reveal */
+body.is-loaded .gallery img{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* stagger delays */
+body.is-loaded .gallery img:nth-child(1){ transition-delay: 60ms; }
+body.is-loaded .gallery img:nth-child(2){ transition-delay: 120ms; }
+body.is-loaded .gallery img:nth-child(3){ transition-delay: 180ms; }
+body.is-loaded .gallery img:nth-child(4){ transition-delay: 240ms; }
+body.is-loaded .gallery img:nth-child(5){ transition-delay: 300ms; }
+body.is-loaded .gallery img:nth-child(6){ transition-delay: 360ms; }
+body.is-loaded .gallery img:nth-child(7){ transition-delay: 420ms; }
+body.is-loaded .gallery img:nth-child(8){ transition-delay: 480ms; }
+
+/* responsive */
 @media (max-width: 1200px){
-  .gallery{
-    grid-template-columns:repeat(3, 1fr);
-  }
+  .gallery{ grid-template-columns:repeat(3, 1fr); }
 }
-
 @media (max-width: 900px){
-  .gallery{
-    grid-template-columns:repeat(2, 1fr);
-  }
+  .gallery{ grid-template-columns:repeat(2, 1fr); }
+}
+@media (max-width: 500px){
+  .gallery{ grid-template-columns:1fr; }
 }
 
-@media (max-width: 500px){
-  .gallery{
-    grid-template-columns:1fr;
+/* reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .gallery img{
+    transition:none;
+    opacity:1;
+    transform:none;
   }
 }
 </style>
@@ -100,5 +121,12 @@ h1 a:hover{
       <img src="./assets/designer5.jpg" alt="Design 5">
     </div>
   </div>
+
+<script>
+  // Trigger entrance animation after the page has rendered
+  window.addEventListener('load', () => {
+    document.body.classList.add('is-loaded');
+  });
+</script>
 </body>
 </html>
