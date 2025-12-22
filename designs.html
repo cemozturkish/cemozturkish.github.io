@@ -16,10 +16,7 @@ html,body{
 }
 body{
   font-family:"Tinos", serif;
-
-  /* SAME BACKGROUND AS EVENTS */
   background-image:url("./assets/events-bg.jpg");
-
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -30,26 +27,23 @@ body::before{
   content:"";
   position:fixed;
   inset:0;
-
-  /* SAME OVERLAY AS EVENTS */
   background:rgba(0,0,0,0.25);
-
   pointer-events:none;
 }
 
 .wrap{
   position:relative;
-  max-width:1100px;
+  max-width:1400px; /* wider to support 4 columns */
+  margin:0 auto;
   padding:40px;
 }
 
 h1{
-  margin:0 0 10px 0;
+  margin:0 0 20px 0;
   font-size:42px;
   font-weight:400;
 }
 
-/* title links home */
 h1 a{
   color:rgba(255,255,255,0.82);
   text-decoration:none;
@@ -58,17 +52,38 @@ h1 a:hover{
   color:rgba(255,255,255,0.95);
 }
 
+/* SYMMETRICAL GRID */
 .gallery{
-  margin-top:30px;
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  grid-template-columns:repeat(4, 1fr);
   gap:24px;
+  justify-content:center;
 }
 
+/* images stay honest */
 .gallery img{
   width:100%;
   height:auto;
   display:block;
+}
+
+/* RESPONSIVE FALLBACKS */
+@media (max-width: 1200px){
+  .gallery{
+    grid-template-columns:repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px){
+  .gallery{
+    grid-template-columns:repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px){
+  .gallery{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
