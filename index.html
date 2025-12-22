@@ -40,14 +40,14 @@ body{
 main{ position:relative; }
 
 .section{
-  min-height:100vh;
-  padding:40px;
+  min-height:120vh;              /* more vertical runway */
+  padding:120px 40px 140px;      /* top / sides / bottom */
   box-sizing:border-box;
 }
 
 /* HERO */
 .hero{
-  margin-top:34px;
+  margin-top:0;
 }
 .hero h1{
   margin:0;
@@ -95,6 +95,11 @@ main{ position:relative; }
 
 /* gallery */
 .wrap{ max-width:1400px; }
+
+.spacer{
+  height:120px;                  /* breathing space */
+}
+
 .gallery{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -122,6 +127,14 @@ main{ position:relative; }
 @media(max-width:1200px){ .gallery{grid-template-columns:repeat(3,1fr)} }
 @media(max-width:900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
 @media(max-width:500px){ .gallery{grid-template-columns:1fr} }
+
+@media(max-width:700px){
+  .section{
+    min-height:110vh;
+    padding:80px 18px 100px;
+  }
+  .spacer{ height:80px; }
+}
 </style>
 </head>
 
@@ -146,6 +159,9 @@ main{ position:relative; }
   <section id="designs" class="section">
     <div class="wrap">
       <h2 id="designsTitle" class="sectionTitle slideIn">DESIGNS</h2>
+
+      <div class="spacer"></div>
+
       <div class="gallery">
         <img class="reveal" src="./assets/designer1.jpg">
         <img class="reveal" src="./assets/designer2.jpg">
@@ -153,6 +169,8 @@ main{ position:relative; }
         <img class="reveal" src="./assets/designer4.jpg">
         <img class="reveal" src="./assets/designer5.jpg">
       </div>
+
+      <div class="spacer"></div>
     </div>
   </section>
 
@@ -160,18 +178,23 @@ main{ position:relative; }
   <section id="events" class="section">
     <div class="wrap">
       <h2 class="sectionTitle">EVENTS</h2>
+
+      <div class="spacer"></div>
+
       <div class="gallery">
         <img class="reveal" src="./assets/events1.jpg">
         <img class="reveal" src="./assets/events2.jpg">
         <img class="reveal" src="./assets/events3.jpg">
       </div>
+
+      <div class="spacer"></div>
     </div>
   </section>
 </main>
 
 <script>
 /* helpers */
-const clamp01 = x => Math.max(0,Math.min(1,x));
+const clamp01=x=>Math.max(0,Math.min(1,x));
 const smoothstep=(a,b,x)=>{
   const t=clamp01((x-a)/(b-a));
   return t*t*(3-2*t);
