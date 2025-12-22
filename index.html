@@ -39,11 +39,9 @@ body{
   z-index:-1;
 }
 .bgOverlayA{ background:rgba(245,243,238,0.25); }
-.bgOverlayB{ background:rgba(0,0,0,0.25); opacity:0; } /* fades in with bgB */
+.bgOverlayB{ background:rgba(0,0,0,0.25); opacity:0; }
 
-main{
-  position:relative;
-}
+main{ position:relative; }
 
 /* sections */
 .section{
@@ -55,9 +53,7 @@ main{
 }
 
 /* HOME */
-.hero{
-  margin-top:34px;
-}
+.hero{ margin-top:34px; }
 .hero h1{
   margin:0;
   font-size:52px;
@@ -100,10 +96,7 @@ main{
   color:rgba(255,255,255,0.95);
   margin-right:6px;
 }
-.word a{
-  color:inherit;
-  text-decoration:none;
-}
+.word a{ color:inherit; text-decoration:none; }
 .word a:focus-visible{
   outline:1px solid rgba(255,255,255,0.6);
   outline-offset:4px;
@@ -119,31 +112,36 @@ main{
   color:rgba(255,255,255,0.82);
 }
 
-/* content wrapper for inner sections */
+/* content wrapper */
 .wrap{
   width:100%;
   max-width:1400px;
 }
 
-/* 4-column symmetrical grid (your request) */
+/* 4-column symmetrical grid */
 .gallery{
   display:grid;
   grid-template-columns:repeat(4, 1fr);
   gap:24px;
 }
 
-/* rise-in on scroll */
+/* Parallax + reveal system (composed transforms) */
 .reveal{
+  --revealY: 60px;
+  --parX: 0px;
+  --parY: 0px;
+
   opacity:0;
-  transform:translateY(60px);
-  transition:opacity 650ms ease, transform 650ms ease;
-  will-change:transform, opacity;
+  transform: translate3d(var(--parX), calc(var(--revealY) + var(--parY)), 0);
+  transition: opacity 650ms ease, transform 650ms ease;
+  will-change: transform, opacity;
 }
 .reveal.is-visible{
   opacity:1;
-  transform:translateY(0);
+  --revealY: 0px;
 }
 
+/* images stay honest */
 .gallery img{
   width:100%;
   height:auto;
@@ -174,7 +172,13 @@ main{
 /* reduce motion */
 @media (prefers-reduced-motion: reduce){
   .word{ transition:none; }
-  .reveal{ transition:none; opacity:1; transform:none; }
+  .reveal{
+    transition:none;
+    opacity:1;
+    --revealY:0px;
+    --parX:0px;
+    --parY:0px;
+  }
 }
 </style>
 </head>
@@ -229,7 +233,7 @@ main{
   </main>
 
 <script>
-/* Smooth-ish anchor scroll (native is fine, this just makes it less jumpy) */
+/* Smooth anchor scroll */
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click', (e)=>{
     const id = a.getAttribute('href');
@@ -245,35 +249,31 @@ const bgB = document.getElementById('bgB');
 const overlayB = document.getElementById('overlayB');
 
 function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+function smoothstep(edge0, edge1, x){
+  const t = clamp01((x - edge0) / (edge1 - edge0));
+  return t * t * (3 - 2 * t);
+}
 
 function updateBackgroundFade(){
-  // Fade starts after leaving the home section and finishes by the end of the Designs section
   const home = document.getElementById('home');
   const designs = document.getElementById('designs');
 
   const homeRect = home.getBoundingClientRect();
   const designsRect = designs.getBoundingClientRect();
 
-  // home bottom crossing the top of viewport is our "start"
-  const start = 0; // viewport top
   const homeBottom = homeRect.bottom;
 
-  // by the time we're halfway through designs, fully switched
+  // fully switched by mid-designs
   const designsMid = designsRect.top + (designs.offsetHeight * 0.5);
 
-  // Compute progress: when homeBottom is near top -> begin; when designsMid near top -> end
-  const p = (start - homeBottom) / (start - designsMid);
+  const p = (0 - homeBottom) / (0 - designsMid);
   const t = clamp01(p);
 
   bgB.style.opacity = t.toFixed(3);
   overlayB.style.opacity = t.toFixed(3);
 }
 
-window.addEventListener('scroll', updateBackgroundFade, {passive:true});
-window.addEventListener('resize', updateBackgroundFade);
-updateBackgroundFade();
-
-/* Reveal images as they enter viewport (rise-in) */
+/* Reveal images on entry */
 const revealEls = document.querySelectorAll('.reveal');
 const io = new IntersectionObserver((entries)=>{
   entries.forEach(entry=>{
@@ -283,8 +283,91 @@ const io = new IntersectionObserver((entries)=>{
     }
   });
 }, { threshold: 0.15 });
-
 revealEls.forEach(el => io.observe(el));
+
+/* Aesthetic chaos parallax that snaps to alignment at a "sweet spot" */
+function initParallaxChaos(){
+  const imgs = Array.from(document.querySelectorAll('.gallery .reveal'));
+
+  // Assign each image a unique parallax profile
+  imgs.forEach((img, i) => {
+    // speed: negative/positive mix, small enough to stay tasteful
+    const speedY = ( (i % 7) - 3 ) * 0.06;         // -0.18 .. +0.18
+    const speedX = ( (i % 5) - 2 ) * 0.03;         // -0.06 .. +0.06
+
+    // base drift offsets for “chaos” (pixels)
+    const baseX = ((i * 37) % 25) - 12;            // -12..+12
+    const baseY = ((i * 53) % 35) - 17;            // -17..+17
+
+    img.dataset.speedY = String(speedY);
+    img.dataset.speedX = String(speedX);
+    img.dataset.baseX = String(baseX);
+    img.dataset.baseY = String(baseY);
+  });
+
+  function update(){
+    const vh = window.innerHeight || 800;
+    const sweetCenter = vh * 0.52;   // "sweet spot" around middle-ish
+    const sweetRadius = vh * 0.28;   // how wide the calm zone is
+
+    imgs.forEach((img) => {
+      // If image isn't visible yet, don't bother animating it
+      if (!img.classList.contains('is-visible')) return;
+
+      const section = img.closest('.section');
+      if (!section) return;
+
+      // How close is this SECTION's center to the viewport center?
+      const r = section.getBoundingClientRect();
+      const sectionCenter = r.top + r.height * 0.5;
+
+      const dist = Math.abs(sectionCenter - sweetCenter);
+
+      // alignFactor: 1 near sweet spot (perfect alignment), 0 far away (chaos)
+      const alignFactor = 1 - smoothstep(0, sweetRadius, dist);
+
+      // chaosFactor is inverse
+      const chaosFactor = 1 - alignFactor;
+
+      // Parallax driven by scroll position, but scaled down
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+
+      const speedY = parseFloat(img.dataset.speedY || "0");
+      const speedX = parseFloat(img.dataset.speedX || "0");
+      const baseX  = parseFloat(img.dataset.baseX  || "0");
+      const baseY  = parseFloat(img.dataset.baseY  || "0");
+
+      // Compute chaotic offsets
+      const x = (baseX + scrollY * speedX) * chaosFactor;
+      const y = (baseY + scrollY * speedY) * chaosFactor;
+
+      img.style.setProperty('--parX', `${x.toFixed(2)}px`);
+      img.style.setProperty('--parY', `${y.toFixed(2)}px`);
+    });
+  }
+
+  // run on scroll/resize using rAF so it doesn't stutter
+  let ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      update();
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  update();
+}
+
+window.addEventListener('scroll', updateBackgroundFade, {passive:true});
+window.addEventListener('resize', updateBackgroundFade);
+updateBackgroundFade();
+
+// start parallax system after initial paint
+initParallaxChaos();
 </script>
 </body>
 </html>
