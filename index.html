@@ -92,10 +92,7 @@ main{ position:relative; }
 
 /* gallery */
 .wrap{ max-width:1400px; }
-
-.spacer{
-  height:120px;
-}
+.spacer{ height:120px; }
 
 .gallery{
   display:grid;
@@ -164,6 +161,11 @@ main{ position:relative; }
         <img class="reveal" src="./assets/designer3.jpg">
         <img class="reveal" src="./assets/designer4.jpg">
         <img class="reveal" src="./assets/designer5.jpg">
+        <img class="reveal" src="./assets/designer6.jpg">
+        <img class="reveal" src="./assets/designer7.jpg">
+        <img class="reveal" src="./assets/designer8.jpg">
+        <img class="reveal" src="./assets/designer9.jpg">
+        <img class="reveal" src="./assets/designer10.jpg">
       </div>
 
       <div class="spacer"></div>
@@ -181,6 +183,13 @@ main{ position:relative; }
         <img class="reveal" src="./assets/events1.jpg">
         <img class="reveal" src="./assets/events2.jpg">
         <img class="reveal" src="./assets/events3.jpg">
+        <img class="reveal" src="./assets/events4.jpg">
+        <img class="reveal" src="./assets/events5.jpg">
+        <img class="reveal" src="./assets/events6.jpg">
+        <img class="reveal" src="./assets/events7.jpg">
+        <img class="reveal" src="./assets/events8.jpg">
+        <img class="reveal" src="./assets/events9.jpg">
+        <img class="reveal" src="./assets/events10.jpg">
       </div>
 
       <div class="spacer"></div>
@@ -215,49 +224,4 @@ const io=new IntersectionObserver(entries=>{
 },{threshold:.15});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-/* vertical chaos tied to title position */
-const title=document.getElementById('designsTitle');
-const imgs=[...document.querySelectorAll('.gallery .reveal')];
-
-imgs.forEach((img,i)=>{
-  img.dataset.speed=((i%7)-3)*0.22;
-  img.dataset.base=((i*53)%240)-120;
-});
-
-function updateChaos(){
-  const vh=innerHeight;
-  let t=0;
-  if(title){
-    const r=title.getBoundingClientRect();
-    t=smoothstep(vh*.85,vh*.55,r.top);
-    title.style.opacity=t;
-    title.style.transform=`translateX(${(-42*(1-t)).toFixed(1)}px)`;
-  }
-  imgs.forEach(img=>{
-    if(!img.classList.contains('is-visible')) return;
-    const y=(+img.dataset.base+scrollY*+img.dataset.speed)*(1-t);
-    img.style.setProperty('--parY',`${y}px`);
-  });
-}
-
-/* smooth anchor scroll */
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.onclick=e=>{
-    e.preventDefault();
-    document.querySelector(a.getAttribute('href'))
-      .scrollIntoView({behavior:'smooth'});
-  };
-});
-
-/* bind */
-addEventListener('scroll',()=>{
-  updateDark();
-  updateChaos();
-},{passive:true});
-addEventListener('resize',()=>{updateDark();updateChaos();});
-
-updateDark();
-updateChaos();
-</script>
-</body>
-</html>
+/* vertic*
