@@ -5,102 +5,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Cem Öztürk</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-
 <style>
 html,body{height:100%;margin:0}
 body{
-  font-family:"Tinos", serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+               Roboto,Helvetica,Arial,sans-serif;
   overflow-x:hidden;
   color:#fff;
   background:#111;
 }
 
-/* fixed background layers */
+/* fixed background */
 .bg{
   position:fixed;
   inset:0;
-  z-index:-3;
+  z-index:-2;
+  background-image:url("./assets/background.jpg");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
 }
-#bgA{ background-image:url("./assets/background.jpg"); opacity:1; }
-#bgB{ background-image:url("./assets/events-bg.jpg"); opacity:0; }
 
-/* overlays (readability tints for each bg aesthetic) */
-.bgOverlayA,
-.bgOverlayB{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:-2;
-}
-.bgOverlayA{ background:rgba(245,243,238,0.25); }
-.bgOverlayB{ background:rgba(0,0,0,0.25); opacity:0; }
-
-/* NEW: global darkener that increases with scroll */
+/* progressive darkening overlay */
 #darken{
   position:fixed;
   inset:0;
   pointer-events:none;
   z-index:-1;
-  background:rgba(0,0,0,1);
-  opacity:0; /* controlled by JS */
-  transition:opacity 80ms linear;
+  background:black;
+  opacity:0;
 }
 
+/* layout */
 main{ position:relative; }
 
-/* sections */
 .section{
   min-height:100vh;
   padding:40px;
   box-sizing:border-box;
-  display:flex;
-  align-items:flex-start;
 }
 
-/* HOME */
-.hero{ margin-top:34px; }
+/* HERO */
+.hero{
+  margin-top:34px;
+}
 .hero h1{
   margin:0;
   font-size:52px;
   letter-spacing:.04em;
   line-height:1;
-  color:rgba(255,255,255,0.82);
   font-weight:400;
+  color:rgba(255,255,255,0.82);
 }
 .hero p{
   margin:12px 0 0;
   font-size:18px;
   color:rgba(255,255,255,0.70);
-  letter-spacing:.02em;
-
   display:flex;
   gap:6px;
-
   height:30px;
   align-items:center;
-  line-height:30px;
-  overflow:visible;
 }
 .word{
-  display:inline-block;
-  font-size:1em;
-  line-height:1;
-  white-space:nowrap;
   cursor:pointer;
-  transform-origin:left center;
-  transition:
-    font-size 0.25s ease,
-    letter-spacing 0.25s ease,
-    color 0.25s ease,
-    margin 0.25s ease;
+  transition:font-size .25s ease,letter-spacing .25s ease,color .25s ease,margin .25s ease;
 }
-.sep{ opacity:0.8; line-height:1; }
 .word:hover{
   font-size:1.45em;
   letter-spacing:.04em;
@@ -108,57 +77,42 @@ main{ position:relative; }
   margin-right:6px;
 }
 .word a{ color:inherit; text-decoration:none; }
-.word a:focus-visible{
-  outline:1px solid rgba(255,255,255,0.6);
-  outline-offset:4px;
-}
+.sep{ opacity:.8 }
 
-/* content wrapper */
-.wrap{
-  width:100%;
-  max-width:1400px;
-}
-
-/* titles */
+/* section titles */
 .sectionTitle{
-  margin:0 0 18px 0;
   font-size:42px;
   letter-spacing:.04em;
-  line-height:1;
   font-weight:400;
+  margin-bottom:18px;
   color:rgba(255,255,255,0.82);
 }
 
-/* DESIGNS title: scroll-in from left */
-.sectionTitle.slideIn{
+/* DESIGNS title slide-in */
+.slideIn{
   opacity:0;
   transform:translateX(-42px);
-  transition:opacity 400ms ease;
-  will-change:transform, opacity;
 }
 
-/* 4-column symmetrical grid */
+/* gallery */
+.wrap{ max-width:1400px; }
 .gallery{
   display:grid;
-  grid-template-columns:repeat(4, 1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:24px;
 }
 
-/* reveal + vertical parallax composition */
+/* reveal + vertical chaos */
 .reveal{
-  --revealY: 60px;
-  --parY: 0px;
-
   opacity:0;
-  transform: translate3d(0, calc(var(--revealY) + var(--parY)), 0);
-  transition: opacity 650ms ease, transform 650ms ease;
-  will-change: transform, opacity;
+  --parY:0px;
+  transform:translateY(calc(60px + var(--parY)));
+  transition:opacity .6s ease,transform .6s ease;
 }
 .reveal.is-visible{
   opacity:1;
-  --revealY: 0px;
+  transform:translateY(var(--parY));
 }
-
 .gallery img{
   width:100%;
   height:auto;
@@ -166,242 +120,128 @@ main{ position:relative; }
 }
 
 /* responsive */
-@media (max-width: 1200px){
-  .gallery{ grid-template-columns:repeat(3, 1fr); }
-}
-@media (max-width: 900px){
-  .gallery{ grid-template-columns:repeat(2, 1fr); }
-}
-@media (max-width: 700px){
-  .section{ padding:18px; }
-  .hero h1{ font-size:40px; }
-  .hero p{
-    font-size:16px;
-    height:26px;
-    line-height:26px;
-    padding-top:4px;
-  }
-}
-@media (max-width: 500px){
-  .gallery{ grid-template-columns:1fr; }
-}
-
-/* reduce motion */
-@media (prefers-reduced-motion: reduce){
-  .word{ transition:none; }
-  .reveal{
-    transition:none;
-    opacity:1;
-    --revealY:0px;
-    --parY:0px;
-  }
-  .sectionTitle.slideIn{
-    opacity:1;
-    transform:none;
-  }
-  #darken{ transition:none; }
-}
+@media(max-width:1200px){ .gallery{grid-template-columns:repeat(3,1fr)} }
+@media(max-width:900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:500px){ .gallery{grid-template-columns:1fr} }
 </style>
 </head>
 
 <body>
-  <!-- background layers -->
-  <div id="bgA" class="bg" aria-hidden="true"></div>
-  <div id="bgB" class="bg" aria-hidden="true"></div>
-  <div class="bgOverlayA" aria-hidden="true"></div>
-  <div id="overlayB" class="bgOverlayB" aria-hidden="true"></div>
+<div class="bg"></div>
+<div id="darken"></div>
 
-  <!-- NEW: progressive darkening overlay -->
-  <div id="darken" aria-hidden="true"></div>
+<main>
+  <!-- HOME -->
+  <section id="home" class="section">
+    <div class="hero">
+      <h1>CEM ÖZTÜRK</h1>
+      <p>
+        <span class="word"><a href="#designs">Designer</a></span>
+        <span class="sep">,</span>
+        <span class="word">researcher</span>
+        <span class="sep">,</span>
+        <span class="word"><a href="#events">event coordinator</a></span>
+      </p>
+    </div>
+  </section>
 
-  <main>
-    <!-- HOME -->
-    <section id="home" class="section">
-      <div class="hero">
-        <h1>CEM ÖZTÜRK</h1>
-        <p>
-          <span class="word"><a href="#designs">Designer</a></span>
-          <span class="sep">,</span>
-          <span class="word">researcher</span>
-          <span class="sep">,</span>
-          <span class="word"><a href="#events">event coordinator</a></span>
-        </p>
+  <!-- DESIGNS -->
+  <section id="designs" class="section">
+    <div class="wrap">
+      <h2 id="designsTitle" class="sectionTitle slideIn">DESIGNS</h2>
+      <div class="gallery">
+        <img class="reveal" src="./assets/designer1.jpg">
+        <img class="reveal" src="./assets/designer2.jpg">
+        <img class="reveal" src="./assets/designer3.jpg">
+        <img class="reveal" src="./assets/designer4.jpg">
+        <img class="reveal" src="./assets/designer5.jpg">
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- DESIGNS -->
-    <section id="designs" class="section">
-      <div class="wrap">
-        <h2 id="designsTitle" class="sectionTitle slideIn">DESIGNS</h2>
-        <div class="gallery">
-          <img class="reveal" src="./assets/designer1.jpg" alt="Design 1">
-          <img class="reveal" src="./assets/designer2.jpg" alt="Design 2">
-          <img class="reveal" src="./assets/designer3.jpg" alt="Design 3">
-          <img class="reveal" src="./assets/designer4.jpg" alt="Design 4">
-          <img class="reveal" src="./assets/designer5.jpg" alt="Design 5">
-        </div>
+  <!-- EVENTS -->
+  <section id="events" class="section">
+    <div class="wrap">
+      <h2 class="sectionTitle">EVENTS</h2>
+      <div class="gallery">
+        <img class="reveal" src="./assets/events1.jpg">
+        <img class="reveal" src="./assets/events2.jpg">
+        <img class="reveal" src="./assets/events3.jpg">
       </div>
-    </section>
-
-    <!-- EVENTS -->
-    <section id="events" class="section">
-      <div class="wrap">
-        <h2 class="sectionTitle">EVENTS</h2>
-        <div class="gallery">
-          <img class="reveal" src="./assets/events1.jpg" alt="Event 1">
-          <img class="reveal" src="./assets/events2.jpg" alt="Event 2">
-          <img class="reveal" src="./assets/events3.jpg" alt="Event 3">
-        </div>
-      </div>
-    </section>
-  </main>
+    </div>
+  </section>
+</main>
 
 <script>
-/* Smooth anchor scroll */
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click', (e)=>{
-    const id = a.getAttribute('href');
-    const el = document.querySelector(id);
-    if(!el) return;
-    e.preventDefault();
-    el.scrollIntoView({behavior:'smooth', block:'start'});
+/* helpers */
+const clamp01 = x => Math.max(0,Math.min(1,x));
+const smoothstep=(a,b,x)=>{
+  const t=clamp01((x-a)/(b-a));
+  return t*t*(3-2*t);
+};
+
+/* progressive darkening */
+const darken=document.getElementById('darken');
+function updateDark(){
+  const maxScroll=document.documentElement.scrollHeight-window.innerHeight;
+  const p=clamp01(window.scrollY/maxScroll);
+  darken.style.opacity=(smoothstep(0,1,p)*0.65).toFixed(3);
+}
+
+/* reveal images */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('is-visible');
+      io.unobserve(e.target);
+    }
   });
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* vertical chaos tied to title position */
+const title=document.getElementById('designsTitle');
+const imgs=[...document.querySelectorAll('.gallery .reveal')];
+
+imgs.forEach((img,i)=>{
+  img.dataset.speed=((i%7)-3)*0.22;
+  img.dataset.base=((i*53)%240)-120;
 });
 
-/* Helpers */
-function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-function smoothstep(edge0, edge1, x){
-  const t = clamp01((x - edge0) / (edge1 - edge0));
-  return t * t * (3 - 2 * t);
-}
-
-/* Background crossfade */
-const bgB = document.getElementById('bgB');
-const overlayB = document.getElementById('overlayB');
-
-function updateBackgroundFade(){
-  const home = document.getElementById('home');
-  const designs = document.getElementById('designs');
-
-  const homeRect = home.getBoundingClientRect();
-  const designsRect = designs.getBoundingClientRect();
-
-  const homeBottom = homeRect.bottom;
-  const designsMid = designsRect.top + (designs.offsetHeight * 0.5);
-
-  const p = (0 - homeBottom) / (0 - designsMid);
-  const t = clamp01(p);
-
-  bgB.style.opacity = t.toFixed(3);
-  overlayB.style.opacity = t.toFixed(3);
-}
-
-/* NEW: progressive darkening as you scroll down the whole page */
-const darken = document.getElementById('darken');
-function updateDarkening(){
-  const scrollY = window.scrollY || window.pageYOffset || 0;
-  const doc = document.documentElement;
-  const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
-
-  // overall scroll progress 0..1
-  const progress = clamp01(scrollY / maxScroll);
-
-  // max darkness: tweak this number
-  const maxDark = 0.60; // 0.0 = none, 1.0 = black hole
-  const eased = smoothstep(0.00, 1.00, progress);
-
-  darken.style.opacity = (eased * maxDark).toFixed(3);
-}
-
-/* Reveal images on entry */
-const revealEls = document.querySelectorAll('.reveal');
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      entry.target.classList.add('is-visible');
-      io.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.15 });
-revealEls.forEach(el => io.observe(el));
-
-/*
-  Vertical-only aesthetic chaos
-  Sweet spot is EXACTLY when the DESIGNS title has fully settled (opacity 1, translateX 0).
-*/
-function initVerticalChaos(){
-  const imgs = Array.from(document.querySelectorAll('.gallery .reveal'));
-  const title = document.getElementById('designsTitle');
-
-  // Stronger movement settings
-  const speedScale = 0.22;
-  const baseRange  = 120;
-
-  imgs.forEach((img, i) => {
-    const speedY = (((i % 7) - 3) * speedScale);
-    const baseY  = ((i * 53) % (baseRange*2)) - baseRange;
-    img.dataset.speedY = String(speedY);
-    img.dataset.baseY  = String(baseY);
-  });
-
-  function update(){
-    const vh = window.innerHeight || 800;
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-
-    // title progress drives alignment
-    let titleProgress = 0;
-    if (title){
-      const tr = title.getBoundingClientRect();
-      const start = vh * 0.85;
-      const end   = vh * 0.55;
-
-      titleProgress = smoothstep(start, end, tr.top);
-
-      const x = (-42 * (1 - titleProgress));
-      title.style.opacity = titleProgress.toFixed(3);
-      title.style.transform = `translateX(${x.toFixed(2)}px)`;
-    }
-
-    const alignFactor = titleProgress;
-    const chaosFactor = 1 - alignFactor;
-
-    imgs.forEach((img) => {
-      if (!img.classList.contains('is-visible')) return;
-
-      const speedY = parseFloat(img.dataset.speedY || "0");
-      const baseY  = parseFloat(img.dataset.baseY  || "0");
-
-      const y = (baseY + scrollY * speedY) * chaosFactor;
-      img.style.setProperty('--parY', `${y.toFixed(2)}px`);
-    });
+function updateChaos(){
+  const vh=innerHeight;
+  let t=0;
+  if(title){
+    const r=title.getBoundingClientRect();
+    t=smoothstep(vh*.85,vh*.55,r.top);
+    title.style.opacity=t;
+    title.style.transform=`translateX(${(-42*(1-t)).toFixed(1)}px)`;
   }
-
-  let ticking = false;
-  function onScroll(){
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      update();
-      ticking = false;
-    });
-  }
-
-  window.addEventListener('scroll', onScroll, {passive:true});
-  window.addEventListener('resize', onScroll);
-  update();
+  imgs.forEach(img=>{
+    if(!img.classList.contains('is-visible')) return;
+    const y=(+img.dataset.base+scrollY*+img.dataset.speed)*(1-t);
+    img.style.setProperty('--parY',`${y}px`);
+  });
 }
 
-/* single scroll handler */
-function onScrollAll(){
-  updateBackgroundFade();
-  updateDarkening();
-}
-window.addEventListener('scroll', onScrollAll, {passive:true});
-window.addEventListener('resize', () => { updateBackgroundFade(); updateDarkening(); });
+/* smooth anchor scroll */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.onclick=e=>{
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))
+      .scrollIntoView({behavior:'smooth'});
+  };
+});
 
-updateBackgroundFade();
-updateDarkening();
-initVerticalChaos();
+/* bind */
+addEventListener('scroll',()=>{
+  updateDark();
+  updateChaos();
+},{passive:true});
+addEventListener('resize',()=>{updateDark();updateChaos();});
+
+updateDark();
+updateChaos();
 </script>
 </body>
 </html>
