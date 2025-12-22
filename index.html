@@ -152,22 +152,8 @@ main{ position:relative; }
   <section id="designs" class="section">
     <div class="wrap">
       <h2 id="designsTitle" class="sectionTitle slideIn">DESIGNS</h2>
-
       <div class="spacer"></div>
-
-      <div class="gallery">
-        <img class="reveal" src="./assets/designer1.jpg">
-        <img class="reveal" src="./assets/designer2.jpg">
-        <img class="reveal" src="./assets/designer3.jpg">
-        <img class="reveal" src="./assets/designer4.jpg">
-        <img class="reveal" src="./assets/designer5.jpg">
-        <img class="reveal" src="./assets/designer6.jpg">
-        <img class="reveal" src="./assets/designer7.jpg">
-        <img class="reveal" src="./assets/designer8.jpg">
-        <img class="reveal" src="./assets/designer9.jpg">
-        <img class="reveal" src="./assets/designer10.jpg">
-      </div>
-
+      <div id="designGallery" class="gallery"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -176,22 +162,8 @@ main{ position:relative; }
   <section id="events" class="section">
     <div class="wrap">
       <h2 class="sectionTitle">EVENTS</h2>
-
       <div class="spacer"></div>
-
-      <div class="gallery">
-        <img class="reveal" src="./assets/events1.jpg">
-        <img class="reveal" src="./assets/events2.jpg">
-        <img class="reveal" src="./assets/events3.jpg">
-        <img class="reveal" src="./assets/events4.jpg">
-        <img class="reveal" src="./assets/events5.jpg">
-        <img class="reveal" src="./assets/events6.jpg">
-        <img class="reveal" src="./assets/events7.jpg">
-        <img class="reveal" src="./assets/events8.jpg">
-        <img class="reveal" src="./assets/events9.jpg">
-        <img class="reveal" src="./assets/events10.jpg">
-      </div>
-
+      <div id="eventsGallery" class="gallery"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -213,6 +185,22 @@ function updateDark(){
   darken.style.opacity=(smoothstep(0,1,p)*0.65).toFixed(3);
 }
 
+/* auto-fill galleries */
+function fillGallery(containerId, prefix, count){
+  const wrap=document.getElementById(containerId);
+  for(let i=1;i<=count;i++){
+    const img=document.createElement("img");
+    img.className="reveal";
+    img.loading="lazy";
+    img.src=`./assets/${prefix}${i}.jpg`;
+    img.onerror=()=>img.remove(); // silently ignore missing files
+    wrap.appendChild(img);
+  }
+}
+
+fillGallery("designGallery","designer",30);
+fillGallery("eventsGallery","events",30);
+
 /* reveal images */
 const io=new IntersectionObserver(entries=>{
   entries.forEach(e=>{
@@ -222,6 +210,59 @@ const io=new IntersectionObserver(entries=>{
     }
   });
 },{threshold:.15});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-/* vertic*
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+});
+
+/* vertical chaos tied to title position */
+const title=document.getElementById('designsTitle');
+let imgs=[];
+
+function refreshImages(){
+  imgs=[...document.querySelectorAll('.gallery .reveal')];
+  imgs.forEach((img,i)=>{
+    img.dataset.speed=((i%7)-3)*0.22;
+    img.dataset.base=((i*53)%240)-120;
+  });
+}
+
+refreshImages();
+
+function updateChaos(){
+  const vh=innerHeight;
+  let t=0;
+  if(title){
+    const r=title.getBoundingClientRect();
+    t=smoothstep(vh*.85,vh*.55,r.top);
+    title.style.opacity=t;
+    title.style.transform=`translateX(${(-42*(1-t)).toFixed(1)}px)`;
+  }
+  imgs.forEach(img=>{
+    if(!img.classList.contains('is-visible')) return;
+    const y=(+img.dataset.base+scrollY*+img.dataset.speed)*(1-t);
+    img.style.setProperty('--parY',`${y}px`);
+  });
+}
+
+/* smooth anchor scroll */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.onclick=e=>{
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))
+      .scrollIntoView({behavior:'smooth'});
+  };
+});
+
+/* bind */
+addEventListener('scroll',()=>{
+  updateDark();
+  updateChaos();
+},{passive:true});
+addEventListener('resize',()=>{updateDark();updateChaos();});
+
+updateDark();
+updateChaos();
+</script>
+</body>
+</html>
