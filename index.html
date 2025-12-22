@@ -292,40 +292,47 @@ const io = new IntersectionObserver((entries)=>{
 }, { threshold: 0.15 });
 revealEls.forEach(el => io.observe(el));
 
-/* Vertical-only aesthetic chaos that settles at a sweet spot */
+/*
+  Vertical-only aesthetic chaos
+  Sweet spot is EXACTLY when the DESIGNS title has fully settled (opacity 1, translateX 0).
+*/
 function initVerticalChaos(){
   const imgs = Array.from(document.querySelectorAll('.gallery .reveal'));
+  const title = document.getElementById('designsTitle');
 
   imgs.forEach((img, i) => {
-    // vertical speed variation
     const speedY = (((i % 7) - 3) * 0.07);   // -0.21..+0.21
-    // base vertical offsets for "chaos"
     const baseY = ((i * 53) % 46) - 23;      // -23..+23
-
     img.dataset.speedY = String(speedY);
     img.dataset.baseY  = String(baseY);
   });
 
   function update(){
     const vh = window.innerHeight || 800;
-    const sweetCenter = vh * 0.52;
-    const sweetRadius = vh * 0.28;
-
     const scrollY = window.scrollY || window.pageYOffset || 0;
+
+    // === DESIGNS title slide-in AND alignment driver (same progress) ===
+    let titleProgress = 0;
+    if (title){
+      const tr = title.getBoundingClientRect();
+
+      // Start/end chosen so it "feels" right: title begins entering near lower viewport, finishes around mid.
+      const start = vh * 0.85;  // hidden below
+      const end   = vh * 0.55;  // settled (translateX 0)
+
+      titleProgress = smoothstep(start, end, tr.top); // 0..1
+
+      const x = (-42 * (1 - titleProgress)); // -42px -> 0px
+      title.style.opacity = titleProgress.toFixed(3);
+      title.style.transform = `translateX(${x.toFixed(2)}px)`;
+    }
+
+    // Sweet spot alignment is exactly when titleProgress === 1
+    const alignFactor = titleProgress;      // 0 = chaos, 1 = aligned
+    const chaosFactor = 1 - alignFactor;    // inverse
 
     imgs.forEach((img) => {
       if (!img.classList.contains('is-visible')) return;
-
-      const section = img.closest('.section');
-      if (!section) return;
-
-      const r = section.getBoundingClientRect();
-      const sectionCenter = r.top + r.height * 0.5;
-      const dist = Math.abs(sectionCenter - sweetCenter);
-
-      // 1 = aligned, 0 = chaos
-      const alignFactor = 1 - smoothstep(0, sweetRadius, dist);
-      const chaosFactor = 1 - alignFactor;
 
       const speedY = parseFloat(img.dataset.speedY || "0");
       const baseY  = parseFloat(img.dataset.baseY  || "0");
@@ -334,20 +341,6 @@ function initVerticalChaos(){
 
       img.style.setProperty('--parY', `${y.toFixed(2)}px`);
     });
-
-    // DESIGNS title slide-in from left as you scroll into it
-    const title = document.getElementById('designsTitle');
-    if (title){
-      const tr = title.getBoundingClientRect();
-      const start = vh * 0.85;  // below this, hidden
-      const end   = vh * 0.55;  // by here, fully in
-
-      const t = smoothstep(start, end, tr.top); // 0..1
-      const x = (-42 * (1 - t));                // -42px -> 0px
-
-      title.style.opacity = t.toFixed(3);
-      title.style.transform = `translateX(${x.toFixed(2)}px)`;
-    }
   }
 
   let ticking = false;
