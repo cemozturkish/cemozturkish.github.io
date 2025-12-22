@@ -31,6 +31,28 @@ body::before{
   pointer-events:none;
 }
 
+/* next background layer for crossfade */
+#bg-next{
+  position:fixed;
+  inset:0;
+  background-image:url("./assets/events-bg.jpg");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  opacity:0;
+  transition:opacity 600ms ease;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* optional overlay tint on next bg to match your inner pages */
+#bg-next::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.25);
+}
+
 /* HERO */
 .hero{
   position:absolute;
@@ -46,6 +68,9 @@ body::before{
   line-height:1;
   color:rgba(255,255,255,0.82);
   font-weight:400;
+
+  transform-origin:left top;
+  transition:transform 550ms ease, opacity 550ms ease;
 }
 
 /* title link */
@@ -55,6 +80,26 @@ body::before{
 }
 .hero h1 a:hover{
   color:rgba(255,255,255,0.95);
+}
+
+/* DESIGNS "morph" label (overlay) */
+.morph-label{
+  position:absolute;
+  left:40px;
+  top:34px;
+  z-index:3;
+  margin:0;
+  font-size:42px;
+  letter-spacing:.04em;
+  line-height:1;
+  color:rgba(255,255,255,0.82);
+  font-weight:400;
+
+  opacity:0;
+  transform:translateY(6px) scale(0.98);
+  transform-origin:left top;
+  transition:opacity 420ms ease, transform 420ms ease;
+  pointer-events:none;
 }
 
 /* INTERACTIVE LINE (locked vertically) */
@@ -71,6 +116,8 @@ body::before{
   align-items:center;
   line-height:30px;
   overflow:visible;
+
+  transition:opacity 350ms ease;
 }
 
 /* each word */
@@ -117,10 +164,31 @@ body::before{
   outline-offset:4px;
 }
 
+/* EXIT STATE */
+body.is-exiting .hero h1{
+  transform:scale(0.78);
+  opacity:0.70;
+}
+body.is-exiting .hero p{
+  opacity:0.0;
+}
+body.is-exiting #bg-next{
+  opacity:1;
+}
+body.is-exiting .morph-label{
+  opacity:1;
+  transform:translateY(0) scale(1);
+}
+
 /* MOBILE */
 @media (max-width: 700px){
   .hero{left:18px; right:18px}
   .hero h1{font-size:40px}
+  .morph-label{
+    left:18px;
+    top:34px;
+    font-size:34px;
+  }
   .hero p{
     font-size:16px;
     height:26px;
@@ -131,7 +199,10 @@ body::before{
 
 /* reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .word{
+  #bg-next,
+  .hero h1,
+  .hero p,
+  .morph-label{
     transition:none;
   }
 }
@@ -139,15 +210,43 @@ body::before{
 </head>
 
 <body>
+  <div id="bg-next" aria-hidden="true"></div>
+
+  <!-- morph label (only used during exit) -->
+  <h1 class="morph-label" id="morphLabel" aria-hidden="true">DESIGNS</h1>
+
   <div class="hero">
     <h1><a href="./index.html">CEM ÖZTÜRK</a></h1>
     <p>
-      <span class="word"><a href="./designs.html">Designer</a></span>
+      <span class="word"><a id="linkDesigner" href="./designs.html">Designer</a></span>
       <span class="sep">,</span>
       <span class="word">researcher</span>
       <span class="sep">,</span>
       <span class="word"><a href="./events.html">event coordinator</a></span>
     </p>
   </div>
+
+<script>
+(function(){
+  const designerLink = document.getElementById('linkDesigner');
+  if (!designerLink) return;
+
+  designerLink.addEventListener('click', (e) => {
+    // respect new tab / cmd-click / middle click
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+
+    e.preventDefault();
+
+    // Start exit animation
+    document.body.classList.add('is-exiting');
+
+    // Navigate after animation completes
+    // (keep this aligned with CSS timing)
+    window.setTimeout(() => {
+      window.location.href = designerLink.getAttribute('href');
+    }, 620);
+  });
+})();
+</script>
 </body>
 </html>
