@@ -84,13 +84,13 @@ main{ position:relative; }
   color:rgba(255,255,255,0.82);
 }
 
-/* DESIGNS title slide-in */
+/* DESIGNS / EXHIBITIONS title slide-in */
 .slideIn{
   opacity:0;
   transform:translateX(-42px);
 }
 
-/* gallery base (DESIGNS uses grid) */
+/* gallery base (DESIGNS + EXHIBITIONS) */
 .wrap{ max-width:1400px; }
 .spacer{ height:120px; }
 
@@ -117,7 +117,7 @@ main{ position:relative; }
   display:block;
 }
 
-/* EVENTS: masonry-like columns + different feel */
+/* EVENTS: masonry-like columns */
 #eventsGallery{
   column-count:3;
   column-gap:24px;
@@ -188,6 +188,16 @@ main{ position:relative; }
     </div>
   </section>
 
+  <!-- EXHIBITIONS -->
+  <section id="exhibitions" class="section">
+    <div class="wrap">
+      <h2 class="sectionTitle slideIn">EXHIBITIONS</h2>
+      <div class="spacer"></div>
+      <div id="exhibitionGallery" class="gallery"></div>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
   <!-- EVENTS -->
   <section id="events" class="section">
     <div class="wrap">
@@ -238,6 +248,7 @@ function fillGallery(containerId, prefix, count){
 }
 
 fillGallery("designGallery","designer",30);
+fillGallery("exhibitionGallery","exhibition",10);
 fillGallery("eventsGallery","events",30);
 
 /* reveal observer */
