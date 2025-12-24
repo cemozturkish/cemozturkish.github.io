@@ -65,7 +65,7 @@ main{ position:relative; }
   flex-wrap:wrap;
 }
 
-/* neat, consistent clickable words */
+/* neat clickable words */
 .heroLink{
   display:inline-block;
   cursor:pointer;
@@ -89,45 +89,16 @@ main{ position:relative; }
   color:rgba(255,255,255,0.82);
 }
 
-/* DESIGNS title slide-in only */
-.slideIn{
-  opacity:0;
-  transform:translateX(-42px);
-}
-
-/* gallery base (everything except EVENTS uses grid) */
+/* section wrapper + spacing */
 .wrap{ max-width:1400px; }
 .spacer{ height:120px; }
 
-.gallery{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:24px;
-}
-
-/* reveal + vertical chaos */
-.reveal{
-  opacity:0;
-  --parY:0px;
-  transform:translateY(calc(60px + var(--parY)));
-  transition:opacity .6s ease,transform .6s ease;
-}
-.reveal.is-visible{
-  opacity:1;
-  transform:translateY(var(--parY));
-}
-.gallery img{
-  width:100%;
-  height:auto;
-  display:block;
-}
-
-/* EVENTS: masonry-like columns (NOW 4) */
-#eventsGallery{
+/* ALL GALLERIES: masonry-like columns */
+.masonry{
   column-count:4;
   column-gap:24px;
 }
-#eventsGallery img{
+.masonry img{
   width:100%;
   height:auto;
   margin:0 0 24px;
@@ -135,30 +106,23 @@ main{ position:relative; }
   display:block;
 }
 
-/* EVENTS reveal style */
-#eventsGallery .reveal{
+/* ALL GALLERIES: cinematic reveal */
+.reveal{
+  opacity:0;
   transform:translateY(30px);
   filter:blur(6px);
-  transition:opacity .7s ease,transform .7s ease,filter .9s ease;
+  transition:opacity .7s ease, transform .7s ease, filter .9s ease;
 }
-#eventsGallery .reveal.is-visible{
+.reveal.is-visible{
+  opacity:1;
   transform:translateY(0);
   filter:blur(0);
 }
 
 /* responsive */
-@media(max-width:1200px){
-  .gallery{grid-template-columns:repeat(3,1fr)}
-  #eventsGallery{column-count:3;}
-}
-@media(max-width:900px){
-  .gallery{grid-template-columns:repeat(2,1fr)}
-  #eventsGallery{column-count:2;}
-}
-@media(max-width:500px){
-  .gallery{grid-template-columns:1fr}
-  #eventsGallery{column-count:1;}
-}
+@media(max-width:1200px){ .masonry{column-count:3;} }
+@media(max-width:900px){  .masonry{column-count:2;} }
+@media(max-width:500px){  .masonry{column-count:1;} }
 @media(max-width:700px){
   .section{
     min-height:110vh;
@@ -189,9 +153,9 @@ main{ position:relative; }
   <!-- DESIGNS -->
   <section id="designs" class="section">
     <div class="wrap">
-      <h2 id="designsTitle" class="sectionTitle slideIn">DESIGNS</h2>
+      <h2 class="sectionTitle">DESIGNS</h2>
       <div class="spacer"></div>
-      <div id="designGallery" class="gallery"></div>
+      <div id="designGallery" class="masonry"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -201,7 +165,7 @@ main{ position:relative; }
     <div class="wrap">
       <h2 class="sectionTitle">EXHIBITIONS</h2>
       <div class="spacer"></div>
-      <div id="exhibitionGallery" class="gallery"></div>
+      <div id="exhibitionGallery" class="masonry"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -211,7 +175,7 @@ main{ position:relative; }
     <div class="wrap">
       <h2 class="sectionTitle">PRODUCTIONS</h2>
       <div class="spacer"></div>
-      <div id="productionGallery" class="gallery"></div>
+      <div id="productionGallery" class="masonry"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -221,7 +185,7 @@ main{ position:relative; }
     <div class="wrap">
       <h2 class="sectionTitle">IDEAS</h2>
       <div class="spacer"></div>
-      <div id="ideaGallery" class="gallery"></div>
+      <div id="ideaGallery" class="masonry"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -231,7 +195,7 @@ main{ position:relative; }
     <div class="wrap">
       <h2 class="sectionTitle">PROJECTS</h2>
       <div class="spacer"></div>
-      <div id="projectGallery" class="gallery"></div>
+      <div id="projectGallery" class="masonry"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -241,7 +205,7 @@ main{ position:relative; }
     <div class="wrap">
       <h2 class="sectionTitle">EVENTS</h2>
       <div class="spacer"></div>
-      <div id="eventsGallery"></div>
+      <div id="eventsGallery" class="masonry"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -255,12 +219,23 @@ const smoothstep=(a,b,x)=>{
   return t*t*(3-2*t);
 };
 
-/* progressive darkening */
+/* darken: reach max by DESIGNS, then stop */
 const darken=document.getElementById('darken');
+const MAX_DARK = 0.65;
+const designsSection = document.getElementById('designs');
+let darkStopY = 1;
+
+function computeDarkStop(){
+  // We want max darkness roughly when you scroll to the DESIGNS section.
+  // Use the section's top offset (document position).
+  darkStopY = Math.max(1, designsSection.offsetTop);
+}
+
 function updateDark(){
-  const maxScroll=document.documentElement.scrollHeight-window.innerHeight;
-  const p=clamp01(window.scrollY/maxScroll);
-  darken.style.opacity=(smoothstep(0,1,p)*0.65).toFixed(3);
+  const y = window.scrollY;
+  const p = clamp01(y / darkStopY);      // 0 -> 1 by the time we hit DESIGNS
+  const eased = smoothstep(0, 1, p);     // nicer ramp
+  darken.style.opacity = (eased * MAX_DARK).toFixed(3);
 }
 
 /* auto-fill galleries with extension fallback */
@@ -285,7 +260,7 @@ function fillGallery(containerId, prefix, count){
   }
 }
 
-/* counts: high so future uploads auto-appear */
+/* counts high so future uploads auto-appear */
 fillGallery("designGallery","designer",60);
 fillGallery("exhibitionGallery","exhibition",60);
 fillGallery("productionGallery","production",60);
@@ -303,43 +278,19 @@ const io=new IntersectionObserver(entries=>{
   });
 },{threshold:.15});
 
+/* apply reveal + stagger per section */
 document.addEventListener("DOMContentLoaded",()=>{
-  document.querySelectorAll(".reveal").forEach((el,idx)=>{
-    if(el.closest("#eventsGallery")){
-      el.style.transitionDelay=`${(idx%12)*40}ms`;
-    }
-    io.observe(el);
+  document.querySelectorAll(".masonry").forEach(gallery=>{
+    const imgs=[...gallery.querySelectorAll(".reveal")];
+    imgs.forEach((img,i)=>{
+      img.style.transitionDelay = `${(i%12)*40}ms`;
+      io.observe(img);
+    });
   });
+
+  computeDarkStop();
+  updateDark();
 });
-
-/* vertical chaos tied to DESIGNS title only */
-const title=document.getElementById('designsTitle');
-let imgs=[];
-
-function refreshImages(){
-  imgs=[...document.querySelectorAll('#designGallery .reveal')];
-  imgs.forEach((img,i)=>{
-    img.dataset.speed=((i%7)-3)*0.22;
-    img.dataset.base=((i*53)%240)-120;
-  });
-}
-refreshImages();
-
-function updateChaos(){
-  const vh=innerHeight;
-  let t=0;
-  if(title){
-    const r=title.getBoundingClientRect();
-    t=smoothstep(vh*.85,vh*.55,r.top);
-    title.style.opacity=t;
-    title.style.transform=`translateX(${(-42*(1-t)).toFixed(1)}px)`;
-  }
-  imgs.forEach(img=>{
-    if(!img.classList.contains('is-visible')) return;
-    const y=(+img.dataset.base+scrollY*+img.dataset.speed)*(1-t);
-    img.style.setProperty('--parY',`${y}px`);
-  });
-}
 
 /* smooth anchor scroll */
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
@@ -351,14 +302,11 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 });
 
 /* bind */
-addEventListener('scroll',()=>{
+addEventListener('scroll',updateDark,{passive:true});
+addEventListener('resize',()=>{
+  computeDarkStop();
   updateDark();
-  updateChaos();
-},{passive:true});
-addEventListener('resize',()=>{updateDark();updateChaos();});
-
-updateDark();
-updateChaos();
+});
 </script>
 </body>
 </html>
