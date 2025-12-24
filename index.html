@@ -59,21 +59,26 @@ main{ position:relative; }
   font-size:18px;
   color:rgba(255,255,255,0.70);
   display:flex;
-  gap:6px;
+  gap:10px;
   height:30px;
   align-items:center;
+  flex-wrap:wrap;
 }
-.word{
+
+/* neat, consistent clickable words */
+.heroLink{
+  display:inline-block;
   cursor:pointer;
-  transition:font-size .25s ease,letter-spacing .25s ease,color .25s ease,margin .25s ease;
+  color:inherit;
+  text-decoration:none;
+  transition:transform .18s ease, letter-spacing .18s ease, color .18s ease;
+  transform-origin:left center;
 }
-.word:hover{
-  font-size:1.45em;
-  letter-spacing:.04em;
+.heroLink:hover{
+  transform:scale(1.18);
+  letter-spacing:.03em;
   color:rgba(255,255,255,0.95);
-  margin-right:6px;
 }
-.word a{ color:inherit; text-decoration:none; }
 
 /* section titles */
 .sectionTitle{
@@ -117,9 +122,9 @@ main{ position:relative; }
   display:block;
 }
 
-/* EVENTS: masonry-like columns */
+/* EVENTS: masonry-like columns (NOW 4) */
 #eventsGallery{
-  column-count:3;
+  column-count:4;
   column-gap:24px;
 }
 #eventsGallery img{
@@ -142,7 +147,10 @@ main{ position:relative; }
 }
 
 /* responsive */
-@media(max-width:1200px){ .gallery{grid-template-columns:repeat(3,1fr)} }
+@media(max-width:1200px){
+  .gallery{grid-template-columns:repeat(3,1fr)}
+  #eventsGallery{column-count:3;}
+}
 @media(max-width:900px){
   .gallery{grid-template-columns:repeat(2,1fr)}
   #eventsGallery{column-count:2;}
@@ -171,9 +179,9 @@ main{ position:relative; }
     <div class="hero">
       <h1>CEM ÖZTÜRK</h1>
       <p>
-        <span class="word"><a href="#designs">Designer</a>,</span>
-        <span class="word">researcher,</span>
-        <span class="word"><a href="#events">event coordinator</a>.</span>
+        <a class="heroLink" href="#designs">Designer</a><span>,</span>
+        <a class="heroLink" href="#ideas">researcher</a><span>,</span>
+        <a class="heroLink" href="#events">event coordinator</a><span>.</span>
       </p>
     </div>
   </section>
@@ -277,7 +285,7 @@ function fillGallery(containerId, prefix, count){
   }
 }
 
-/* counts: set higher than you currently have so future uploads "just appear" */
+/* counts: high so future uploads auto-appear */
 fillGallery("designGallery","designer",60);
 fillGallery("exhibitionGallery","exhibition",60);
 fillGallery("productionGallery","production",60);
