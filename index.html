@@ -90,7 +90,7 @@ main{ position:relative; }
   transform:translateX(-42px);
 }
 
-/* gallery */
+/* gallery base (DESIGNS uses grid) */
 .wrap{ max-width:1400px; }
 .spacer{ height:120px; }
 
@@ -117,10 +117,40 @@ main{ position:relative; }
   display:block;
 }
 
+/* EVENTS: masonry-like columns + different feel */
+#eventsGallery{
+  column-count:3;
+  column-gap:24px;
+}
+#eventsGallery img{
+  width:100%;
+  height:auto;
+  margin:0 0 24px;
+  break-inside:avoid;
+  display:block;
+}
+
+/* EVENTS reveal style */
+#eventsGallery .reveal{
+  transform:translateY(30px);
+  filter:blur(6px);
+  transition:opacity .7s ease,transform .7s ease,filter .9s ease;
+}
+#eventsGallery .reveal.is-visible{
+  transform:translateY(0);
+  filter:blur(0);
+}
+
 /* responsive */
 @media(max-width:1200px){ .gallery{grid-template-columns:repeat(3,1fr)} }
-@media(max-width:900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
-@media(max-width:500px){ .gallery{grid-template-columns:1fr} }
+@media(max-width:900px){
+  .gallery{grid-template-columns:repeat(2,1fr)}
+  #eventsGallery{column-count:2;}
+}
+@media(max-width:500px){
+  .gallery{grid-template-columns:1fr}
+  #eventsGallery{column-count:1;}
+}
 @media(max-width:700px){
   .section{
     min-height:110vh;
@@ -163,7 +193,7 @@ main{ position:relative; }
     <div class="wrap">
       <h2 class="sectionTitle">EVENTS</h2>
       <div class="spacer"></div>
-      <div id="eventsGallery" class="gallery"></div>
+      <div id="eventsGallery"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -185,15 +215,24 @@ function updateDark(){
   darken.style.opacity=(smoothstep(0,1,p)*0.65).toFixed(3);
 }
 
-/* auto-fill galleries */
+/* auto-fill galleries with extension fallback */
 function fillGallery(containerId, prefix, count){
   const wrap=document.getElementById(containerId);
+  const exts=["jpg","jpeg","png"];
+
   for(let i=1;i<=count;i++){
     const img=document.createElement("img");
     img.className="reveal";
     img.loading="lazy";
-    img.src=`./assets/${prefix}${i}.jpg`;
-    img.onerror=()=>img.remove(); // silently ignore missing files
+
+    let k=0;
+    const tryNext=()=>{
+      if(k>=exts.length){ img.remove(); return; }
+      img.src=`./assets/${prefix}${i}.${exts[k++]}`;
+    };
+    img.onerror=tryNext;
+
+    tryNext();
     wrap.appendChild(img);
   }
 }
@@ -201,7 +240,7 @@ function fillGallery(containerId, prefix, count){
 fillGallery("designGallery","designer",30);
 fillGallery("eventsGallery","events",30);
 
-/* reveal images */
+/* reveal observer */
 const io=new IntersectionObserver(entries=>{
   entries.forEach(e=>{
     if(e.isIntersecting){
@@ -212,21 +251,25 @@ const io=new IntersectionObserver(entries=>{
 },{threshold:.15});
 
 document.addEventListener("DOMContentLoaded",()=>{
-  document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+  document.querySelectorAll(".reveal").forEach((el,idx)=>{
+    if(el.closest("#eventsGallery")){
+      el.style.transitionDelay=`${(idx%12)*40}ms`;
+    }
+    io.observe(el);
+  });
 });
 
-/* vertical chaos tied to title position */
+/* vertical chaos tied to DESIGNS title */
 const title=document.getElementById('designsTitle');
 let imgs=[];
 
 function refreshImages(){
-  imgs=[...document.querySelectorAll('.gallery .reveal')];
+  imgs=[...document.querySelectorAll('#designGallery .reveal')];
   imgs.forEach((img,i)=>{
     img.dataset.speed=((i%7)-3)*0.22;
     img.dataset.base=((i*53)%240)-120;
   });
 }
-
 refreshImages();
 
 function updateChaos(){
