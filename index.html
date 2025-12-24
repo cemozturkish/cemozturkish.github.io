@@ -89,7 +89,7 @@ main{ position:relative; }
   color:rgba(255,255,255,0.82);
 }
 
-/* dynamic title motion (we drive transform in JS) */
+/* dynamic title motion (driven in JS) */
 .dynamicTitle{
   will-change: transform;
   transform: translateX(-120vw);
@@ -294,47 +294,46 @@ function setupReveals(){
 }
 
 /*
-  Title choreography:
-  - Off left until section hits bottom quarter (top <= 0.75vh)
-  - Center through middle half (0.75vh to 0.25vh)
-  - Exit right during last quarter (0.25vh to 0)
+  Title choreography anchored to GALLERY position:
+  - Gallery top is below bottom-quarter line: title off-screen left
+  - When gallery top moves into bottom quarter -> slides in to center
+  - Middle half: title stays centered
+  - Top quarter: title slides out to the right
 */
-const titles = [...document.querySelectorAll(".dynamicTitle")].map(t => ({
-  el: t,
-  section: t.closest(".section")
-}));
+const titleTracks = [...document.querySelectorAll(".dynamicTitle")].map(t => {
+  const section = t.closest(".section");
+  const gallery = section ? section.querySelector(".masonry") : null;
+  return { el: t, gallery };
+});
 
 function updateTitles(){
   const vh = window.innerHeight;
-  const enterY = vh * 0.75;  // bottom 1/4 line
-  const exitY  = vh * 0.25;  // top 1/4 line
+  const enterY = vh * 0.75; // bottom 1/4 line
+  const exitY  = vh * 0.25; // top 1/4 line
 
-  titles.forEach(({el, section})=>{
-    const r = section.getBoundingClientRect();
-    const top = r.top;
+  titleTracks.forEach(({el, gallery})=>{
+    if(!gallery) return;
 
-    let x; // translateX in vw
-    if(top > enterY){
-      // before "bottom quarter": keep off-screen left
+    const gTop = gallery.getBoundingClientRect().top;
+
+    let x = -120; // vw
+
+    if(gTop >= vh){
+      // gallery not on screen yet
       x = -120;
-    } else if(top <= enterY && top > exitY){
-      // middle half: stay centered
-      // also handle the entry lerp from off-left to center
-      const t = clamp01((enterY - top) / (enterY - vh)); // vh -> enterY
-      // When top is near vh (just arriving), t ~ 0. When it reaches enterY, t ~ 1.
-      // But section can jump past vh quickly, so we use a safer piecewise below.
+    } else if(gTop < vh && gTop > enterY){
+      // gallery entering: interpolate -120 -> 0
+      const t = clamp01((vh - gTop) / (vh - enterY));
+      x = -120 * (1 - smoothstep(0,1,t));
+    } else if(gTop <= enterY && gTop >= exitY){
+      // middle half: centered
       x = 0;
-      // If section top is between vh and enterY, interpolate in
-      if(top > vh){
-        const tt = clamp01((vh - top) / (vh - enterY));
-        x = (-120 * (1 - smoothstep(0,1,tt)));
-      }
-    } else if(top <= exitY && top > 0){
-      // last quarter: move to the right and leave
-      const tt = clamp01((exitY - top) / exitY);
-      x = 120 * smoothstep(0,1,tt);
-    } else if(top <= 0){
-      // past top: keep off-screen right
+    } else if(gTop < exitY && gTop > 0){
+      // exiting: interpolate 0 -> 120
+      const t = clamp01((exitY - gTop) / exitY);
+      x = 120 * smoothstep(0,1,t);
+    } else if(gTop <= 0){
+      // gallery has passed top
       x = 120;
     }
 
