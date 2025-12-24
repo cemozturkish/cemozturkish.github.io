@@ -84,13 +84,13 @@ main{ position:relative; }
   color:rgba(255,255,255,0.82);
 }
 
-/* DESIGNS / EXHIBITIONS title slide-in */
+/* DESIGNS title slide-in only */
 .slideIn{
   opacity:0;
   transform:translateX(-42px);
 }
 
-/* gallery base (DESIGNS + EXHIBITIONS) */
+/* gallery base (everything except EVENTS uses grid) */
 .wrap{ max-width:1400px; }
 .spacer{ height:120px; }
 
@@ -191,9 +191,39 @@ main{ position:relative; }
   <!-- EXHIBITIONS -->
   <section id="exhibitions" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle slideIn">EXHIBITIONS</h2>
+      <h2 class="sectionTitle">EXHIBITIONS</h2>
       <div class="spacer"></div>
       <div id="exhibitionGallery" class="gallery"></div>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- PRODUCTIONS -->
+  <section id="productions" class="section">
+    <div class="wrap">
+      <h2 class="sectionTitle">PRODUCTIONS</h2>
+      <div class="spacer"></div>
+      <div id="productionGallery" class="gallery"></div>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- IDEAS -->
+  <section id="ideas" class="section">
+    <div class="wrap">
+      <h2 class="sectionTitle">IDEAS</h2>
+      <div class="spacer"></div>
+      <div id="ideaGallery" class="gallery"></div>
+      <div class="spacer"></div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="section">
+    <div class="wrap">
+      <h2 class="sectionTitle">PROJECTS</h2>
+      <div class="spacer"></div>
+      <div id="projectGallery" class="gallery"></div>
       <div class="spacer"></div>
     </div>
   </section>
@@ -247,9 +277,13 @@ function fillGallery(containerId, prefix, count){
   }
 }
 
-fillGallery("designGallery","designer",30);
-fillGallery("exhibitionGallery","exhibition",10);
-fillGallery("eventsGallery","events",30);
+/* counts: set higher than you currently have so future uploads "just appear" */
+fillGallery("designGallery","designer",60);
+fillGallery("exhibitionGallery","exhibition",60);
+fillGallery("productionGallery","production",60);
+fillGallery("ideaGallery","idea",60);
+fillGallery("projectGallery","project",60);
+fillGallery("eventsGallery","events",60);
 
 /* reveal observer */
 const io=new IntersectionObserver(entries=>{
@@ -270,7 +304,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-/* vertical chaos tied to DESIGNS title */
+/* vertical chaos tied to DESIGNS title only */
 const title=document.getElementById('designsTitle');
 let imgs=[];
 
