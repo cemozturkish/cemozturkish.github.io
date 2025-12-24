@@ -89,6 +89,12 @@ main{ position:relative; }
   color:rgba(255,255,255,0.82);
 }
 
+/* dynamic title motion (we drive transform in JS) */
+.dynamicTitle{
+  will-change: transform;
+  transform: translateX(-120vw);
+}
+
 /* section wrapper + spacing */
 .wrap{ max-width:1400px; }
 .spacer{ height:120px; }
@@ -153,7 +159,7 @@ main{ position:relative; }
   <!-- DESIGNS -->
   <section id="designs" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle">DESIGNS</h2>
+      <h2 class="sectionTitle dynamicTitle">DESIGNS</h2>
       <div class="spacer"></div>
       <div id="designGallery" class="masonry"></div>
       <div class="spacer"></div>
@@ -163,7 +169,7 @@ main{ position:relative; }
   <!-- EXHIBITIONS -->
   <section id="exhibitions" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle">EXHIBITIONS</h2>
+      <h2 class="sectionTitle dynamicTitle">EXHIBITIONS</h2>
       <div class="spacer"></div>
       <div id="exhibitionGallery" class="masonry"></div>
       <div class="spacer"></div>
@@ -173,7 +179,7 @@ main{ position:relative; }
   <!-- PRODUCTIONS -->
   <section id="productions" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle">PRODUCTIONS</h2>
+      <h2 class="sectionTitle dynamicTitle">PRODUCTIONS</h2>
       <div class="spacer"></div>
       <div id="productionGallery" class="masonry"></div>
       <div class="spacer"></div>
@@ -183,7 +189,7 @@ main{ position:relative; }
   <!-- IDEAS -->
   <section id="ideas" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle">IDEAS</h2>
+      <h2 class="sectionTitle dynamicTitle">IDEAS</h2>
       <div class="spacer"></div>
       <div id="ideaGallery" class="masonry"></div>
       <div class="spacer"></div>
@@ -193,7 +199,7 @@ main{ position:relative; }
   <!-- PROJECTS -->
   <section id="projects" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle">PROJECTS</h2>
+      <h2 class="sectionTitle dynamicTitle">PROJECTS</h2>
       <div class="spacer"></div>
       <div id="projectGallery" class="masonry"></div>
       <div class="spacer"></div>
@@ -203,7 +209,7 @@ main{ position:relative; }
   <!-- EVENTS -->
   <section id="events" class="section">
     <div class="wrap">
-      <h2 class="sectionTitle">EVENTS</h2>
+      <h2 class="sectionTitle dynamicTitle">EVENTS</h2>
       <div class="spacer"></div>
       <div id="eventsGallery" class="masonry"></div>
       <div class="spacer"></div>
@@ -226,15 +232,13 @@ const designsSection = document.getElementById('designs');
 let darkStopY = 1;
 
 function computeDarkStop(){
-  // We want max darkness roughly when you scroll to the DESIGNS section.
-  // Use the section's top offset (document position).
   darkStopY = Math.max(1, designsSection.offsetTop);
 }
 
 function updateDark(){
   const y = window.scrollY;
-  const p = clamp01(y / darkStopY);      // 0 -> 1 by the time we hit DESIGNS
-  const eased = smoothstep(0, 1, p);     // nicer ramp
+  const p = clamp01(y / darkStopY);
+  const eased = smoothstep(0, 1, p);
   darken.style.opacity = (eased * MAX_DARK).toFixed(3);
 }
 
@@ -278,8 +282,8 @@ const io=new IntersectionObserver(entries=>{
   });
 },{threshold:.15});
 
-/* apply reveal + stagger per section */
-document.addEventListener("DOMContentLoaded",()=>{
+/* stagger per gallery */
+function setupReveals(){
   document.querySelectorAll(".masonry").forEach(gallery=>{
     const imgs=[...gallery.querySelectorAll(".reveal")];
     imgs.forEach((img,i)=>{
@@ -287,10 +291,56 @@ document.addEventListener("DOMContentLoaded",()=>{
       io.observe(img);
     });
   });
+}
 
-  computeDarkStop();
-  updateDark();
-});
+/*
+  Title choreography:
+  - Off left until section hits bottom quarter (top <= 0.75vh)
+  - Center through middle half (0.75vh to 0.25vh)
+  - Exit right during last quarter (0.25vh to 0)
+*/
+const titles = [...document.querySelectorAll(".dynamicTitle")].map(t => ({
+  el: t,
+  section: t.closest(".section")
+}));
+
+function updateTitles(){
+  const vh = window.innerHeight;
+  const enterY = vh * 0.75;  // bottom 1/4 line
+  const exitY  = vh * 0.25;  // top 1/4 line
+
+  titles.forEach(({el, section})=>{
+    const r = section.getBoundingClientRect();
+    const top = r.top;
+
+    let x; // translateX in vw
+    if(top > enterY){
+      // before "bottom quarter": keep off-screen left
+      x = -120;
+    } else if(top <= enterY && top > exitY){
+      // middle half: stay centered
+      // also handle the entry lerp from off-left to center
+      const t = clamp01((enterY - top) / (enterY - vh)); // vh -> enterY
+      // When top is near vh (just arriving), t ~ 0. When it reaches enterY, t ~ 1.
+      // But section can jump past vh quickly, so we use a safer piecewise below.
+      x = 0;
+      // If section top is between vh and enterY, interpolate in
+      if(top > vh){
+        const tt = clamp01((vh - top) / (vh - enterY));
+        x = (-120 * (1 - smoothstep(0,1,tt)));
+      }
+    } else if(top <= exitY && top > 0){
+      // last quarter: move to the right and leave
+      const tt = clamp01((exitY - top) / exitY);
+      x = 120 * smoothstep(0,1,tt);
+    } else if(top <= 0){
+      // past top: keep off-screen right
+      x = 120;
+    }
+
+    el.style.transform = `translateX(${x}vw)`;
+  });
+}
 
 /* smooth anchor scroll */
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
@@ -302,10 +352,23 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 });
 
 /* bind */
-addEventListener('scroll',updateDark,{passive:true});
+function onScroll(){
+  updateDark();
+  updateTitles();
+}
+
+addEventListener('scroll',onScroll,{passive:true});
 addEventListener('resize',()=>{
   computeDarkStop();
   updateDark();
+  updateTitles();
+});
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setupReveals();
+  computeDarkStop();
+  updateDark();
+  updateTitles();
 });
 </script>
 </body>
