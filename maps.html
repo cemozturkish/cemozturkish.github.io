@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Designs | Cem Öztürk</title>
+<title>Maps | Cem Öztürk</title>
 
 <style>
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -25,7 +25,6 @@ body{
   padding:40px clamp(24px, 4vw, 60px);
 }
 
-/* back link */
 .back{
   display:inline-block;
   font-size:14px;
@@ -45,7 +44,6 @@ h1{
   margin-bottom:40px;
 }
 
-/* masonry gallery */
 .masonry{
   column-count:4;
   column-gap:20px;
@@ -71,6 +69,12 @@ h1{
 @media(max-width:900px){  .masonry{column-count:2;} }
 @media(max-width:500px){  .masonry{column-count:1;} }
 
+.empty{
+  color:rgba(255,255,255,0.4);
+  font-size:16px;
+  letter-spacing:.04em;
+}
+
 @media(prefers-reduced-motion:reduce){
   .masonry img{
     transition:none;
@@ -85,24 +89,35 @@ h1{
 <body>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
-  <h1>DESIGNS BY CEM</h1>
+  <h1>MAPS BY CEM</h1>
   <div id="gallery" class="masonry"></div>
+  <p id="empty" class="empty" style="display:none;">Coming soon.</p>
 </div>
 
 <script>
 (function(){
   const gallery = document.getElementById("gallery");
+  const emptyMsg = document.getElementById("empty");
   const exts = ["jpg","jpeg","png"];
+  let loaded = 0;
+  let total = 0;
 
   for(let i = 1; i <= 60; i++){
+    total++;
     const img = document.createElement("img");
     img.loading = "lazy";
     let k = 0;
     const tryNext = () => {
-      if(k >= exts.length){ img.remove(); return; }
-      img.src = `./assets/designer${i}.${exts[k++]}`;
+      if(k >= exts.length){
+        img.remove();
+        total--;
+        if(total === 0) emptyMsg.style.display = "";
+        return;
+      }
+      img.src = `./assets/map${i}.${exts[k++]}`;
     };
     img.onerror = tryNext;
+    img.onload = () => { loaded++; };
     tryNext();
     gallery.appendChild(img);
   }
