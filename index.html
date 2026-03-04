@@ -6,369 +6,131 @@
 <title>Cem Öztürk</title>
 
 <style>
-html,body{height:100%;margin:0}
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  overflow:hidden;
+}
+
 body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont,
                "Segoe UI", Helvetica, Arial, sans-serif;
-  overflow-x:hidden;
   color:#fff;
   background:#111;
 }
 
-/* fixed background */
+/* full-bleed background */
 .bg{
   position:fixed;
   inset:0;
-  z-index:-2;
+  z-index:0;
   background-image:url("./assets/background.jpg");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
 }
 
-/* progressive darkening overlay */
-#darken{
-  position:fixed;
+/* dark overlay for readability */
+.bg::after{
+  content:"";
+  position:absolute;
   inset:0;
-  pointer-events:none;
-  z-index:-1;
-  background:black;
-  opacity:0;
+  background:rgba(0,0,0,0.52);
 }
 
-/* layout */
-main{ position:relative; }
-
-.section{
-  min-height:120vh;
-  padding:120px 40px 140px;
-  box-sizing:border-box;
-}
-
-/* HERO */
-.hero h1{
-  margin:0;
-  font-size:52px;
-  letter-spacing:.04em;
-  line-height:1;
-  font-weight:400;
-  color:rgba(255,255,255,0.82);
-}
-.hero p{
-  margin:12px 0 0;
-  font-size:18px;
-  color:rgba(255,255,255,0.70);
+/* navigation container — left-aligned, vertically centered */
+.nav{
+  position:relative;
+  z-index:1;
   display:flex;
-  gap:10px;
-  height:30px;
-  align-items:center;
-  flex-wrap:wrap;
+  flex-direction:column;
+  justify-content:center;
+  height:100vh;
+  padding-left:clamp(40px, 8vw, 120px);
+  gap:4px;
 }
 
-/* neat clickable words */
-.heroLink{
-  display:inline-block;
-  cursor:pointer;
-  color:inherit;
+/* name / logo */
+.nav-name{
+  font-size:clamp(18px, 2.4vw, 28px);
+  font-weight:300;
+  letter-spacing:.12em;
+  color:rgba(255,255,255,0.45);
+  margin-bottom:32px;
+  text-transform:uppercase;
+}
+
+/* category links */
+.nav a{
+  display:block;
+  font-size:clamp(22px, 3.2vw, 38px);
+  font-weight:400;
+  color:rgba(255,255,255,0.72);
   text-decoration:none;
-  transition:transform .18s ease, letter-spacing .18s ease, color .18s ease;
+  letter-spacing:.05em;
+  padding:8px 0;
+  transition:color .22s ease, transform .22s ease, letter-spacing .22s ease;
   transform-origin:left center;
 }
-.heroLink:hover{
-  transform:scale(1.18);
-  letter-spacing:.03em;
-  color:rgba(255,255,255,0.95);
+.nav a:hover{
+  color:rgba(255,255,255,0.98);
+  transform:translateX(12px);
+  letter-spacing:.08em;
 }
 
-/* section titles */
-.sectionTitle{
-  font-size:42px;
-  letter-spacing:.04em;
-  font-weight:400;
-  margin-bottom:18px;
-  color:rgba(255,255,255,0.82);
-}
-
-/* dynamic title motion (driven in JS) */
-.dynamicTitle{
-  will-change: transform;
-  transform: translateX(-120vw);
-}
-
-/* section wrapper + spacing */
-.wrap{ max-width:1400px; }
-.spacer{ height:120px; }
-
-/* ALL GALLERIES: masonry-like columns */
-.masonry{
-  column-count:4;
-  column-gap:24px;
-}
-.masonry img{
-  width:100%;
-  height:auto;
-  margin:0 0 24px;
-  break-inside:avoid;
-  display:block;
-}
-
-/* ALL GALLERIES: cinematic reveal */
-.reveal{
+/* entrance animation */
+.nav a,
+.nav-name{
   opacity:0;
-  transform:translateY(30px);
-  filter:blur(6px);
-  transition:opacity .7s ease, transform .7s ease, filter .9s ease;
+  transform:translateY(18px);
+  animation:fadeUp .6s ease forwards;
 }
-.reveal.is-visible{
-  opacity:1;
-  transform:translateY(0);
-  filter:blur(0);
+.nav-name{ animation-delay:.1s; }
+.nav a:nth-child(2){ animation-delay:.18s; }
+.nav a:nth-child(3){ animation-delay:.26s; }
+.nav a:nth-child(4){ animation-delay:.34s; }
+.nav a:nth-child(5){ animation-delay:.42s; }
+.nav a:nth-child(6){ animation-delay:.50s; }
+.nav a:nth-child(7){ animation-delay:.58s; }
+.nav a:nth-child(8){ animation-delay:.66s; }
+.nav a:nth-child(9){ animation-delay:.74s; }
+.nav a:nth-child(10){ animation-delay:.82s; }
+
+@keyframes fadeUp{
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
-/* responsive */
-@media(max-width:1200px){ .masonry{column-count:3;} }
-@media(max-width:900px){  .masonry{column-count:2;} }
-@media(max-width:500px){  .masonry{column-count:1;} }
-@media(max-width:700px){
-  .section{
-    min-height:110vh;
-    padding:80px 18px 100px;
+/* mobile tweaks */
+@media(max-width:600px){
+  .nav{
+    padding-left:28px;
+    gap:2px;
   }
-  .spacer{ height:80px; }
+  .nav a{
+    padding:6px 0;
+  }
 }
 </style>
 </head>
 
 <body>
 <div class="bg"></div>
-<div id="darken"></div>
 
-<main>
-  <!-- HOME -->
-  <section id="home" class="section">
-    <div class="hero">
-      <h1>CEM ÖZTÜRK</h1>
-      <p>
-        <a class="heroLink" href="#designs">Designer</a><span>,</span>
-        <a class="heroLink" href="#ideas">researcher</a><span>,</span>
-        <a class="heroLink" href="#events">event coordinator</a><span>.</span>
-      </p>
-    </div>
-  </section>
+<nav class="nav">
+  <div class="nav-name">Cem Öztürk</div>
+  <a href="./about.html">ABOUT CEM</a>
+  <a href="./designs.html">DESIGNS BY CEM</a>
+  <a href="./exhibitions.html">EXHIBITIONS BY CEM</a>
+  <a href="./productions.html">PRODUCTIONS BY CEM</a>
+  <a href="./ideas.html">IDEAS BY CEM</a>
+  <a href="./projects.html">PROJECTS BY CEM</a>
+  <a href="./events.html">EVENTS BY CEM</a>
+  <a href="./maps.html">MAPS BY CEM</a>
+</nav>
 
-  <!-- DESIGNS -->
-  <section id="designs" class="section">
-    <div class="wrap">
-      <h2 class="sectionTitle dynamicTitle">DESIGNS</h2>
-      <div class="spacer"></div>
-      <div id="designGallery" class="masonry"></div>
-      <div class="spacer"></div>
-    </div>
-  </section>
-
-  <!-- EXHIBITIONS -->
-  <section id="exhibitions" class="section">
-    <div class="wrap">
-      <h2 class="sectionTitle dynamicTitle">EXHIBITIONS</h2>
-      <div class="spacer"></div>
-      <div id="exhibitionGallery" class="masonry"></div>
-      <div class="spacer"></div>
-    </div>
-  </section>
-
-  <!-- PRODUCTIONS -->
-  <section id="productions" class="section">
-    <div class="wrap">
-      <h2 class="sectionTitle dynamicTitle">PRODUCTIONS</h2>
-      <div class="spacer"></div>
-      <div id="productionGallery" class="masonry"></div>
-      <div class="spacer"></div>
-    </div>
-  </section>
-
-  <!-- IDEAS -->
-  <section id="ideas" class="section">
-    <div class="wrap">
-      <h2 class="sectionTitle dynamicTitle">IDEAS</h2>
-      <div class="spacer"></div>
-      <div id="ideaGallery" class="masonry"></div>
-      <div class="spacer"></div>
-    </div>
-  </section>
-
-  <!-- PROJECTS -->
-  <section id="projects" class="section">
-    <div class="wrap">
-      <h2 class="sectionTitle dynamicTitle">PROJECTS</h2>
-      <div class="spacer"></div>
-      <div id="projectGallery" class="masonry"></div>
-      <div class="spacer"></div>
-    </div>
-  </section>
-
-  <!-- EVENTS -->
-  <section id="events" class="section">
-    <div class="wrap">
-      <h2 class="sectionTitle dynamicTitle">EVENTS</h2>
-      <div class="spacer"></div>
-      <div id="eventsGallery" class="masonry"></div>
-      <div class="spacer"></div>
-    </div>
-  </section>
-</main>
-
-<script>
-/* helpers */
-const clamp01=x=>Math.max(0,Math.min(1,x));
-const smoothstep=(a,b,x)=>{
-  const t=clamp01((x-a)/(b-a));
-  return t*t*(3-2*t);
-};
-
-/* darken: reach max by DESIGNS, then stop */
-const darken=document.getElementById('darken');
-const MAX_DARK = 0.65;
-const designsSection = document.getElementById('designs');
-let darkStopY = 1;
-
-function computeDarkStop(){
-  darkStopY = Math.max(1, designsSection.offsetTop);
-}
-
-function updateDark(){
-  const y = window.scrollY;
-  const p = clamp01(y / darkStopY);
-  const eased = smoothstep(0, 1, p);
-  darken.style.opacity = (eased * MAX_DARK).toFixed(3);
-}
-
-/* auto-fill galleries with extension fallback */
-function fillGallery(containerId, prefix, count){
-  const wrap=document.getElementById(containerId);
-  const exts=["jpg","jpeg","png"];
-
-  for(let i=1;i<=count;i++){
-    const img=document.createElement("img");
-    img.className="reveal";
-    img.loading="lazy";
-
-    let k=0;
-    const tryNext=()=>{
-      if(k>=exts.length){ img.remove(); return; }
-      img.src=`./assets/${prefix}${i}.${exts[k++]}`;
-    };
-    img.onerror=tryNext;
-
-    tryNext();
-    wrap.appendChild(img);
-  }
-}
-
-/* counts high so future uploads auto-appear */
-fillGallery("designGallery","designer",60);
-fillGallery("exhibitionGallery","exhibition",60);
-fillGallery("productionGallery","production",60);
-fillGallery("ideaGallery","idea",60);
-fillGallery("projectGallery","project",60);
-fillGallery("eventsGallery","events",60);
-
-/* reveal observer */
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      e.target.classList.add('is-visible');
-      io.unobserve(e.target);
-    }
-  });
-},{threshold:.15});
-
-/* stagger per gallery */
-function setupReveals(){
-  document.querySelectorAll(".masonry").forEach(gallery=>{
-    const imgs=[...gallery.querySelectorAll(".reveal")];
-    imgs.forEach((img,i)=>{
-      img.style.transitionDelay = `${(i%12)*40}ms`;
-      io.observe(img);
-    });
-  });
-}
-
-/*
-  Title choreography anchored to GALLERY position:
-  - Gallery top is below bottom-quarter line: title off-screen left
-  - When gallery top moves into bottom quarter -> slides in to center
-  - Middle half: title stays centered
-  - Top quarter: title slides out to the right
-*/
-const titleTracks = [...document.querySelectorAll(".dynamicTitle")].map(t => {
-  const section = t.closest(".section");
-  const gallery = section ? section.querySelector(".masonry") : null;
-  return { el: t, gallery };
-});
-
-function updateTitles(){
-  const vh = window.innerHeight;
-  const enterY = vh * 0.75; // bottom 1/4 line
-  const exitY  = vh * 0.25; // top 1/4 line
-
-  titleTracks.forEach(({el, gallery})=>{
-    if(!gallery) return;
-
-    const gTop = gallery.getBoundingClientRect().top;
-
-    let x = -120; // vw
-
-    if(gTop >= vh){
-      // gallery not on screen yet
-      x = -120;
-    } else if(gTop < vh && gTop > enterY){
-      // gallery entering: interpolate -120 -> 0
-      const t = clamp01((vh - gTop) / (vh - enterY));
-      x = -120 * (1 - smoothstep(0,1,t));
-    } else if(gTop <= enterY && gTop >= exitY){
-      // middle half: centered
-      x = 0;
-    } else if(gTop < exitY && gTop > 0){
-      // exiting: interpolate 0 -> 120
-      const t = clamp01((exitY - gTop) / exitY);
-      x = 120 * smoothstep(0,1,t);
-    } else if(gTop <= 0){
-      // gallery has passed top
-      x = 120;
-    }
-
-    el.style.transform = `translateX(${x}vw)`;
-  });
-}
-
-/* smooth anchor scroll */
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.onclick=e=>{
-    e.preventDefault();
-    document.querySelector(a.getAttribute('href'))
-      .scrollIntoView({behavior:'smooth'});
-  };
-});
-
-/* bind */
-function onScroll(){
-  updateDark();
-  updateTitles();
-}
-
-addEventListener('scroll',onScroll,{passive:true});
-addEventListener('resize',()=>{
-  computeDarkStop();
-  updateDark();
-  updateTitles();
-});
-
-document.addEventListener("DOMContentLoaded",()=>{
-  setupReveals();
-  computeDarkStop();
-  updateDark();
-  updateTitles();
-});
-</script>
 </body>
 </html>

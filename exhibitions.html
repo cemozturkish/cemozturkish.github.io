@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Designs | Cem Öztürk</title>
+<title>Exhibitions | Cem Öztürk</title>
 
 <style>
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -25,7 +25,6 @@ body{
   padding:40px clamp(24px, 4vw, 60px);
 }
 
-/* back link */
 .back{
   display:inline-block;
   font-size:14px;
@@ -45,7 +44,6 @@ h1{
   margin-bottom:40px;
 }
 
-/* masonry gallery */
 .masonry{
   column-count:4;
   column-gap:20px;
@@ -85,7 +83,7 @@ h1{
 <body>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
-  <h1>DESIGNS BY CEM</h1>
+  <h1>EXHIBITIONS BY CEM</h1>
   <div id="gallery" class="masonry"></div>
 </div>
 
@@ -100,7 +98,7 @@ h1{
     let k = 0;
     const tryNext = () => {
       if(k >= exts.length){ img.remove(); return; }
-      img.src = `./assets/designer${i}.${exts[k++]}`;
+      img.src = `./assets/exhibition${i}.${exts[k++]}`;
     };
     img.onerror = tryNext;
     tryNext();
