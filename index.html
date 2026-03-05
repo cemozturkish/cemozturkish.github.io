@@ -6,7 +6,7 @@
 <title>Cem Öztürk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@200;300&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400&family=Raleway:wght@200&family=Space+Mono&family=Cormorant+Garamond:wght@300&family=Montserrat:wght@200&family=Bebas+Neue&family=Libre+Baskerville&family=Josefin+Sans:wght@200&display=swap" rel="stylesheet" />
 
 <style>
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -57,30 +57,11 @@ body{
   justify-content:center;
   align-items:flex-end;
   height:100vh;
-  padding-right:clamp(36px, 6vw, 80px);
-  padding-bottom:8vh;
+  padding-right:clamp(28px, 4vw, 60px);
+  padding-bottom:14vh;
   gap:0;
 }
 
-/* name / logo — elegant serif */
-.nav-name{
-  font-family:'Cormorant Garamond', Georgia, serif;
-  font-size:clamp(20px, 2.8vw, 34px);
-  font-weight:300;
-  letter-spacing:.18em;
-  color:rgba(255,255,255,0.38);
-  margin-bottom:44px;
-  text-transform:uppercase;
-}
-
-/* thin separator line */
-.nav-line{
-  width:50px;
-  height:1px;
-  background:rgba(255,255,255,0.18);
-  margin-bottom:36px;
-  margin-left:auto;
-}
 
 /* category links */
 .nav a{
@@ -120,23 +101,19 @@ body{
 }
 
 /* entrance animation */
-.nav a,
-.nav-name,
-.nav-line{
+.nav a{
   opacity:0;
   transform:translateY(24px);
   animation:fadeUp .8s cubic-bezier(.16,1,.3,1) forwards;
 }
-.nav-name{ animation-delay:.15s; }
-.nav-line{ animation-delay:.30s; }
-.nav a:nth-child(3) { animation-delay:.40s; }
-.nav a:nth-child(4) { animation-delay:.50s; }
-.nav a:nth-child(5) { animation-delay:.60s; }
-.nav a:nth-child(6) { animation-delay:.70s; }
-.nav a:nth-child(7) { animation-delay:.80s; }
-.nav a:nth-child(8) { animation-delay:.90s; }
-.nav a:nth-child(9) { animation-delay:1.0s; }
-.nav a:nth-child(10){ animation-delay:1.1s; }
+.nav a:nth-child(1){ animation-delay:.15s; }
+.nav a:nth-child(2){ animation-delay:.25s; }
+.nav a:nth-child(3){ animation-delay:.35s; }
+.nav a:nth-child(4){ animation-delay:.45s; }
+.nav a:nth-child(5){ animation-delay:.55s; }
+.nav a:nth-child(6){ animation-delay:.65s; }
+.nav a:nth-child(7){ animation-delay:.75s; }
+.nav a:nth-child(8){ animation-delay:.85s; }
 
 @keyframes fadeUp{
   to{
@@ -157,7 +134,7 @@ body{
 
 @media(prefers-reduced-motion:reduce){
   .bg{ animation:none; }
-  .nav a, .nav-name, .nav-line{
+  .nav a{
     animation:none;
     opacity:1;
     transform:none;
@@ -170,16 +147,14 @@ body{
 <div class="bg"></div>
 
 <nav class="nav">
-  <div class="nav-name">Cem Öztürk</div>
-  <div class="nav-line"></div>
-  <a href="./about.html">ABOUT</a>
-  <a href="./designs.html">DESIGNS</a>
-  <a href="./exhibitions.html">EXHIBITIONS</a>
-  <a href="./productions.html">PRODUCTIONS</a>
-  <a href="./ideas.html">IDEAS</a>
-  <a href="./projects.html">PROJECTS</a>
-  <a href="./events.html">EVENTS</a>
-  <a href="./maps.html">MAPS</a>
+  <a href="./about.html" style="font-family:'Playfair Display',serif; font-weight:400;">ABOUT <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Playfair Display</small></a>
+  <a href="./designs.html" style="font-family:'Raleway',sans-serif; font-weight:200;">DESIGNS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Raleway</small></a>
+  <a href="./exhibitions.html" style="font-family:'Space Mono',monospace;">EXHIBITIONS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Space Mono</small></a>
+  <a href="./productions.html" style="font-family:'Cormorant Garamond',serif; font-weight:300;">PRODUCTIONS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Cormorant Garamond</small></a>
+  <a href="./ideas.html" style="font-family:'Montserrat',sans-serif; font-weight:200;">IDEAS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Montserrat</small></a>
+  <a href="./projects.html" style="font-family:'Bebas Neue',cursive;">PROJECTS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Bebas Neue</small></a>
+  <a href="./events.html" style="font-family:'Libre Baskerville',serif;">EVENTS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Libre Baskerville</small></a>
+  <a href="./maps.html" style="font-family:'Josefin Sans',sans-serif; font-weight:200;">MAPS <small style="opacity:.4;font-size:60%;vertical-align:middle;">— Josefin Sans</small></a>
 </nav>
 
 </body>
