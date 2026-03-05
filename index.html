@@ -140,11 +140,24 @@ body{
     transform:none;
   }
 }
+/* transition: curtain wipe */
+.curtain{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:#0a0a0a;
+  transform:translateX(100%);
+  transition:transform .6s cubic-bezier(.77,0,.18,1);
+}
+.curtain.active{
+  transform:translateX(0);
+}
 </style>
 </head>
 
 <body>
 <div class="bg"></div>
+<div class="curtain"></div>
 
 <nav class="nav">
   <a href="./about.html">ABOUT</a>
@@ -157,5 +170,18 @@ body{
   <a href="./maps.html">MAPS</a>
 </nav>
 
+<script>
+(function(){
+  const curtain = document.querySelector('.curtain');
+  document.querySelectorAll('.nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const href = a.href;
+      curtain.classList.add('active');
+      setTimeout(() => { window.location = href; }, 620);
+    });
+  });
+})();
+</script>
 </body>
 </html>
