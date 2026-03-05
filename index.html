@@ -140,20 +140,26 @@ body{
     transform:none;
   }
 }
-/* page transition curtain */
+/* page transition: zoom burst */
 .curtain{
   position:fixed;
   inset:0;
   z-index:100;
   background:#0a0a0a;
-  transform:translateX(0);
-  animation:curtainReveal .6s cubic-bezier(.77,0,.18,1) .05s forwards;
+  clip-path:circle(150% at 50% 50%);
+  animation:burstReveal .55s cubic-bezier(.4,0,.2,1) .05s forwards;
 }
 .curtain.closing{
-  animation:curtainClose .6s cubic-bezier(.77,0,.18,1) forwards;
+  animation:burstClose .5s cubic-bezier(.4,0,.2,1) forwards;
 }
-@keyframes curtainReveal{ to{ transform:translateX(-100%); } }
-@keyframes curtainClose{ from{ transform:translateX(100%); } to{ transform:translateX(0); } }
+@keyframes burstReveal{
+  from{ clip-path:circle(150% at 50% 50%); }
+  to{ clip-path:circle(0% at 50% 50%); }
+}
+@keyframes burstClose{
+  from{ clip-path:circle(0% at 50% 50%); }
+  to{ clip-path:circle(150% at 50% 50%); }
+}
 </style>
 </head>
 
@@ -180,7 +186,7 @@ body{
       e.preventDefault();
       const href = a.href;
       curtain.classList.add('closing');
-      setTimeout(() => { window.location = href; }, 620);
+      setTimeout(() => { window.location = href; }, 520);
     });
   });
 })();
