@@ -140,33 +140,26 @@ body{
     transform:none;
   }
 }
-/* page transition: zoom burst */
-.curtain{
-  position:fixed;
-  inset:0;
-  z-index:100;
-  background:#0a0a0a;
-  clip-path:circle(150% at 50% 50%);
-  animation:burstReveal .55s cubic-bezier(.4,0,.2,1) .05s forwards;
+/* page transition: fade + scale */
+body{
+  animation:pageIn .5s cubic-bezier(.2,0,.2,1) both;
 }
-.curtain.closing{
-  animation:burstClose .5s cubic-bezier(.4,0,.2,1) forwards;
+body.leaving{
+  animation:pageOut .4s cubic-bezier(.4,0,1,1) forwards;
 }
-@keyframes burstReveal{
-  from{ clip-path:circle(150% at 50% 50%); }
-  to{ clip-path:circle(0% at 50% 50%); }
+@keyframes pageIn{
+  from{ opacity:0; transform:scale(.97); }
+  to{ opacity:1; transform:scale(1); }
 }
-@keyframes burstClose{
-  from{ clip-path:circle(0% at 50% 50%); }
-  to{ clip-path:circle(150% at 50% 50%); }
+@keyframes pageOut{
+  from{ opacity:1; transform:scale(1); }
+  to{ opacity:0; transform:scale(1.03); }
 }
 </style>
 </head>
 
 <body>
 <div class="bg"></div>
-<div class="curtain"></div>
-
 <nav class="nav">
   <a href="./about.html">ABOUT</a>
   <a href="./designs.html">DESIGNS</a>
@@ -180,13 +173,12 @@ body{
 
 <script>
 (function(){
-  const curtain = document.querySelector('.curtain');
   document.querySelectorAll('.nav a').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
       const href = a.href;
-      curtain.classList.add('closing');
-      setTimeout(() => { window.location = href; }, 520);
+      document.body.classList.add('leaving');
+      setTimeout(() => { window.location = href; }, 420);
     });
   });
 })();
