@@ -15,8 +15,17 @@ html,body{
 body{
   font-family: system-ui, -apple-system, BlinkMacSystemFont,
                "Segoe UI", Helvetica, Arial, sans-serif;
-  background:#111;
+  background:#0a0a0a;
   color:#fff;
+}
+
+.bg{
+  position:fixed; inset:0; z-index:-1;
+  background:url("./assets/background.jpg") center/cover no-repeat;
+}
+.bg::after{
+  content:""; position:absolute; inset:0;
+  background:rgba(0,0,0,0.9);
 }
 
 .wrap{
@@ -78,14 +87,24 @@ h1{
   }
 }
 
-body{ animation:pageIn .55s ease both; }
-body.leaving{ animation:pageOut .45s ease forwards; }
-@keyframes pageIn{ from{opacity:0;filter:blur(12px)} to{opacity:1;filter:blur(0)} }
-@keyframes pageOut{ from{opacity:1;filter:blur(0)} to{opacity:0;filter:blur(12px)} }
+.curtain{
+  position:fixed; inset:0; z-index:9999;
+  background:#0a0a0a;
+}
+.curtain.enter{
+  animation:curtainOut .45s cubic-bezier(.4,0,.2,1) .05s both;
+}
+.curtain.exit{
+  animation:curtainIn .4s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes curtainIn{  from{transform:translateX(100%)} to{transform:translateX(0)} }
+@keyframes curtainOut{ from{transform:translateX(0)} to{transform:translateX(-100%)} }
 </style>
 </head>
 
 <body>
+<div class="bg"></div>
+<div class="curtain enter"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
   <h1>PROJECTS BY CEM</h1>
@@ -131,7 +150,9 @@ body.leaving{ animation:pageOut .45s ease forwards; }
     a.addEventListener('click', e => {
       e.preventDefault();
       const href = a.href;
-      document.body.classList.add('leaving');
+      const c = document.createElement('div');
+      c.className = 'curtain exit';
+      document.body.appendChild(c);
       setTimeout(() => { window.location = href; }, 420);
     });
   });

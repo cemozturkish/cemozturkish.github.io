@@ -140,21 +140,19 @@ body{
     transform:none;
   }
 }
-/* page transition: blur dissolve */
-body{
-  animation:pageIn .55s ease both;
+/* page transition: curtain wipe */
+.curtain{
+  position:fixed; inset:0; z-index:9999;
+  background:#0a0a0a;
 }
-body.leaving{
-  animation:pageOut .45s ease forwards;
+.curtain.enter{
+  animation:curtainOut .45s cubic-bezier(.4,0,.2,1) .05s both;
 }
-@keyframes pageIn{
-  from{ opacity:0; filter:blur(12px); }
-  to{ opacity:1; filter:blur(0); }
+.curtain.exit{
+  animation:curtainIn .4s cubic-bezier(.4,0,.2,1) both;
 }
-@keyframes pageOut{
-  from{ opacity:1; filter:blur(0); }
-  to{ opacity:0; filter:blur(12px); }
-}
+@keyframes curtainIn{  from{transform:translateX(100%)} to{transform:translateX(0)} }
+@keyframes curtainOut{ from{transform:translateX(0)} to{transform:translateX(-100%)} }
 </style>
 </head>
 
@@ -171,13 +169,17 @@ body.leaving{
   <a href="./maps.html">MAPS</a>
 </nav>
 
+<div class="curtain enter"></div>
+
 <script>
 (function(){
   document.querySelectorAll('.nav a').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
       const href = a.href;
-      document.body.classList.add('leaving');
+      const c = document.createElement('div');
+      c.className = 'curtain exit';
+      document.body.appendChild(c);
       setTimeout(() => { window.location = href; }, 420);
     });
   });
