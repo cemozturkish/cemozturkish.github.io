@@ -92,7 +92,6 @@ h1{
 </head>
 
 <body>
-<div class="curtain"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
   <h1>EVENTS BY CEM</h1>
@@ -134,13 +133,12 @@ h1{
   }).observe(gallery, {childList: true});
 })();
 (function(){
-  const curtain = document.querySelector('.curtain');
   document.querySelectorAll('a.back').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
       const href = a.href;
-      curtain.classList.add('closing');
-      setTimeout(() => { window.location = href; }, 520);
+      document.body.classList.add('leaving');
+      setTimeout(() => { window.location = href; }, 420);
     });
   });
 })();
