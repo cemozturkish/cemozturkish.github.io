@@ -79,10 +79,33 @@ h1{
     filter:none;
   }
 }
+
+/* page transition curtain */
+.curtain{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:#0a0a0a;
+  transform:translateX(0);
+  animation:curtainReveal .6s cubic-bezier(.77,0,.18,1) .05s forwards;
+}
+.curtain.closing{
+  animation:none;
+  transform:translateX(-100%);
+  animation:curtainClose .6s cubic-bezier(.77,0,.18,1) forwards;
+}
+@keyframes curtainReveal{
+  to{ transform:translateX(-100%); }
+}
+@keyframes curtainClose{
+  from{ transform:translateX(100%); }
+  to{ transform:translateX(0); }
+}
 </style>
 </head>
 
 <body>
+<div class="curtain"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
   <h1>DESIGNS BY CEM</h1>
@@ -122,6 +145,19 @@ h1{
       io.observe(img);
     });
   }).observe(gallery, {childList: true});
+})();
+
+// curtain transition for back link
+(function(){
+  const curtain = document.querySelector('.curtain');
+  document.querySelectorAll('a.back').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const href = a.href;
+      curtain.classList.add('closing');
+      setTimeout(() => { window.location = href; }, 620);
+    });
+  });
 })();
 </script>
 </body>
