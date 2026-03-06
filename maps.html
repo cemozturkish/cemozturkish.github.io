@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Maps | Cem Öztürk</title>
+<title>Maps | CEM ÖZTÜRK</title>
+<link rel="icon" href="data:," />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300&display=swap" rel="stylesheet" />
@@ -109,6 +110,10 @@ h1{
 }
 @keyframes curtainIn{  from{transform:translateX(100%)} to{transform:translateX(0)} }
 @keyframes curtainOut{ from{transform:translateX(0)} to{transform:translateX(-100%)} }
+.curtain.exit-left{
+  animation:curtainInLeft .4s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes curtainInLeft{ from{transform:translateX(-100%)} to{transform:translateX(0)} }
 </style>
 </head>
 
@@ -172,8 +177,9 @@ h1{
       e.preventDefault();
       const href = a.href;
       const c = document.createElement('div');
-      c.className = 'curtain exit';
+      c.className = 'curtain exit-left';
       document.body.appendChild(c);
+      sessionStorage.setItem('nav-back','1');
       setTimeout(() => { window.location = href; }, 420);
     });
   });
