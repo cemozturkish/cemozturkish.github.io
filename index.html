@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cem Öztürk</title>
+<title>CEM ÖZTÜRK</title>
+<link rel="icon" href="data:," />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300&display=swap" rel="stylesheet" />
@@ -77,33 +78,17 @@ body{
   text-align:right;
   transform-origin:right center;
   transition:color .4s cubic-bezier(.25,.1,.25,1),
-             letter-spacing .4s cubic-bezier(.25,.1,.25,1);
-}
-
-/* animated underline on hover */
-.nav a::after{
-  content:"";
-  position:absolute;
-  bottom:6px;
-  right:0;
-  width:0;
-  height:1px;
-  background:rgba(255,255,255,0.5);
-  transition:width .4s cubic-bezier(.25,.1,.25,1);
+             transform .4s cubic-bezier(.25,.1,.25,1);
 }
 
 .nav a:hover{
   color:rgba(255,255,255,0.95);
-  letter-spacing:.10em;
-}
-.nav a:hover::after{
-  width:100%;
+  transform:scale(1.08);
 }
 
 /* entrance animation */
 .nav a{
   opacity:0;
-  transform:translateY(24px);
   animation:fadeUp .8s cubic-bezier(.16,1,.3,1) forwards;
 }
 .nav a:nth-child(1){ animation-delay:.15s; }
@@ -116,6 +101,10 @@ body{
 .nav a:nth-child(8){ animation-delay:.85s; }
 
 @keyframes fadeUp{
+  from{
+    opacity:0;
+    transform:translateY(24px);
+  }
   to{
     opacity:1;
     transform:translateY(0);
@@ -148,11 +137,15 @@ body{
 .curtain.enter{
   animation:curtainOut .45s cubic-bezier(.4,0,.2,1) .05s both;
 }
+.curtain.enter-right{
+  animation:curtainOutRight .45s cubic-bezier(.4,0,.2,1) .05s both;
+}
 .curtain.exit{
   animation:curtainIn .4s cubic-bezier(.4,0,.2,1) both;
 }
 @keyframes curtainIn{  from{transform:translateX(100%)} to{transform:translateX(0)} }
 @keyframes curtainOut{ from{transform:translateX(0)} to{transform:translateX(-100%)} }
+@keyframes curtainOutRight{ from{transform:translateX(0)} to{transform:translateX(100%)} }
 </style>
 </head>
 
@@ -163,16 +156,21 @@ body{
   <a href="./designs.html">DESIGNS</a>
   <a href="./exhibitions.html">EXHIBITIONS</a>
   <a href="./productions.html">PRODUCTIONS</a>
-  <a href="./ideas.html">IDEAS</a>
   <a href="./projects.html">PROJECTS</a>
   <a href="./events.html">EVENTS</a>
+  <a href="./ideas.html">IDEAS</a>
   <a href="./maps.html">MAPS</a>
 </nav>
 
-<div class="curtain enter"></div>
+<div id="curtain" class="curtain enter"></div>
 
 <script>
 (function(){
+  var c = document.getElementById('curtain');
+  if(sessionStorage.getItem('nav-back')){
+    c.className = 'curtain enter-right';
+    sessionStorage.removeItem('nav-back');
+  }
   document.querySelectorAll('.nav a').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
