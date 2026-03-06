@@ -59,7 +59,7 @@ body{
   align-items:flex-end;
   height:100vh;
   padding-right:clamp(28px, 4vw, 60px);
-  padding-bottom:8vh;
+  padding-top:12vh;
   gap:0;
 }
 
@@ -89,7 +89,7 @@ body{
 /* entrance animation */
 .nav a{
   opacity:0;
-  animation:fadeUp .8s cubic-bezier(.16,1,.3,1) forwards;
+  animation:fadeIn .8s cubic-bezier(.16,1,.3,1) forwards;
 }
 .nav a:nth-child(1){ animation-delay:.15s; }
 .nav a:nth-child(2){ animation-delay:.25s; }
@@ -100,14 +100,14 @@ body{
 .nav a:nth-child(7){ animation-delay:.75s; }
 .nav a:nth-child(8){ animation-delay:.85s; }
 
-@keyframes fadeUp{
+@keyframes fadeIn{
   from{
     opacity:0;
-    transform:translateY(24px);
+    transform:translateX(30px);
   }
   to{
     opacity:1;
-    transform:translateY(0);
+    transform:translateX(0);
   }
 }
 
