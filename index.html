@@ -129,6 +129,66 @@ body{
     transform:none;
   }
 }
+/* clickable left zone */
+.contact-zone{
+  position:fixed;
+  left:0; top:0;
+  width:40%;
+  height:100%;
+  z-index:2;
+  cursor:pointer;
+}
+
+/* contact overlay panel */
+.contact-panel{
+  position:fixed;
+  left:0; top:0;
+  width:40%;
+  height:100%;
+  z-index:3;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding-left:clamp(28px, 4vw, 60px);
+  transform:translateX(-100%);
+  opacity:0;
+  transition:transform .45s cubic-bezier(.25,.1,.25,1),
+             opacity .45s cubic-bezier(.25,.1,.25,1);
+  pointer-events:none;
+}
+.contact-panel.open{
+  transform:translateX(0);
+  opacity:1;
+  pointer-events:auto;
+}
+.contact-panel a{
+  display:block;
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px, 2vw, 22px);
+  font-weight:200;
+  color:rgba(255,255,255,0.6);
+  text-decoration:none;
+  letter-spacing:.06em;
+  padding:8px 0;
+  transition:color .3s ease;
+}
+.contact-panel a:hover{
+  color:rgba(255,255,255,0.95);
+}
+
+@media(max-width:600px){
+  .contact-zone,
+  .contact-panel{
+    width:60%;
+  }
+  .contact-panel{
+    padding-left:28px;
+  }
+}
+
 /* page transition: curtain wipe */
 .curtain{
   position:fixed; inset:0; z-index:9999;
@@ -151,6 +211,15 @@ body{
 
 <body>
 <div class="bg"></div>
+
+<div class="contact-zone" id="contactZone"></div>
+<div class="contact-panel" id="contactPanel">
+  <a href="mailto:cemwozturk@gmail.com">cemwozturk@gmail.com</a>
+  <a href="https://instagram.com/cemozturkish" target="_blank" rel="noopener">instagram</a>
+  <a href="https://twitter.com/hasancemozturk" target="_blank" rel="noopener">twitter</a>
+  <a href="https://linkedin.com/in/hasancemozturk" target="_blank" rel="noopener">linkedin</a>
+</div>
+
 <nav class="nav">
   <a href="./about.html">ABOUT</a>
   <a href="./designs.html">DESIGNS</a>
@@ -171,6 +240,17 @@ body{
     c.className = 'curtain enter-right';
     sessionStorage.removeItem('nav-back');
   }
+  // contact panel toggle
+  var zone = document.getElementById('contactZone');
+  var panel = document.getElementById('contactPanel');
+  zone.addEventListener('click', function(){ panel.classList.toggle('open'); });
+  // close panel when clicking outside (on the right side / nav area)
+  document.addEventListener('click', function(e){
+    if(panel.classList.contains('open') && !panel.contains(e.target) && e.target !== zone){
+      panel.classList.remove('open');
+    }
+  });
+
   document.querySelectorAll('.nav a').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
