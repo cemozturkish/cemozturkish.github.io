@@ -145,7 +145,8 @@ body{
   fill:transparent;
   transition:fill .3s ease;
 }
-.contact-zone path:hover{
+.contact-zone path:hover,
+.contact-zone path.active{
   fill:rgba(0,0,0,0.15);
 }
 
@@ -274,11 +275,12 @@ body{
   // contact panel toggle — clicking the head trace path
   var headZone = document.getElementById('headZone');
   var panel = document.getElementById('contactPanel');
-  headZone.addEventListener('click', function(){ panel.classList.toggle('open'); });
+  headZone.addEventListener('click', function(){ panel.classList.toggle('open'); headZone.classList.toggle('active'); });
   // close panel when clicking outside
   document.addEventListener('click', function(e){
     if(panel.classList.contains('open') && !panel.contains(e.target) && e.target !== headZone){
       panel.classList.remove('open');
+      headZone.classList.remove('active');
     }
   });
 
