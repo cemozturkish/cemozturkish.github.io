@@ -129,16 +129,17 @@ body{
     transform:none;
   }
 }
-/* clickable head zone — SVG polygon traced from background */
+/* clickable head zone — SVG path traced from background */
 .contact-zone{
   position:fixed;
-  left:0; top:0;
-  width:100%;
-  height:100%;
+  inset:-20px;
+  width:calc(100% + 40px);
+  height:calc(100% + 40px);
   z-index:2;
   pointer-events:none;
+  animation:bgDrift 25s ease-in-out infinite alternate;
 }
-.contact-zone polygon{
+.contact-zone path{
   cursor:pointer;
   pointer-events:auto;
   fill:rgba(255,0,0,0.25); /* DEBUG: red tint to see the shape — remove later */
@@ -185,11 +186,8 @@ body{
 }
 
 @media(max-width:600px){
-  .contact-zone,
   .contact-panel{
     width:60%;
-  }
-  .contact-panel{
     padding-left:28px;
   }
 }
@@ -217,8 +215,8 @@ body{
 <body>
 <div class="bg"></div>
 
-<svg class="contact-zone" id="contactZone" viewBox="0 0 100 100" preserveAspectRatio="none">
-  <polygon id="headZone" points="" />
+<svg class="contact-zone" id="contactZone" viewBox="0 0 1366.09 768.16" preserveAspectRatio="xMidYMid slice">
+  <path id="headZone" d="M261.68,768.16c-6.19-25.76-28.17-49.6-27.21-50.76,14.74-17.63,36.17-59.84,36.17-59.84,0,0,2.69-15.12,1.13-26.15-1.47-10.44-5.12-18.54-7.78-23.8,4.43-6.93,8.87-13.85,13.3-20.78,10.94-7.54,22.83-13.54,35.42-18.42l64.14-1.74,10.72-2.43,9.71-4.65,6.47-4.05,5.66-6.27,7.49-10.52,4.25-21.85,28.32-61.5,10.32-34.39,5.87-34.59,1.42-25.49,1.51-19.04-8.8-52.08,5.87-12.1-.37-11.74,12.1-19.8,15.04-16.14v-4.03l6.6,1.47-3.3-7.33,3.3-15.95-23.2-48.97,3.26-33.47,37.55-37.55v-28.57L537.04.16,0,0v768.16h261.68Z" />
 </svg>
 <div class="contact-panel" id="contactPanel">
   <a href="mailto:cemwozturk@gmail.com">cemwozturk@gmail.com</a>
@@ -247,28 +245,13 @@ body{
     c.className = 'curtain enter-right';
     sessionStorage.removeItem('nav-back');
   }
-  // build head polygon from Illustrator relative coords
-  // Format: first pair is starting offset from center, rest are cumulative deltas
-  var rawCoords = [-0.14382566,-0.042649122,-0.00098389024,-0.025143788,-0.0049988919,0.026861753,0.00033752037,-0.001245536,-0.0055066641,-0.0029609255,-0.0058280468,0.011073991,0.0040395272,-0.00025837957,0.00076508823,0.00075131884,0.00061012294,-0.0026800299,0.0090405337,-0.0048857139,-0.0046309934,-0.0038948389,0.012823145,-0.0089344457];
-  var pts = [];
-  var x = 50 + rawCoords[0] * 100;
-  var y = 50 + rawCoords[1] * 100;
-  pts.push(x + ',' + y);
-  for (var i = 2; i < rawCoords.length; i += 2) {
-    x += rawCoords[i] * 100;
-    y += rawCoords[i + 1] * 100;
-    pts.push(x + ',' + y);
-  }
-  document.getElementById('headZone').setAttribute('points', pts.join(' '));
-
-  // contact panel toggle
-  var zone = document.getElementById('contactZone');
+  // contact panel toggle — clicking the head trace path
+  var headZone = document.getElementById('headZone');
   var panel = document.getElementById('contactPanel');
-  zone.querySelector('#headZone').addEventListener('click', function(){ panel.classList.toggle('open'); });
+  headZone.addEventListener('click', function(){ panel.classList.toggle('open'); });
   // close panel when clicking outside
-  var headPoly = document.getElementById('headZone');
   document.addEventListener('click', function(e){
-    if(panel.classList.contains('open') && !panel.contains(e.target) && e.target !== headPoly){
+    if(panel.classList.contains('open') && !panel.contains(e.target) && e.target !== headZone){
       panel.classList.remove('open');
     }
   });
