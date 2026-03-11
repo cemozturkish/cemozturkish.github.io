@@ -308,6 +308,37 @@ body{
 .section-panel .panel-body .bio p{
   margin-bottom:20px;
 }
+.section-panel .panel-body .edu-entry{
+  margin-bottom:28px;
+}
+.section-panel .panel-body .edu-entry .edu-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:16px;
+}
+.section-panel .panel-body .edu-entry .edu-school{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px, 1.6vw, 19px);
+  font-weight:300;
+  color:rgba(255,255,255,0.85);
+  letter-spacing:.04em;
+}
+.section-panel .panel-body .edu-entry .edu-location{
+  font-size:clamp(12px, 1.2vw, 14px);
+  color:rgba(255,255,255,0.45);
+  white-space:nowrap;
+}
+.section-panel .panel-body .edu-entry .edu-degree{
+  font-size:clamp(13px, 1.3vw, 16px);
+  color:rgba(255,255,255,0.55);
+  margin-top:4px;
+}
+.section-panel .panel-body .edu-entry .edu-date{
+  font-size:clamp(12px, 1.2vw, 14px);
+  color:rgba(255,255,255,0.4);
+  white-space:nowrap;
+}
 .section-panel .panel-body .empty{
   color:rgba(255,255,255,0.4);
   font-size:16px;
@@ -392,7 +423,7 @@ body{
 
   // page content definitions
   var pages = {
-    'about.html': { title:'ABOUT', type:'bio', content:'<div class="bio"><p>Designer, researcher, and event coordinator.</p><p>More details coming soon.</p></div>' },
+    'about.html': { title:'ABOUT', type:'bio', content:'<div class="bio"><div class="edu-entry"><div class="edu-row"><span class="edu-school">Pitzer College</span><span class="edu-location">Claremont, CA</span></div><div class="edu-row"><span class="edu-degree">Bachelor of Arts in PPE: Philosophy, Politics, and Economics</span><span class="edu-date">December 2025</span></div></div><div class="edu-entry"><div class="edu-row"><span class="edu-school">Tribhuvan University</span><span class="edu-location">Kathmandu, Nepal</span></div><div class="edu-row"><span class="edu-degree">Study Abroad: Culture, Change, and Social Justice in Nepal</span><span class="edu-date">Spring 2025</span></div></div><div class="edu-entry"><div class="edu-row"><span class="edu-school">Bard College</span><span class="edu-location">Brooklyn, NY</span></div><div class="edu-row"><span class="edu-degree">BardNYC: Globalization and International Affairs Semester Program</span><span class="edu-date">Spring 2024</span></div></div></div>' },
     'designs.html': { title:'DESIGNS', type:'gallery', prefix:'designer' },
     'exhibitions.html': { title:'EXHIBITIONS', type:'gallery', prefix:'exhibition' },
     'productions.html': { title:'PRODUCTIONS', type:'gallery', prefix:'production' },
