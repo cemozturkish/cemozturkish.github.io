@@ -225,6 +225,102 @@ body{
 @keyframes spotlightFade{
   to{ fill-opacity:0; }
 }
+
+/* section panel — slides in from right */
+.section-panel{
+  position:fixed;
+  right:0; top:0;
+  width:65%;
+  height:100%;
+  z-index:4;
+  background:rgba(0,0,0,0.82);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  overflow-y:auto;
+  transform:translateX(100%);
+  opacity:0;
+  transition:transform .45s cubic-bezier(.25,.1,.25,1),
+             opacity .45s cubic-bezier(.25,.1,.25,1);
+  pointer-events:none;
+}
+.section-panel.open{
+  transform:translateX(0);
+  opacity:1;
+  pointer-events:auto;
+}
+.section-panel .panel-close{
+  position:sticky;
+  top:0;
+  display:block;
+  padding:20px clamp(24px, 4vw, 60px);
+  font-size:14px;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,0.5);
+  text-decoration:none;
+  cursor:pointer;
+  background:transparent;
+  border:none;
+  font-family:inherit;
+  transition:color .2s;
+  z-index:1;
+}
+.section-panel .panel-close:hover{
+  color:rgba(255,255,255,0.9);
+}
+.section-panel .panel-body{
+  padding:0 clamp(24px, 4vw, 60px) 60px;
+}
+.section-panel .panel-body h1{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(18px, 2.6vw, 30px);
+  font-weight:200;
+  letter-spacing:.06em;
+  color:rgba(255,255,255,0.55);
+  margin-bottom:40px;
+  text-align:center;
+}
+.section-panel .panel-body .masonry{
+  column-count:3;
+  column-gap:20px;
+}
+.section-panel .panel-body .masonry img{
+  width:100%;
+  height:auto;
+  margin-bottom:20px;
+  break-inside:avoid;
+  display:block;
+  opacity:0;
+  transform:translateY(30px);
+  filter:blur(4px);
+  transition:opacity .65s ease, transform .65s ease, filter .8s ease;
+}
+.section-panel .panel-body .masonry img.visible{
+  opacity:0.9;
+  transform:translateY(0);
+  filter:blur(0);
+}
+.section-panel .panel-body .bio{
+  font-size:18px;
+  line-height:1.7;
+  color:rgba(255,255,255,0.7);
+  max-width:600px;
+}
+.section-panel .panel-body .bio p{
+  margin-bottom:20px;
+}
+.section-panel .panel-body .empty{
+  color:rgba(255,255,255,0.4);
+  font-size:16px;
+  letter-spacing:.04em;
+}
+@media(max-width:900px){
+  .section-panel{ width:85%; }
+  .section-panel .panel-body .masonry{ column-count:2; }
+}
+@media(max-width:500px){
+  .section-panel{ width:100%; }
+  .section-panel .panel-body .masonry{ column-count:1; }
+}
 </style>
 </head>
 
@@ -239,6 +335,11 @@ body{
   <a href="https://instagram.com/cemozturkish" target="_blank" rel="noopener">instagram</a>
   <a href="https://twitter.com/hasancemozturk" target="_blank" rel="noopener">twitter</a>
   <a href="https://linkedin.com/in/hasancemozturk" target="_blank" rel="noopener">linkedin</a>
+</div>
+
+<div class="section-panel" id="sectionPanel">
+  <button class="panel-close" id="panelClose">&larr; BACK</button>
+  <div class="panel-body" id="panelBody"></div>
 </div>
 
 <nav class="nav">
@@ -284,15 +385,104 @@ body{
     }
   });
 
+  // section panel logic
+  var secPanel = document.getElementById('sectionPanel');
+  var secBody = document.getElementById('panelBody');
+  var secClose = document.getElementById('panelClose');
+
+  // page content definitions
+  var pages = {
+    'about.html': { title:'ABOUT', type:'bio', content:'<div class="bio"><p>Designer, researcher, and event coordinator.</p><p>More details coming soon.</p></div>' },
+    'designs.html': { title:'DESIGNS', type:'gallery', prefix:'designer' },
+    'exhibitions.html': { title:'EXHIBITIONS', type:'gallery', prefix:'exhibition' },
+    'productions.html': { title:'PRODUCTIONS', type:'gallery', prefix:'production' },
+    'projects.html': { title:'PROJECTS', type:'gallery', prefix:'project' },
+    'events.html': { title:'EVENTS', type:'gallery', prefix:'events', header:'./assets/events.png' },
+    'ideas.html': { title:'IDEAS', type:'gallery', prefix:'idea', header:'./assets/ideas.png' },
+    'maps.html': { title:'MAPS', type:'gallery', prefix:'map', header:'./assets/maps.png' }
+  };
+
+  function openSection(page){
+    var p = pages[page];
+    if(!p) return;
+    secBody.innerHTML = '';
+    // title
+    var h = document.createElement('h1');
+    h.textContent = p.title;
+    // header image for some pages
+    if(p.header){
+      var himg = document.createElement('img');
+      himg.src = p.header;
+      himg.alt = p.title;
+      himg.style.cssText = 'display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;';
+      secBody.appendChild(himg);
+    } else {
+      secBody.appendChild(h);
+    }
+    if(p.type === 'bio'){
+      secBody.insertAdjacentHTML('beforeend', p.content);
+    } else {
+      var gallery = document.createElement('div');
+      gallery.className = 'masonry';
+      secBody.appendChild(gallery);
+      loadGallery(gallery, p.prefix);
+    }
+    secPanel.classList.add('open');
+    secPanel.scrollTop = 0;
+  }
+
+  function loadGallery(gallery, prefix){
+    var exts = ['jpg','jpeg','png'];
+    for(var i = 1; i <= 60; i++){
+      (function(i){
+        var img = document.createElement('img');
+        img.loading = 'lazy';
+        var k = 0;
+        var tryNext = function(){
+          if(k >= exts.length){ img.remove(); return; }
+          img.src = './assets/' + prefix + i + '.' + exts[k++];
+        };
+        img.onerror = tryNext;
+        tryNext();
+        gallery.appendChild(img);
+      })(i);
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:.1, root: secPanel});
+    new MutationObserver(function(){
+      gallery.querySelectorAll('img:not(.visible)').forEach(function(img, i){
+        img.style.transitionDelay = (i % 8) * 60 + 'ms';
+        io.observe(img);
+      });
+    }).observe(gallery, {childList:true});
+  }
+
+  function closeSection(){
+    secPanel.classList.remove('open');
+  }
+
+  secClose.addEventListener('click', closeSection);
+
   document.querySelectorAll('.nav a').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
-      const href = a.href;
-      const c = document.createElement('div');
-      c.className = 'curtain exit';
-      document.body.appendChild(c);
-      setTimeout(() => { window.location = href; }, 420);
+      var href = a.getAttribute('href');
+      var page = href.replace('./','');
+      openSection(page);
     });
+  });
+
+  // close section panel when clicking outside
+  document.addEventListener('click', function(e){
+    if(secPanel.classList.contains('open') && !secPanel.contains(e.target) && !e.target.closest('.nav')){
+      closeSection();
+    }
   });
 })();
 </script>
