@@ -344,6 +344,51 @@ body{
   font-size:16px;
   letter-spacing:.04em;
 }
+.section-panel .panel-body .exp-list{
+  max-width:800px;
+  margin:0 auto 50px;
+}
+.section-panel .panel-body .exp-entry{ margin-bottom:32px; }
+.section-panel .panel-body .exp-entry .exp-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  gap:16px; flex-wrap:wrap;
+}
+.section-panel .panel-body .exp-entry .exp-org{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px,1.6vw,19px);
+  font-weight:300;
+  color:rgba(255,255,255,0.85);
+  letter-spacing:.04em;
+}
+.section-panel .panel-body .exp-entry .exp-location{
+  font-size:clamp(12px,1.2vw,14px);
+  color:rgba(255,255,255,0.45);
+  white-space:nowrap;
+}
+.section-panel .panel-body .exp-role{
+  display:flex; justify-content:space-between; align-items:baseline;
+  gap:16px; flex-wrap:wrap; margin-top:6px;
+}
+.section-panel .panel-body .exp-role .exp-title{
+  font-size:clamp(13px,1.3vw,16px);
+  color:rgba(255,255,255,0.6);
+  font-style:italic;
+}
+.section-panel .panel-body .exp-role .exp-date{
+  font-size:clamp(12px,1.2vw,14px);
+  color:rgba(255,255,255,0.4);
+  white-space:nowrap;
+}
+.section-panel .panel-body .exp-entry ul{
+  list-style:none; margin-top:8px; padding-left:0;
+}
+.section-panel .panel-body .exp-entry ul li{
+  position:relative; font-size:14px; line-height:1.6;
+  color:rgba(255,255,255,0.6); margin-top:6px; padding-left:16px;
+}
+.section-panel .panel-body .exp-entry ul li::before{
+  content:"·"; position:absolute; left:4px; color:rgba(255,255,255,0.4);
+}
 @media(max-width:900px){
   .section-panel{ width:85%; }
   .section-panel .panel-body .masonry{ column-count:2; }
@@ -422,13 +467,71 @@ body{
   var secClose = document.getElementById('panelClose');
 
   // page content definitions
+  var aboutContent = '<div class="bio">' +
+    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Pomona College</span><span class="edu-location">Claremont, CA</span></div><div class="edu-row"><span class="edu-degree">Bachelor of Arts in PPE: Philosophy, Politics, and Economics</span><span class="edu-date">Spring 2026</span></div></div>' +
+    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Tribhuvan University</span><span class="edu-location">Kathmandu, Nepal</span></div><div class="edu-row"><span class="edu-degree">Study Abroad: Culture, Change, and Social Justice in Nepal</span><span class="edu-date">Spring 2025</span></div></div>' +
+    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Bard College</span><span class="edu-location">Brooklyn, NY</span></div><div class="edu-row"><span class="edu-degree">BardNYC: Globalization and International Affairs Semester Program</span><span class="edu-date">Spring 2024</span></div></div>' +
+    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Kabataş Erkek Lisesi</span><span class="edu-location">Istanbul, Türkiye</span></div></div>' +
+    '</div>';
+
+  var eventsIntro = '<div class="exp-list">' +
+    '<div class="exp-entry">' +
+      '<div class="exp-head"><span class="exp-org">Pitzer Campus Life</span><span class="exp-location">Claremont, CA</span></div>' +
+      '<div class="exp-role"><span class="exp-title">Event Staff Manager</span><span class="exp-date">August 2025 – May 2026</span></div>' +
+      '<ul><li>Oversaw the event calendar for the Fall \'25 semester, supervised and trained a new Event Staff team of 10 students, and managed technical operations including sound equipment setup and troubleshooting.</li></ul>' +
+      '<div class="exp-role"><span class="exp-title">Event Coordinator</span><span class="exp-date">August 2022 – February 2025</span></div>' +
+      '<ul><li>Coordinated and executed over 100 campus-wide events across the Claremont Colleges for over 8,000 students.</li>' +
+      '<li>Led outreach and promotion through digital and physical campaigns, including flyers, murals, email graphics, tabling on campus, and collaborating with student organizations to maximize participation.</li></ul>' +
+    '</div>' +
+    '<div class="exp-entry">' +
+      '<div class="exp-head"><span class="exp-org">PEN America / Russian Independent Media Archives</span><span class="exp-location">Manhattan, NY</span></div>' +
+      '<div class="exp-role"><span class="exp-title">Event Coordinator</span><span class="exp-date">February 2024 – May 2024</span></div>' +
+      '<ul><li>Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.</li>' +
+      '<li>Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York\'s Russian-speaking community to expand event participation and visibility.</li></ul>' +
+    '</div>' +
+  '</div>';
+
+  var exhibitionsIntro = '<div class="exp-list">' +
+    '<div class="exp-entry">' +
+      '<div class="exp-head"><span class="exp-org">Pitzer Art Galleries</span><span class="exp-location">Los Angeles, CA</span></div>' +
+      '<div class="exp-role"><span class="exp-title">Art Gallery Assistant</span><span class="exp-date">August 2024 – February 2025</span></div>' +
+      '<ul><li>Supported installation, reception logistics, and outreach for exhibitions <em>Aurora</em> (Valeria Tizol Vivas) and <em>Las Tres Gracias</em> (Jimena Sarno), creating promotional materials including flyers and email graphics.</li>' +
+      '<li>Managed weekend gallery operations: opened the space, set up A/V and visuals, and prepared the gallery for visitors.</li>' +
+      '<li>Welcomed guests, provided programs, served as the on-site contact, and led exhibition walkthroughs.</li></ul>' +
+    '</div>' +
+  '</div>';
+
+  var productionsIntro = '<div class="exp-list">' +
+    '<div class="exp-entry">' +
+      '<div class="exp-head"><span class="exp-org">Seaver Theatre</span><span class="exp-location">Claremont, CA</span></div>' +
+      '<div class="exp-role"><span class="exp-title">Theatre Assistant</span><span class="exp-date">August 2025 – May 2026</span></div>' +
+      '<ul><li>Supported front-of-house operations, including box office, ushering, and event coordination.</li>' +
+      '<li>Worked weekly in the costume shop, tailoring garments for three productions.</li>' +
+      '<li>Assisted in the scene shop, building props and supporting technical production needs.</li></ul>' +
+    '</div>' +
+    '<div class="exp-entry">' +
+      '<div class="exp-head"><span class="exp-org">Legal Aid Society</span><span class="exp-location">Brooklyn, NY</span></div>' +
+      '<div class="exp-role"><span class="exp-title">Production Assistant</span><span class="exp-date">January 2024 – June 2024</span></div>' +
+      '<ul><li>Maintained flexible, on-call working hours to accommodate attorneys, clients, and production teams while conducting fieldwork across New York City for interviews, visiting courts, and capturing documentary footage.</li>' +
+      '<li>Collaborated with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos.</li></ul>' +
+    '</div>' +
+  '</div>';
+
+  var projectsIntro = '<div class="exp-list">' +
+    '<div class="exp-entry">' +
+      '<div class="exp-head"><span class="exp-org">Sancharika Samuha: Forum of Women Journalists &amp; Communicators</span><span class="exp-location">Kathmandu, Nepal</span></div>' +
+      '<div class="exp-role"><span class="exp-title">Editor</span><span class="exp-date">April 2025 – May 2025</span></div>' +
+      '<ul><li>Collaborated with Nepali Supreme Court Justice Sapana Pradhan Malla to enhance representation of women journalists in media, and provided support in organizing and coordinating events promoting equity-based development.</li></ul>' +
+    '</div>' +
+  '</div>';
+
   var pages = {
-    'about.html': { title:'ABOUT', type:'bio', content:'<div class="bio"><div class="edu-entry"><div class="edu-row"><span class="edu-school">Pitzer College</span><span class="edu-location">Claremont, CA</span></div><div class="edu-row"><span class="edu-degree">Bachelor of Arts in PPE: Philosophy, Politics, and Economics</span><span class="edu-date">December 2025</span></div></div><div class="edu-entry"><div class="edu-row"><span class="edu-school">Tribhuvan University</span><span class="edu-location">Kathmandu, Nepal</span></div><div class="edu-row"><span class="edu-degree">Study Abroad: Culture, Change, and Social Justice in Nepal</span><span class="edu-date">Spring 2025</span></div></div><div class="edu-entry"><div class="edu-row"><span class="edu-school">Bard College</span><span class="edu-location">Brooklyn, NY</span></div><div class="edu-row"><span class="edu-degree">BardNYC: Globalization and International Affairs Semester Program</span><span class="edu-date">Spring 2024</span></div></div></div>' },
+    'about.html': { title:'ABOUT', type:'bio', content: aboutContent },
     'designs.html': { title:'DESIGNS', type:'gallery', prefix:'designer' },
-    'exhibitions.html': { title:'EXHIBITIONS', type:'gallery', prefix:'exhibition' },
-    'productions.html': { title:'PRODUCTIONS', type:'gallery', prefix:'production' },
-    'projects.html': { title:'PROJECTS', type:'gallery', prefix:'project' },
-    'events.html': { title:'EVENTS', type:'gallery', prefix:'events', header:'./assets/events.png' },
+    'exhibitions.html': { title:'EXHIBITIONS', type:'gallery', prefix:'exhibition', intro: exhibitionsIntro },
+    'productions.html': { title:'PRODUCTIONS', type:'gallery', prefix:'production', intro: productionsIntro },
+    'projects.html': { title:'PROJECTS', type:'gallery', prefix:'project', intro: projectsIntro },
+    'events.html': { title:'EVENTS', type:'gallery', prefix:'events', header:'./assets/events.png', intro: eventsIntro },
     'ideas.html': { title:'IDEAS', type:'gallery', prefix:'idea', header:'./assets/ideas.png' },
     'maps.html': { title:'MAPS', type:'gallery', prefix:'map', header:'./assets/maps.png' }
   };
@@ -453,6 +556,9 @@ body{
     if(p.type === 'bio'){
       secBody.insertAdjacentHTML('beforeend', p.content);
     } else {
+      if(p.intro){
+        secBody.insertAdjacentHTML('beforeend', p.intro);
+      }
       var gallery = document.createElement('div');
       gallery.className = 'masonry';
       secBody.appendChild(gallery);
