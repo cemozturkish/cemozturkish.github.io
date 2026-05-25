@@ -59,6 +59,18 @@ h1{
   text-align:center;
 }
 
+.exp-list{ max-width:800px; margin:0 auto 50px; }
+.exp-entry{ margin-bottom:32px; }
+.exp-entry .exp-head{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; }
+.exp-entry .exp-org{ font-family:'Josefin Sans', sans-serif; font-size:clamp(15px,1.6vw,19px); font-weight:300; color:rgba(255,255,255,0.85); letter-spacing:.04em; }
+.exp-entry .exp-location{ font-size:clamp(12px,1.2vw,14px); color:rgba(255,255,255,0.45); white-space:nowrap; }
+.exp-role{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-top:6px; }
+.exp-role .exp-title{ font-size:clamp(13px,1.3vw,16px); color:rgba(255,255,255,0.6); font-style:italic; }
+.exp-role .exp-date{ font-size:clamp(12px,1.2vw,14px); color:rgba(255,255,255,0.4); white-space:nowrap; }
+.exp-entry ul{ list-style:none; margin-top:8px; padding-left:0; }
+.exp-entry ul li{ position:relative; font-size:14px; line-height:1.6; color:rgba(255,255,255,0.6); margin-top:6px; padding-left:16px; }
+.exp-entry ul li::before{ content:"·"; position:absolute; left:4px; color:rgba(255,255,255,0.4); }
+
 .masonry{
   column-count:4;
   column-gap:20px;
@@ -118,6 +130,37 @@ h1{
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
   <h1>PRODUCTIONS</h1>
+  <div class="exp-list">
+    <div class="exp-entry">
+      <div class="exp-head">
+        <span class="exp-org">Seaver Theatre</span>
+        <span class="exp-location">Claremont, CA</span>
+      </div>
+      <div class="exp-role">
+        <span class="exp-title">Theatre Assistant</span>
+        <span class="exp-date">August 2025 – May 2026</span>
+      </div>
+      <ul>
+        <li>Supported front-of-house operations, including box office, ushering, and event coordination.</li>
+        <li>Worked weekly in the costume shop, tailoring garments for three productions.</li>
+        <li>Assisted in the scene shop, building props and supporting technical production needs.</li>
+      </ul>
+    </div>
+    <div class="exp-entry">
+      <div class="exp-head">
+        <span class="exp-org">Legal Aid Society</span>
+        <span class="exp-location">Brooklyn, NY</span>
+      </div>
+      <div class="exp-role">
+        <span class="exp-title">Production Assistant</span>
+        <span class="exp-date">January 2024 – June 2024</span>
+      </div>
+      <ul>
+        <li>Maintained flexible, on-call working hours to accommodate attorneys, clients, and production teams while conducting fieldwork across New York City for interviews, visiting courts, and capturing documentary footage.</li>
+        <li>Collaborated with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos.</li>
+      </ul>
+    </div>
+  </div>
   <div id="gallery" class="masonry"></div>
 </div>
 

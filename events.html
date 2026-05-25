@@ -59,6 +59,47 @@ h1{
   text-align:center;
 }
 
+.exp-list{ max-width:800px; margin:0 auto 50px; }
+.exp-entry{ margin-bottom:32px; }
+.exp-entry .exp-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  gap:16px; flex-wrap:wrap;
+}
+.exp-entry .exp-org{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px,1.6vw,19px);
+  font-weight:300;
+  color:rgba(255,255,255,0.85);
+  letter-spacing:.04em;
+}
+.exp-entry .exp-location{
+  font-size:clamp(12px,1.2vw,14px);
+  color:rgba(255,255,255,0.45);
+  white-space:nowrap;
+}
+.exp-role{
+  display:flex; justify-content:space-between; align-items:baseline;
+  gap:16px; flex-wrap:wrap; margin-top:6px;
+}
+.exp-role .exp-title{
+  font-size:clamp(13px,1.3vw,16px);
+  color:rgba(255,255,255,0.6);
+  font-style:italic;
+}
+.exp-role .exp-date{
+  font-size:clamp(12px,1.2vw,14px);
+  color:rgba(255,255,255,0.4);
+  white-space:nowrap;
+}
+.exp-entry ul{ list-style:none; margin-top:8px; padding-left:0; }
+.exp-entry ul li{
+  position:relative; font-size:14px; line-height:1.6;
+  color:rgba(255,255,255,0.6); margin-top:6px; padding-left:16px;
+}
+.exp-entry ul li::before{
+  content:"·"; position:absolute; left:4px; color:rgba(255,255,255,0.4);
+}
+
 .masonry{
   column-count:4;
   column-gap:20px;
@@ -118,6 +159,43 @@ h1{
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
   <img src="./assets/events.png" alt="EVENTS" style="display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;" />
+  <div class="exp-list">
+    <div class="exp-entry">
+      <div class="exp-head">
+        <span class="exp-org">Pitzer Campus Life</span>
+        <span class="exp-location">Claremont, CA</span>
+      </div>
+      <div class="exp-role">
+        <span class="exp-title">Event Staff Manager</span>
+        <span class="exp-date">August 2025 – May 2026</span>
+      </div>
+      <ul>
+        <li>Oversaw the event calendar for the Fall '25 semester, supervised and trained a new Event Staff team of 10 students, and managed technical operations including sound equipment setup and troubleshooting.</li>
+      </ul>
+      <div class="exp-role">
+        <span class="exp-title">Event Coordinator</span>
+        <span class="exp-date">August 2022 – February 2025</span>
+      </div>
+      <ul>
+        <li>Coordinated and executed over 100 campus-wide events across the Claremont Colleges for over 8,000 students.</li>
+        <li>Led outreach and promotion through digital and physical campaigns, including flyers, murals, email graphics, tabling on campus, and collaborating with student organizations to maximize participation.</li>
+      </ul>
+    </div>
+    <div class="exp-entry">
+      <div class="exp-head">
+        <span class="exp-org">PEN America / Russian Independent Media Archives</span>
+        <span class="exp-location">Manhattan, NY</span>
+      </div>
+      <div class="exp-role">
+        <span class="exp-title">Event Coordinator</span>
+        <span class="exp-date">February 2024 – May 2024</span>
+      </div>
+      <ul>
+        <li>Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.</li>
+        <li>Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York's Russian-speaking community to expand event participation and visibility.</li>
+      </ul>
+    </div>
+  </div>
   <div id="gallery" class="masonry"></div>
 </div>
 
