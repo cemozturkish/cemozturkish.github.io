@@ -190,12 +190,19 @@ body{
 }
 
 @media(max-width:768px){
+  .nav{
+    padding-top:16vh;
+  }
+
   .nav a.contact-trigger{
     display:block;
+    position:fixed;
+    right:clamp(28px, 4vw, 60px);
+    bottom:24px;
     font-size:13px;
     letter-spacing:.1em;
     color:rgba(255,255,255,0.4);
-    padding:22px 0 0;
+    padding:0;
   }
   .nav a.contact-trigger:hover,
   .nav a.contact-trigger:active{
@@ -203,25 +210,36 @@ body{
     transform:none;
   }
 
+  /* contact panel — plain text, bottom-left, no frame */
   .contact-panel{
-    left:auto;
-    right:20px;
+    left:24px;
+    right:auto;
     top:auto;
-    bottom:20px;
+    bottom:28px;
     width:auto;
-    min-width:200px;
-    padding:22px 26px;
-    align-items:flex-end;
-    text-align:right;
-    background:rgba(0,0,0,0.78);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-    border-radius:14px;
-    transform:translateY(12px) scale(.96);
+    align-items:flex-start;
+    text-align:left;
+    background:none;
+    transform:none;
   }
   .contact-panel.open{
-    transform:translateY(0) scale(1);
+    transform:none;
   }
+  .contact-panel a{
+    opacity:0;
+    transform:translateX(-24px);
+    transition:opacity .4s ease, transform .4s ease;
+  }
+  .contact-panel.open a{
+    opacity:1;
+    transform:translateX(0);
+  }
+  /* visual order top-to-bottom: twitter, linkedin, instagram, email —
+     staggered entrance starts from the bottom-most (email) and works up */
+  .contact-panel a:nth-child(1){ order:4; transition-delay:0s;   } /* email */
+  .contact-panel a:nth-child(2){ order:3; transition-delay:.08s; } /* instagram */
+  .contact-panel a:nth-child(3){ order:1; transition-delay:.24s; } /* twitter */
+  .contact-panel a:nth-child(4){ order:2; transition-delay:.16s; } /* linkedin */
 }
 
 /* page transition: curtain wipe */
