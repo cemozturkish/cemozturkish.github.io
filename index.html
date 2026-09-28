@@ -394,9 +394,21 @@ body{
   font-size:16px;
   letter-spacing:.04em;
 }
+.section-panel .panel-body .exp-section{ margin-bottom:60px; }
+.section-panel .panel-body .exp-section:last-child{ margin-bottom:0; }
+.section-panel .panel-body .exp-section-title{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px, 1.8vw, 20px);
+  font-weight:300;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,0.4);
+  text-align:center;
+  margin:0 auto 24px;
+  max-width:800px;
+}
 .section-panel .panel-body .exp-list{
   max-width:800px;
-  margin:0 auto 50px;
+  margin:0 auto 30px;
 }
 .section-panel .panel-body .exp-entry{ margin-bottom:32px; }
 .section-panel .panel-body .exp-entry .exp-head{
@@ -471,9 +483,7 @@ body{
 <nav class="nav">
   <a href="./about.html">ABOUT</a>
   <a href="./designs.html">DESIGNS</a>
-  <a href="./exhibitions.html">EXHIBITIONS</a>
-  <a href="./productions.html">PRODUCTIONS</a>
-  <a href="./projects.html">PROJECTS</a>
+  <a href="./experiences.html">EXPERIENCES</a>
   <a href="./events.html">EVENTS</a>
   <a href="#" class="contact-trigger" id="contactTrigger">CONTACT</a>
 </nav>
@@ -578,12 +588,16 @@ body{
     '</div>' +
   '</div>';
 
+  var experiencesSections = [
+    { title:'EXHIBITIONS', prefix:'exhibition', intro: exhibitionsIntro },
+    { title:'PRODUCTIONS', prefix:'production', intro: productionsIntro },
+    { title:'PROJECTS', prefix:'project', intro: projectsIntro }
+  ];
+
   var pages = {
     'about.html': { title:'ABOUT', type:'bio', content: aboutContent },
     'designs.html': { title:'DESIGNS', type:'gallery', prefix:'designer' },
-    'exhibitions.html': { title:'EXHIBITIONS', type:'gallery', prefix:'exhibition', intro: exhibitionsIntro },
-    'productions.html': { title:'PRODUCTIONS', type:'gallery', prefix:'production', intro: productionsIntro },
-    'projects.html': { title:'PROJECTS', type:'gallery', prefix:'project', intro: projectsIntro },
+    'experiences.html': { title:'EXPERIENCES', type:'multigallery', sections: experiencesSections },
     'events.html': { title:'EVENTS', type:'gallery', prefix:'events', header:'./assets/events.png', intro: eventsIntro }
   };
 
@@ -606,6 +620,23 @@ body{
     }
     if(p.type === 'bio'){
       secBody.insertAdjacentHTML('beforeend', p.content);
+    } else if(p.type === 'multigallery'){
+      p.sections.forEach(function(sec){
+        var section = document.createElement('div');
+        section.className = 'exp-section';
+        var sh = document.createElement('h2');
+        sh.className = 'exp-section-title';
+        sh.textContent = sec.title;
+        section.appendChild(sh);
+        if(sec.intro){
+          section.insertAdjacentHTML('beforeend', sec.intro);
+        }
+        var gallery = document.createElement('div');
+        gallery.className = 'masonry';
+        section.appendChild(gallery);
+        secBody.appendChild(section);
+        loadGallery(gallery, sec.prefix);
+      });
     } else {
       if(p.intro){
         secBody.insertAdjacentHTML('beforeend', p.intro);
