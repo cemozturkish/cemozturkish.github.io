@@ -79,6 +79,14 @@
     }).join('');
   }
 
+  // free text: a blank line starts a new paragraph, a single line break stays a line break
+  function paragraphsHTML(text){
+    return String(text || '').split(/\n\s*\n/).map(function(p){ return p.trim(); })
+      .filter(Boolean)
+      .map(function(p){ return '<p>' + inline(p).replace(/\n/g, '<br>') + '</p>'; })
+      .join('');
+  }
+
   function entriesHTML(list){
     if(!list || !list.length) return '';
     return '<div class="exp-list">' + list.map(function(e){
@@ -128,6 +136,7 @@
     inline: inline,
     src: src,
     educationHTML: educationHTML,
+    paragraphsHTML: paragraphsHTML,
     entriesHTML: entriesHTML,
     gallery: gallery
   };
