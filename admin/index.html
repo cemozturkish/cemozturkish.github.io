@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow" />
 <title>Site Editor</title>
 <link rel="icon" type="image/png" href="../favicon.png" />
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200&display=swap" rel="stylesheet" />
 <style>
 :root{
   --bg:#f4f4f2; --panel:#ffffff; --panel-2:#f8f8f6; --text:#18181b; --muted:#6b6b70;
@@ -173,6 +174,15 @@ textarea.big{ min-height:160px; }
   background:rgba(0,0,0,.6); color:#fff;
 }
 .photo .badge.new{ background:#f5c518; color:#111; }
+.photo{ cursor:pointer; }
+.photo.is-hidden img{ opacity:.28; filter:grayscale(1); }
+.photo.is-hidden{ border-style:dashed; }
+.photo .hidden-label{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  padding:4px 10px; border-radius:999px; background:rgba(0,0,0,.72); color:#fff; pointer-events:none;
+}
+.ptools .eye{ width:auto; padding:0 8px; font-size:12px; font-weight:600; }
 .photo .ptools{
   position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between;
   padding:6px; background:linear-gradient(transparent, rgba(0,0,0,.65));
@@ -194,6 +204,44 @@ textarea.big{ min-height:160px; }
 .add-photo:hover,.photos.dropping .add-photo{ border-color:var(--focus); color:var(--text); }
 .add-photo b{ font-size:24px; font-weight:300; line-height:1; }
 
+.crop{ display:flex; gap:24px; align-items:flex-start; }
+.crop-main{ flex:1; min-width:0; }
+.crop-frame{
+  position:relative; width:100%; aspect-ratio:1366.09/768.16; border-radius:8px; overflow:hidden;
+  background:#111; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none;
+}
+.crop-frame.dragging{ cursor:grabbing; }
+.crop-frame img{ width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+.crop-box{
+  position:absolute; top:0; bottom:0; border:2px solid #fff; border-radius:4px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.55); pointer-events:none;
+}
+.crop-box span{
+  position:absolute; left:50%; top:8px; transform:translateX(-50%);
+  font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  background:#fff; color:#111; padding:2px 8px; border-radius:999px;
+}
+.crop-controls{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+.crop-controls input[type=range]{ flex:1; accent-color:var(--text); }
+.small-label{ font-size:12px; color:var(--muted); }
+.crop-side{ flex-shrink:0; }
+.phone{
+  position:relative; width:200px; aspect-ratio:390/844; border-radius:26px; overflow:hidden;
+  border:6px solid #111; background:#111; box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.phone-bg{ position:absolute; inset:-9px; background-size:cover; background-repeat:no-repeat; }
+.phone-shade{ position:absolute; inset:0; background:linear-gradient(135deg, rgba(0,0,0,.70) 0%, rgba(0,0,0,.40) 50%, rgba(0,0,0,.60) 100%); }
+.phone-nav{
+  position:absolute; right:14px; top:0; bottom:0; padding-top:16%; display:flex; flex-direction:column;
+  justify-content:center; align-items:flex-end; gap:6px;
+  font-family:'Josefin Sans',system-ui,sans-serif; font-weight:200; font-size:13px; letter-spacing:.06em; color:rgba(255,255,255,.6);
+}
+.phone-contact{ position:absolute; right:14px; bottom:12px; font-size:7px; letter-spacing:.1em; color:rgba(255,255,255,.4); }
+@media(max-width:700px){
+  .crop{ flex-direction:column-reverse; align-items:stretch; }
+  .crop-side{ align-self:center; }
+  .phone{ width:170px; }
+}
 .single-image{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
 .single-image .preview{
   width:200px; height:110px; border-radius:8px; background:#111; border:1px solid var(--line);
@@ -266,7 +314,7 @@ var original = null;     // what's currently published
 var originalSha = null;  // blob sha of the published content.json
 var pending = {};        // path -> { blob, url } — photos added but not yet published
 var localUrls = {};      // path -> object URL, kept after publishing while the live site redeploys
-var tab = lsGet(TAB_KEY) || 'contact';
+var tab = lsGet(TAB_KEY) || 'home';
 
 var app = document.getElementById('app');
 
@@ -688,27 +736,54 @@ function entriesEditor(entries){
 }
 
 /* ---------- photo grid ---------- */
-function photoGrid(photos, base){
+function photoGrid(owner, base){
+  var photos = owner.photos;
   var grid = h('div', { class:'photos' });
   var dragFrom = null;
+
+  function isHidden(p){ return !!owner.hidden && owner.hidden.indexOf(p) >= 0; }
+  function setHidden(p, hide){
+    var list = (owner.hidden || []).filter(function(x){ return x !== p; });
+    if(hide) list.push(p);
+    if(list.length) owner.hidden = list; else delete owner.hidden;
+  }
 
   function draw(){
     grid.innerHTML = '';
     photos.forEach(function(p, i){
       var img = h('img', { alt:'', loading:'lazy', src:imgSrc(p) });
       if(!pending[p] && !localUrls[p]) attachFallback(img, p);
-      var tile = h('div', { class:'photo', draggable:true, tabindex:0 },
+      var hidden = isHidden(p);
+      function toggle(){ setHidden(p, !hidden); changed(); }
+      var tile = h('div', { class:'photo' + (hidden ? ' is-hidden' : ''), draggable:true, tabindex:0, role:'button',
+          'aria-pressed': String(hidden), 'aria-label': (hidden ? 'Hidden photo ' : 'Photo ') + (i + 1) + ', click to ' + (hidden ? 'show' : 'hide'),
+          title: hidden ? 'Hidden — click to show' : 'Click to hide' },
         img,
         h('span', { class:'badge' + (pending[p] ? ' new' : ''), text: pending[p] ? 'New' : String(i + 1) }),
+        hidden ? h('span', { class:'hidden-label', text:'Hidden' }) : null,
         h('div', { class:'ptools' },
           h('button', { type:'button', title:'Move earlier', 'aria-label':'Move photo earlier', disabled:i === 0,
             onclick:function(){ move(photos, i, i - 1); changed(); } }, '←'),
-          h('button', { type:'button', class:'del', title:'Remove photo', 'aria-label':'Remove photo',
-            onclick:function(){ photos.splice(i, 1); changed(); } }, '✕'),
+          h('button', { type:'button', class:'eye', title: hidden ? 'Show photo' : 'Hide photo', 'aria-label': hidden ? 'Show photo' : 'Hide photo',
+            onclick:toggle }, hidden ? 'Show' : 'Hide'),
+          h('button', { type:'button', class:'del', title:'Delete photo for good', 'aria-label':'Delete photo',
+            onclick:function(){
+              if(!confirm('Delete this photo for good? (Use "Hide" if you just want it off the site for now.)')) return;
+              setHidden(p, false); photos.splice(i, 1); changed();
+            } }, '✕'),
           h('button', { type:'button', title:'Move later', 'aria-label':'Move photo later', disabled:i === photos.length - 1,
             onclick:function(){ move(photos, i, i + 1); changed(); } }, '→')
         )
       );
+      tile.addEventListener('click', function(e){
+        if(e.target.closest('button')) return;
+        toggle();
+      });
+      tile.addEventListener('keydown', function(e){
+        if(e.target !== tile || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault(); toggle();
+        var again = grid.querySelectorAll('.photo')[i]; if(again) again.focus();
+      });
       tile.addEventListener('dragstart', function(e){
         dragFrom = i; tile.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
@@ -755,11 +830,12 @@ function photoGrid(photos, base){
 
   draw();
   return h('div', {}, grid,
-    h('div', { class:'hint', text:'Drag photos to reorder (or use the arrows). Big photos are shrunk automatically so the site stays fast.' }));
+    h('div', { class:'hint', text:'Click a photo to hide or show it — hidden photos stay here but don\'t appear on the site. Drag to reorder. ✕ deletes for good.' }));
 }
 
 /* ================= pages ================= */
 var TABS = [
+  { id:'home', label:'Home' },
   { id:'contact', label:'Contact' },
   { id:'about', label:'About' },
   { id:'designs', label:'Designs' },
@@ -779,7 +855,101 @@ function titleSection(page, extra){
   );
 }
 
+/* ---------- phone crop picker ---------- */
+var BG_PATH = 'assets/background.jpg';
+var IMG_AR = 1366.09 / 768.16;
+// typical phone screen (390×844) plus the 20px bleed the site adds on each side
+var PHONE_AR = (390 + 40) / (844 + 40);
+var CROP_FRAC = PHONE_AR / IMG_AR;   // share of the photo's width a phone shows
+
+function cropPicker(){
+  function getX(){ return content.home && typeof content.home.mobileFocusX === 'number' ? content.home.mobileFocusX : 50; }
+  function setX(x){
+    x = Math.round(Math.max(0, Math.min(100, x)) * 10) / 10;
+    if(x === 50 && !(original.home && 'mobileFocusX' in original.home)){
+      if(content.home){ delete content.home.mobileFocusX; if(!Object.keys(content.home).length) delete content.home; }
+    } else {
+      content.home = content.home || {};
+      content.home.mobileFocusX = x;
+    }
+    update(); refreshStatus();
+  }
+
+  var bgUrl = imgSrc(BG_PATH);
+  var frame = h('div', { class:'crop-frame', tabindex:0, role:'slider', 'aria-label':'Phone crop position',
+    'aria-valuemin':0, 'aria-valuemax':100 });
+  var photo = h('img', { src:bgUrl, alt:'', draggable:false });
+  var box = h('div', { class:'crop-box' }, h('span', { text:'Phone' }));
+  box.style.width = (CROP_FRAC * 100) + '%';
+  frame.appendChild(photo); frame.appendChild(box);
+
+  var phoneBg = h('div', { class:'phone-bg' });
+  phoneBg.style.backgroundImage = 'url("' + bgUrl + '")';
+  var phone = h('div', { class:'phone' },
+    phoneBg,
+    h('div', { class:'phone-shade' }),
+    h('div', { class:'phone-nav' }, ['about','designs','experiences','events'].map(function(k){
+      return h('span', { text:(content[k] && content[k].title) || k.toUpperCase() });
+    })),
+    h('div', { class:'phone-contact', text:'CONTACT' })
+  );
+
+  var slider = h('input', { type:'range', min:0, max:100, step:0.1, 'aria-label':'Phone crop position' });
+  slider.addEventListener('input', function(){ setX(parseFloat(slider.value)); });
+  var reset = h('button', { class:'btn small ghost', type:'button', onclick:function(){ setX(50); } }, 'Reset to center');
+
+  function update(){
+    var x = getX();
+    box.style.left = ((1 - CROP_FRAC) * x) + '%';
+    phoneBg.style.backgroundPosition = x + '% 50%';
+    slider.value = x;
+    frame.setAttribute('aria-valuenow', x);
+    reset.disabled = x === 50;
+  }
+
+  // drag anywhere on the photo: the box centres on the pointer
+  var dragging = false;
+  function fromPointer(e){
+    var r = frame.getBoundingClientRect();
+    var centre = (e.clientX - r.left) / r.width;
+    setX((centre - CROP_FRAC / 2) / (1 - CROP_FRAC) * 100);
+  }
+  frame.addEventListener('pointerdown', function(e){
+    dragging = true; frame.setPointerCapture(e.pointerId); frame.classList.add('dragging'); fromPointer(e); e.preventDefault();
+  });
+  frame.addEventListener('pointermove', function(e){ if(dragging) fromPointer(e); });
+  function stop(){ dragging = false; frame.classList.remove('dragging'); }
+  frame.addEventListener('pointerup', stop);
+  frame.addEventListener('pointercancel', stop);
+  frame.addEventListener('keydown', function(e){
+    var step = e.shiftKey ? 10 : 1;
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); setX(getX() - step); }
+    if(e.key === 'ArrowRight'){ e.preventDefault(); setX(getX() + step); }
+  });
+
+  update();
+  return h('div', { class:'crop' },
+    h('div', { class:'crop-main' },
+      frame,
+      h('div', { class:'crop-controls' }, h('span', { class:'small-label', text:'Left' }), slider, h('span', { class:'small-label', text:'Right' }), reset)
+    ),
+    h('div', { class:'crop-side' }, phone, h('div', { class:'hint', style:'text-align:center', text:'How phones will see it' }))
+  );
+}
+
 var views = {
+  home: function(){
+    return [
+      pageHead('Home', 'The landing page with your photo and the menu.'),
+      h('div', { class:'card section' },
+        h('h3', { text:'Phone crop' }),
+        h('p', { class:'hint', style:'margin:0 0 14px;font-size:13px',
+          text:'Phones are tall and narrow, so they only show a slice of the background photo. Drag the box (or use the slider) to pick which slice. Computers still show the whole photo.' }),
+        cropPicker()
+      )
+    ];
+  },
+
   contact: function(){
     var c = content.contact = content.contact || {};
     return [
@@ -839,7 +1009,7 @@ var views = {
     return [
       pageHead('Designs', 'A photo gallery.'),
       titleSection(p),
-      h('div', { class:'card section' }, h('h3', { text:'Photos' }), photoGrid(p.photos, 'designer'))
+      h('div', { class:'card section' }, h('h3', { text:'Photos' }), photoGrid(p, 'designer'))
     ];
   },
 
@@ -863,7 +1033,7 @@ var views = {
           h('div', { style:'height:20px' }),
           h('div', { class:'field' }, h('span', { text:'Photos' })),
           h('div', { style:'height:6px' }),
-          photoGrid(sec.photos, slug(sec.title))
+          photoGrid(sec, slug(sec.title))
         ));
       });
       wrap.appendChild(h('button', { class:'btn add', type:'button', onclick:function(){
@@ -914,7 +1084,7 @@ var views = {
         header
       )),
       h('div', { class:'card section' }, h('h3', { text:'Entries' }), entriesEditor(p.entries)),
-      h('div', { class:'card section' }, h('h3', { text:'Photos' }), photoGrid(p.photos, 'events'))
+      h('div', { class:'card section' }, h('h3', { text:'Photos' }), photoGrid(p, 'events'))
     ];
   }
 };
@@ -926,7 +1096,7 @@ function render(){
       tab = t.id; lsSet(TAB_KEY, tab); render(); window.scrollTo(0, 0);
     } }, t.label);
   }));
-  var view = views[tab] || views.contact;
+  var view = views[tab] || views.home;
   app.innerHTML = '';
   app.appendChild(h('header', { class:'topbar' },
     h('div', { class:'topbar-inner' },

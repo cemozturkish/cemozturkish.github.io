@@ -55,12 +55,50 @@
   function load(){
     if(contentPromise) return contentPromise;
     var draft = readPreview();
-    contentPromise = draft ? Promise.resolve(draft)
+    contentPromise = (draft ? Promise.resolve(draft)
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        });
+        })).then(function(c){ phoneCrop(c); return c; });
     return contentPromise;
+  }
+
+  // On portrait screens (phones) the wide background photo only shows a slice.
+  // content.home.mobileFocusX (0 = left edge, 100 = right edge) picks which slice.
+  // The home page's head outline + intro spotlight SVGs are re-cropped to match.
+  var IMG_W = 1366.09, IMG_H = 768.16;
+  function phoneCrop(c){
+    var x = c && c.home && typeof c.home.mobileFocusX === 'number' ? c.home.mobileFocusX : 50;
+    x = Math.max(0, Math.min(100, x));
+    var mq = window.matchMedia('(orientation: portrait)');
+    function apply(){
+      var on = mq.matches && x !== 50;
+      document.querySelectorAll('.bg').forEach(function(el){
+        el.style.backgroundPosition = on ? x + '% 50%' : '';
+      });
+      document.querySelectorAll('svg.contact-zone, svg.intro-spotlight').forEach(function(svg){
+        if(!on){
+          svg.setAttribute('viewBox', '0 0 ' + IMG_W + ' ' + IMG_H);
+          svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+          return;
+        }
+        // same box as .bg (inset:-20px)
+        var W = window.innerWidth + 40, H = window.innerHeight + 40;
+        var s = Math.max(W / IMG_W, H / IMG_H);
+        var vw = W / s, vh = H / s;
+        var vx = (IMG_W - vw) * x / 100, vy = (IMG_H - vh) / 2;
+        svg.setAttribute('viewBox', [vx, vy, vw, vh].join(' '));
+        svg.setAttribute('preserveAspectRatio', 'none');
+      });
+    }
+    apply();
+    window.addEventListener('resize', apply);
+  }
+
+  // photos the admin marked as hidden stay in the list but aren't shown
+  function visible(owner){
+    var hidden = (owner && owner.hidden) || [];
+    return ((owner && owner.photos) || []).filter(function(p){ return hidden.indexOf(p) < 0; });
   }
 
   function educationHTML(list){
@@ -138,6 +176,7 @@
     educationHTML: educationHTML,
     paragraphsHTML: paragraphsHTML,
     entriesHTML: entriesHTML,
-    gallery: gallery
+    gallery: gallery,
+    visible: visible
   };
 })();
