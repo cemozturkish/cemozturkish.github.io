@@ -125,6 +125,29 @@
       .join('');
   }
 
+  // page heading shown at the top of a page (separate from the menu button label);
+  // an empty heading hides it
+  function heading(p){
+    return p && typeof p.heading === 'string' ? p.heading : (p && p.title) || '';
+  }
+
+  // About: fixed education block on top, scrollable "about me" text below
+  function aboutHTML(a){
+    a = a || {};
+    var eduTitle = typeof a.educationTitle === 'string' ? a.educationTitle : 'EDUCATION';
+    var textTitle = typeof a.textTitle === 'string' ? a.textTitle : 'ABOUT ME';
+    var text = paragraphsHTML(a.text);
+    var h = '<div class="about-edu">' +
+      (eduTitle ? '<h2 class="about-section-title">' + inline(eduTitle) + '</h2>' : '') +
+      educationHTML(a.education) + '</div>';
+    if(text){
+      h += '<div class="about-me">' +
+        (textTitle ? '<h2 class="about-section-title">' + inline(textTitle) + '</h2>' : '') +
+        '<div class="about-me-scroll">' + text + '</div></div>';
+    }
+    return h;
+  }
+
   function entriesHTML(list){
     if(!list || !list.length) return '';
     return '<div class="exp-list">' + list.map(function(e){
@@ -175,6 +198,8 @@
     src: src,
     educationHTML: educationHTML,
     paragraphsHTML: paragraphsHTML,
+    heading: heading,
+    aboutHTML: aboutHTML,
     entriesHTML: entriesHTML,
     gallery: gallery,
     visible: visible

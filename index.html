@@ -358,7 +358,46 @@ body{
 .section-panel .panel-body .bio p{
   margin-bottom:20px;
 }
-.section-panel .panel-body .bio .about-text{ margin-top:40px; }
+.section-panel .panel-body .about-section-title{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px, 1.8vw, 20px);
+  font-weight:300;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,0.4);
+  text-align:center;
+  margin:0 0 24px;
+}
+.section-panel .panel-body .about-me-scroll{
+  font-size:clamp(13px, 1.3vw, 16px);
+  line-height:1.7;
+  color:rgba(255,255,255,0.55);
+}
+.section-panel .panel-body .about-me-scroll p{ margin-bottom:14px; }
+/* About: title + education stay put, only the "about me" text scrolls */
+.section-panel.fixed{ display:flex; flex-direction:column; overflow:hidden; }
+.section-panel.fixed .panel-close{ flex:none; align-self:flex-start; }
+.section-panel.fixed .panel-body{
+  flex:1; min-height:0; display:flex; flex-direction:column;
+  padding-bottom:0; overflow-y:auto;
+}
+.section-panel.fixed .panel-body > *{ flex:none; }
+.section-panel.fixed .panel-body > .bio{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+.section-panel.fixed .about-edu{ flex:none; }
+.section-panel.fixed .about-me{ flex:1; min-height:160px; display:flex; flex-direction:column; margin-top:12px; }
+.section-panel.fixed .about-me .about-section-title{ flex:none; }
+@media(max-width:600px){
+  .section-panel.fixed .panel-close{ padding-top:14px; padding-bottom:10px; }
+  .section-panel.fixed .panel-body h1{ margin-bottom:22px; }
+  .section-panel.fixed .about-section-title{ font-size:14px; margin-bottom:14px; }
+  .section-panel.fixed .edu-entry{ margin-bottom:16px; }
+  .section-panel.fixed .about-me{ min-height:120px; margin-top:8px; }
+}
+.section-panel.fixed .about-me-scroll{
+  flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch; padding-bottom:48px;
+  -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+          mask-image:linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+}
 .section-panel .panel-body .edu-entry{
   margin-bottom:28px;
 }
@@ -570,15 +609,14 @@ body{
         himg.alt = p.title;
         himg.style.cssText = 'display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;';
         secBody.appendChild(himg);
-      } else {
+      } else if(Site.heading(p)){
         var h = document.createElement('h1');
-        h.textContent = p.title;
+        h.textContent = Site.heading(p);
         secBody.appendChild(h);
       }
+      secPanel.classList.toggle('fixed', page === 'about');
       if(page === 'about'){
-        var aboutText = Site.paragraphsHTML(p.text);
-        secBody.insertAdjacentHTML('beforeend', '<div class="bio">' + Site.educationHTML(p.education) +
-          (aboutText ? '<div class="about-text">' + aboutText + '</div>' : '') + '</div>');
+        secBody.insertAdjacentHTML('beforeend', '<div class="bio">' + Site.aboutHTML(p) + '</div>');
       } else if(page === 'experiences'){
         (p.sections || []).forEach(function(sec){
           var section = document.createElement('div');

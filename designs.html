@@ -126,7 +126,8 @@ h1{
 <script src="./site.js"></script>
 <script>
 Site.load().then(c => {
-  document.getElementById('title').textContent = c.designs.title;
+  document.getElementById('title').textContent = Site.heading(c.designs);
+  if(!Site.heading(c.designs)) document.getElementById('title').style.display = 'none';
   Site.gallery(document.getElementById('gallery'), Site.visible(c.designs));
 });
 (function(){

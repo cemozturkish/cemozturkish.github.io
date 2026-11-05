@@ -415,9 +415,23 @@ function blobToB64(blob){
   });
 }
 
+// fill in fields added after content.json was first written, using what the site
+// already shows by default, so opening the editor never looks like a change
+function normalize(c){
+  ['about','designs','experiences','events'].forEach(function(k){
+    var p = c[k];
+    if(p && typeof p.heading !== 'string') p.heading = p.title || '';
+  });
+  if(c.about){
+    if(typeof c.about.educationTitle !== 'string') c.about.educationTitle = 'EDUCATION';
+    if(typeof c.about.textTitle !== 'string') c.about.textTitle = 'ABOUT ME';
+  }
+  return c;
+}
+
 function loadContent(){
   return gh('/contents/' + CONTENT_PATH + '?ref=' + REPO.branch).then(function(f){
-    original = JSON.parse(b64ToText(f.content));
+    original = normalize(JSON.parse(b64ToText(f.content)));
     originalSha = f.sha;
     content = clone(original);
     pending = {};
@@ -850,7 +864,10 @@ function pageHead(title, sub){
 function titleSection(page, extra){
   return h('div', { class:'card section' },
     h('h3', { text:'Page' }),
-    textField('Title', page, 'title', { help:'Shown on the home page menu and at the top of the page.' }),
+    h('div', { class:'grid2' },
+      textField('Menu button', page, 'title', { help:'The link on the home page.' }),
+      textField('Page heading', page, 'heading', { help:'Shown at the top when the page opens. Leave empty to hide it.' })
+    ),
     extra || null
   );
 }
@@ -991,14 +1008,21 @@ var views = {
     }
     draw();
     return [
-      pageHead('About', 'Your education, plus any text you want below it.'),
+      pageHead('About', 'Education on top, your own text below.'),
       titleSection(p),
-      h('div', { class:'card section' }, h('h3', { text:'Education' }), list),
       h('div', { class:'card section' },
-        h('h3', { text:'Text' }),
-        textField('Shown below your education', p, 'text', { multiline:true, big:true,
+        h('h3', { text:'Top part' }),
+        textField('Section title', p, 'educationTitle', { placeholder:'e.g. EDUCATION', help:'Leave empty to hide it.' }),
+        h('div', { style:'height:16px' }),
+        list
+      ),
+      h('div', { class:'card section' },
+        h('h3', { text:'Bottom part' }),
+        textField('Section title', p, 'textTitle', { placeholder:'e.g. ABOUT ME', help:'Leave empty to hide it.' }),
+        h('div', { style:'height:12px' }),
+        textField('Text', p, 'text', { multiline:true, big:true,
           placeholder:'Write anything here…',
-          help:'Leave an empty line between paragraphs. *asterisks* for italics, **double** for bold. Leave empty to hide.' })
+          help:'This part scrolls on its own while the top stays in place. Leave an empty line between paragraphs. *asterisks* for italics, **double** for bold. Leave empty to hide the whole bottom part.' })
       )
     ];
   },

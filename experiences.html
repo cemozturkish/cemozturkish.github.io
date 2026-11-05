@@ -151,7 +151,8 @@ h2.exp-section-title{
 <script src="./site.js"></script>
 <script>
 Site.load().then(c => {
-  document.getElementById('title').textContent = c.experiences.title;
+  document.getElementById('title').textContent = Site.heading(c.experiences);
+  if(!Site.heading(c.experiences)) document.getElementById('title').style.display = 'none';
   const root = document.getElementById('sections');
   (c.experiences.sections || []).forEach(sec => {
     const section = document.createElement('div');
