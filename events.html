@@ -170,10 +170,10 @@ Site.load().then(c => {
   const p = c.events;
   const title = document.getElementById('title');
   const header = document.getElementById('header');
-  title.textContent = p.title;
+  title.textContent = Site.heading(p);
   header.alt = p.title;
   if(p.headerImage){ header.src = Site.src(p.headerImage); header.style.display = "block"; }
-  else { title.hidden = false; }
+  else if(title.textContent){ title.hidden = false; }
   document.getElementById('entries').innerHTML = Site.entriesHTML(p.entries);
   Site.gallery(document.getElementById('gallery'), Site.visible(p));
 });
