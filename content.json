@@ -9,10 +9,10 @@
     "title": "ABOUT",
     "education": [
       {
-        "school": "Pomona College",
+        "school": "Pitzer College",
         "location": "Claremont, CA",
         "degree": "Bachelor of Arts in PPE: Philosophy, Politics, and Economics",
-        "date": "Spring 2026"
+        "date": "January 2026"
       },
       {
         "school": "Tribhuvan University",
@@ -32,8 +32,7 @@
         "degree": "",
         "date": ""
       }
-    ],
-    "text": ""
+    ]
   },
   "designs": {
     "title": "DESIGNS",
