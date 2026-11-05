@@ -68,6 +68,7 @@ h1{
 .bio p{
   margin-bottom:20px;
 }
+.bio .about-text{ margin-top:40px; }
 
 .edu-entry{ margin-bottom:28px; }
 .edu-entry .edu-row{
@@ -145,7 +146,9 @@ h1{ animation-delay:.1s; }
 <script>
 Site.load().then(c => {
   document.getElementById('title').textContent = c.about.title;
-  document.getElementById('bio').innerHTML = Site.educationHTML(c.about.education);
+  const text = Site.paragraphsHTML(c.about.text);
+  document.getElementById('bio').innerHTML = Site.educationHTML(c.about.education) +
+    (text ? '<div class="about-text">' + text + '</div>' : '');
 });
 (function(){
   document.querySelectorAll('a.back').forEach(a => {

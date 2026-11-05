@@ -134,6 +134,7 @@ input[type=text],input[type=email],input[type=url],input[type=password],textarea
 }
 input:focus,textarea:focus{ border-color:var(--focus); background:var(--panel); }
 textarea{ resize:none; overflow:hidden; min-height:42px; line-height:1.5; }
+textarea.big{ min-height:160px; }
 
 /* ---------- entries ---------- */
 .entry{
@@ -601,7 +602,7 @@ function textField(label, obj, key, opts){
   opts = opts || {};
   var input;
   if(opts.multiline){
-    input = h('textarea', { rows:1, placeholder:opts.placeholder || '' });
+    input = h('textarea', { rows:1, placeholder:opts.placeholder || '', class: opts.big ? 'big' : null });
     input.value = obj[key] || '';
     input.addEventListener('input', function(){ obj[key] = input.value; autosize(input); refreshStatus(); });
     requestAnimationFrame(function(){ autosize(input); });
@@ -820,9 +821,15 @@ var views = {
     }
     draw();
     return [
-      pageHead('About', 'Your education.'),
+      pageHead('About', 'Your education, plus any text you want below it.'),
       titleSection(p),
-      h('div', { class:'card section' }, h('h3', { text:'Education' }), list)
+      h('div', { class:'card section' }, h('h3', { text:'Education' }), list),
+      h('div', { class:'card section' },
+        h('h3', { text:'Text' }),
+        textField('Shown below your education', p, 'text', { multiline:true, big:true,
+          placeholder:'Write anything here…',
+          help:'Leave an empty line between paragraphs. *asterisks* for italics, **double** for bold. Leave empty to hide.' })
+      )
     ];
   },
 

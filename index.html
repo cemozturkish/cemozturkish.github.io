@@ -358,6 +358,7 @@ body{
 .section-panel .panel-body .bio p{
   margin-bottom:20px;
 }
+.section-panel .panel-body .bio .about-text{ margin-top:40px; }
 .section-panel .panel-body .edu-entry{
   margin-bottom:28px;
 }
@@ -575,7 +576,9 @@ body{
         secBody.appendChild(h);
       }
       if(page === 'about'){
-        secBody.insertAdjacentHTML('beforeend', '<div class="bio">' + Site.educationHTML(p.education) + '</div>');
+        var aboutText = Site.paragraphsHTML(p.text);
+        secBody.insertAdjacentHTML('beforeend', '<div class="bio">' + Site.educationHTML(p.education) +
+          (aboutText ? '<div class="about-text">' + aboutText + '</div>' : '') + '</div>');
       } else if(page === 'experiences'){
         (p.sections || []).forEach(function(sec){
           var section = document.createElement('div');
