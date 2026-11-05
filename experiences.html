@@ -144,124 +144,30 @@ h2.exp-section-title{
 <div class="curtain enter"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
-  <h1>EXPERIENCES</h1>
-
-  <div class="exp-section">
-    <h2 class="exp-section-title">EXHIBITIONS</h2>
-    <div class="exp-list">
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-org">Pitzer Art Galleries</span>
-          <span class="exp-location">Los Angeles, CA</span>
-        </div>
-        <div class="exp-role">
-          <span class="exp-title">Art Gallery Assistant</span>
-          <span class="exp-date">August 2024 – February 2025</span>
-        </div>
-        <ul>
-          <li>Supported installation, reception logistics, and outreach for exhibitions <em>Aurora</em> (Valeria Tizol Vivas) and <em>Las Tres Gracias</em> (Jimena Sarno), creating promotional materials including flyers and email graphics.</li>
-          <li>Managed weekend gallery operations: opened the space, set up A/V and visuals, and prepared the gallery for visitors.</li>
-          <li>Welcomed guests, provided programs, served as the on-site contact, and led exhibition walkthroughs.</li>
-        </ul>
-      </div>
-    </div>
-    <div class="masonry" data-prefix="exhibition"></div>
-  </div>
-
-  <div class="exp-section">
-    <h2 class="exp-section-title">PRODUCTIONS</h2>
-    <div class="exp-list">
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-org">Seaver Theatre</span>
-          <span class="exp-location">Claremont, CA</span>
-        </div>
-        <div class="exp-role">
-          <span class="exp-title">Theatre Assistant</span>
-          <span class="exp-date">August 2025 – May 2026</span>
-        </div>
-        <ul>
-          <li>Supported front-of-house operations, including box office, ushering, and event coordination.</li>
-          <li>Worked weekly in the costume shop, tailoring garments for three productions.</li>
-          <li>Assisted in the scene shop, building props and supporting technical production needs.</li>
-        </ul>
-      </div>
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-org">Legal Aid Society</span>
-          <span class="exp-location">Brooklyn, NY</span>
-        </div>
-        <div class="exp-role">
-          <span class="exp-title">Production Assistant</span>
-          <span class="exp-date">January 2024 – June 2024</span>
-        </div>
-        <ul>
-          <li>Maintained flexible, on-call working hours to accommodate attorneys, clients, and production teams while conducting fieldwork across New York City for interviews, visiting courts, and capturing documentary footage.</li>
-          <li>Collaborated with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos.</li>
-        </ul>
-      </div>
-    </div>
-    <div class="masonry" data-prefix="production"></div>
-  </div>
-
-  <div class="exp-section">
-    <h2 class="exp-section-title">PROJECTS</h2>
-    <div class="exp-list">
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-org">Sancharika Samuha: Forum of Women Journalists &amp; Communicators</span>
-          <span class="exp-location">Kathmandu, Nepal</span>
-        </div>
-        <div class="exp-role">
-          <span class="exp-title">Editor</span>
-          <span class="exp-date">April 2025 – May 2025</span>
-        </div>
-        <ul>
-          <li>Collaborated with Nepali Supreme Court Justice Sapana Pradhan Malla to enhance representation of women journalists in media, and provided support in organizing and coordinating events promoting equity-based development.</li>
-        </ul>
-      </div>
-    </div>
-    <div class="masonry" data-prefix="project"></div>
-  </div>
+  <h1 id="title">EXPERIENCES</h1>
+  <div id="sections"></div>
 </div>
 
+<script src="./site.js"></script>
 <script>
-(function(){
-  const exts = ["jpg","jpeg","png"];
-
-  document.querySelectorAll(".masonry[data-prefix]").forEach(gallery => {
-    const prefix = gallery.dataset.prefix;
-
-    for(let i = 1; i <= 60; i++){
-      const img = document.createElement("img");
-      img.loading = "lazy";
-      let k = 0;
-      const tryNext = () => {
-        if(k >= exts.length){ img.remove(); return; }
-        img.src = `./assets/${prefix}${i}.${exts[k++]}`;
-      };
-      img.onerror = tryNext;
-      tryNext();
-      gallery.appendChild(img);
-    }
-
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if(e.isIntersecting){
-          e.target.classList.add("visible");
-          io.unobserve(e.target);
-        }
-      });
-    }, {threshold: .1});
-
-    new MutationObserver(() => {
-      gallery.querySelectorAll("img:not(.visible)").forEach((img, i) => {
-        img.style.transitionDelay = `${(i % 8) * 60}ms`;
-        io.observe(img);
-      });
-    }).observe(gallery, {childList: true});
+Site.load().then(c => {
+  document.getElementById('title').textContent = c.experiences.title;
+  const root = document.getElementById('sections');
+  (c.experiences.sections || []).forEach(sec => {
+    const section = document.createElement('div');
+    section.className = 'exp-section';
+    const h = document.createElement('h2');
+    h.className = 'exp-section-title';
+    h.textContent = sec.title;
+    section.appendChild(h);
+    section.insertAdjacentHTML('beforeend', Site.entriesHTML(sec.entries));
+    const g = document.createElement('div');
+    g.className = 'masonry';
+    section.appendChild(g);
+    root.appendChild(section);
+    Site.gallery(g, sec.photos);
   });
-})();
+});
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
     a.addEventListener('click', e => {

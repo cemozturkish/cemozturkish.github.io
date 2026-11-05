@@ -119,45 +119,16 @@ h1{
 <div class="curtain enter"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
-  <h1>DESIGNS</h1>
+  <h1 id="title">DESIGNS</h1>
   <div id="gallery" class="masonry"></div>
 </div>
 
+<script src="./site.js"></script>
 <script>
-(function(){
-  const gallery = document.getElementById("gallery");
-  const exts = ["jpg","jpeg","png"];
-
-  for(let i = 1; i <= 60; i++){
-    const img = document.createElement("img");
-    img.loading = "lazy";
-    let k = 0;
-    const tryNext = () => {
-      if(k >= exts.length){ img.remove(); return; }
-      img.src = `./assets/designer${i}.${exts[k++]}`;
-    };
-    img.onerror = tryNext;
-    tryNext();
-    gallery.appendChild(img);
-  }
-
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if(e.isIntersecting){
-        e.target.classList.add("visible");
-        io.unobserve(e.target);
-      }
-    });
-  }, {threshold: .1});
-
-  new MutationObserver(() => {
-    gallery.querySelectorAll("img:not(.visible)").forEach((img, i) => {
-      img.style.transitionDelay = `${(i % 8) * 60}ms`;
-      io.observe(img);
-    });
-  }).observe(gallery, {childList: true});
-})();
-
+Site.load().then(c => {
+  document.getElementById('title').textContent = c.designs.title;
+  Site.gallery(document.getElementById('gallery'), c.designs.photos);
+});
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
     a.addEventListener('click', e => {

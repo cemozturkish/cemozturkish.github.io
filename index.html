@@ -469,10 +469,10 @@ body{
   <path id="headZone" d="M261.68,768.16c-6.19-25.76-28.17-49.6-27.21-50.76,14.74-17.63,36.17-59.84,36.17-59.84,0,0,2.69-15.12,1.13-26.15-1.47-10.44-5.12-18.54-7.78-23.8,4.43-6.93,8.87-13.85,13.3-20.78,10.94-7.54,22.83-13.54,35.42-18.42l64.14-1.74,10.72-2.43,9.71-4.65,6.47-4.05,5.66-6.27,7.49-10.52,4.25-21.85,28.32-61.5,10.32-34.39,5.87-34.59,1.42-25.49,1.51-19.04-8.8-52.08,5.87-12.1-.37-11.74,12.1-19.8,15.04-16.14v-4.03l6.6,1.47-3.3-7.33,3.3-15.95-23.2-48.97,3.26-33.47,37.55-37.55v-28.57L537.04.16,0,0v768.16h261.68Z" />
 </svg>
 <div class="contact-panel" id="contactPanel">
-  <a href="mailto:cemwozturk@gmail.com">cemwozturk@gmail.com</a>
-  <a href="https://instagram.com/cemozturkish" target="_blank" rel="noopener">instagram</a>
-  <a href="https://twitter.com/hasancemozturk" target="_blank" rel="noopener">twitter</a>
-  <a href="https://linkedin.com/in/hasancemozturk" target="_blank" rel="noopener">linkedin</a>
+  <a id="cEmail" href="mailto:cemwozturk@gmail.com">cemwozturk@gmail.com</a>
+  <a id="cInstagram" href="https://instagram.com/cemozturkish" target="_blank" rel="noopener">instagram</a>
+  <a id="cTwitter" href="https://twitter.com/hasancemozturk" target="_blank" rel="noopener">twitter</a>
+  <a id="cLinkedin" href="https://linkedin.com/in/hasancemozturk" target="_blank" rel="noopener">linkedin</a>
 </div>
 
 <div class="section-panel" id="sectionPanel">
@@ -481,10 +481,10 @@ body{
 </div>
 
 <nav class="nav">
-  <a href="./about.html">ABOUT</a>
-  <a href="./designs.html">DESIGNS</a>
-  <a href="./experiences.html">EXPERIENCES</a>
-  <a href="./events.html">EVENTS</a>
+  <a href="./about.html" data-page="about">ABOUT</a>
+  <a href="./designs.html" data-page="designs">DESIGNS</a>
+  <a href="./experiences.html" data-page="experiences">EXPERIENCES</a>
+  <a href="./events.html" data-page="events">EVENTS</a>
   <a href="#" class="contact-trigger" id="contactTrigger">CONTACT</a>
 </nav>
 
@@ -501,6 +501,7 @@ body{
 </svg>
 <div id="curtain" class="curtain enter"></div>
 
+<script src="./site.js"></script>
 <script>
 (function(){
   var c = document.getElementById('curtain');
@@ -529,157 +530,71 @@ body{
   var secBody = document.getElementById('panelBody');
   var secClose = document.getElementById('panelClose');
 
-  // page content definitions
-  var aboutContent = '<div class="bio">' +
-    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Pomona College</span><span class="edu-location">Claremont, CA</span></div><div class="edu-row"><span class="edu-degree">Bachelor of Arts in PPE: Philosophy, Politics, and Economics</span><span class="edu-date">Spring 2026</span></div></div>' +
-    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Tribhuvan University</span><span class="edu-location">Kathmandu, Nepal</span></div><div class="edu-row"><span class="edu-degree">Study Abroad: Culture, Change, and Social Justice in Nepal</span><span class="edu-date">Spring 2025</span></div></div>' +
-    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Bard College</span><span class="edu-location">Brooklyn, NY</span></div><div class="edu-row"><span class="edu-degree">BardNYC: Globalization and International Affairs Semester Program</span><span class="edu-date">Spring 2024</span></div></div>' +
-    '<div class="edu-entry"><div class="edu-row"><span class="edu-school">Kabataş Erkek Lisesi</span><span class="edu-location">Istanbul, Türkiye</span></div></div>' +
-    '</div>';
+  // wording and photos come from content.json (edited through /admin)
+  var content = Site.load();
 
-  var eventsIntro = '<div class="exp-list">' +
-    '<div class="exp-entry">' +
-      '<div class="exp-head"><span class="exp-org">Pitzer Campus Life</span><span class="exp-location">Claremont, CA</span></div>' +
-      '<div class="exp-role"><span class="exp-title">Event Staff Manager</span><span class="exp-date">August 2025 – May 2026</span></div>' +
-      '<ul><li>Oversaw the event calendar for the Fall \'25 semester, supervised and trained a new Event Staff team of 10 students, and managed technical operations including sound equipment setup and troubleshooting.</li></ul>' +
-      '<div class="exp-role"><span class="exp-title">Event Coordinator</span><span class="exp-date">August 2022 – February 2025</span></div>' +
-      '<ul><li>Coordinated and executed over 100 campus-wide events across the Claremont Colleges for over 8,000 students.</li>' +
-      '<li>Led outreach and promotion through digital and physical campaigns, including flyers, murals, email graphics, tabling on campus, and collaborating with student organizations to maximize participation.</li></ul>' +
-    '</div>' +
-    '<div class="exp-entry">' +
-      '<div class="exp-head"><span class="exp-org">PEN America / Russian Independent Media Archives</span><span class="exp-location">Manhattan, NY</span></div>' +
-      '<div class="exp-role"><span class="exp-title">Event Coordinator</span><span class="exp-date">February 2024 – May 2024</span></div>' +
-      '<ul><li>Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.</li>' +
-      '<li>Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York\'s Russian-speaking community to expand event participation and visibility.</li></ul>' +
-    '</div>' +
-  '</div>';
-
-  var exhibitionsIntro = '<div class="exp-list">' +
-    '<div class="exp-entry">' +
-      '<div class="exp-head"><span class="exp-org">Pitzer Art Galleries</span><span class="exp-location">Los Angeles, CA</span></div>' +
-      '<div class="exp-role"><span class="exp-title">Art Gallery Assistant</span><span class="exp-date">August 2024 – February 2025</span></div>' +
-      '<ul><li>Supported installation, reception logistics, and outreach for exhibitions <em>Aurora</em> (Valeria Tizol Vivas) and <em>Las Tres Gracias</em> (Jimena Sarno), creating promotional materials including flyers and email graphics.</li>' +
-      '<li>Managed weekend gallery operations: opened the space, set up A/V and visuals, and prepared the gallery for visitors.</li>' +
-      '<li>Welcomed guests, provided programs, served as the on-site contact, and led exhibition walkthroughs.</li></ul>' +
-    '</div>' +
-  '</div>';
-
-  var productionsIntro = '<div class="exp-list">' +
-    '<div class="exp-entry">' +
-      '<div class="exp-head"><span class="exp-org">Seaver Theatre</span><span class="exp-location">Claremont, CA</span></div>' +
-      '<div class="exp-role"><span class="exp-title">Theatre Assistant</span><span class="exp-date">August 2025 – May 2026</span></div>' +
-      '<ul><li>Supported front-of-house operations, including box office, ushering, and event coordination.</li>' +
-      '<li>Worked weekly in the costume shop, tailoring garments for three productions.</li>' +
-      '<li>Assisted in the scene shop, building props and supporting technical production needs.</li></ul>' +
-    '</div>' +
-    '<div class="exp-entry">' +
-      '<div class="exp-head"><span class="exp-org">Legal Aid Society</span><span class="exp-location">Brooklyn, NY</span></div>' +
-      '<div class="exp-role"><span class="exp-title">Production Assistant</span><span class="exp-date">January 2024 – June 2024</span></div>' +
-      '<ul><li>Maintained flexible, on-call working hours to accommodate attorneys, clients, and production teams while conducting fieldwork across New York City for interviews, visiting courts, and capturing documentary footage.</li>' +
-      '<li>Collaborated with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos.</li></ul>' +
-    '</div>' +
-  '</div>';
-
-  var projectsIntro = '<div class="exp-list">' +
-    '<div class="exp-entry">' +
-      '<div class="exp-head"><span class="exp-org">Sancharika Samuha: Forum of Women Journalists &amp; Communicators</span><span class="exp-location">Kathmandu, Nepal</span></div>' +
-      '<div class="exp-role"><span class="exp-title">Editor</span><span class="exp-date">April 2025 – May 2025</span></div>' +
-      '<ul><li>Collaborated with Nepali Supreme Court Justice Sapana Pradhan Malla to enhance representation of women journalists in media, and provided support in organizing and coordinating events promoting equity-based development.</li></ul>' +
-    '</div>' +
-  '</div>';
-
-  var experiencesSections = [
-    { title:'EXHIBITIONS', prefix:'exhibition', intro: exhibitionsIntro },
-    { title:'PRODUCTIONS', prefix:'production', intro: productionsIntro },
-    { title:'PROJECTS', prefix:'project', intro: projectsIntro }
-  ];
-
-  var pages = {
-    'about.html': { title:'ABOUT', type:'bio', content: aboutContent },
-    'designs.html': { title:'DESIGNS', type:'gallery', prefix:'designer' },
-    'experiences.html': { title:'EXPERIENCES', type:'multigallery', sections: experiencesSections },
-    'events.html': { title:'EVENTS', type:'gallery', prefix:'events', header:'./assets/events.png', intro: eventsIntro }
-  };
-
-  function openSection(page){
-    var p = pages[page];
-    if(!p) return;
-    secBody.innerHTML = '';
-    // title
-    var h = document.createElement('h1');
-    h.textContent = p.title;
-    // header image for some pages
-    if(p.header){
-      var himg = document.createElement('img');
-      himg.src = p.header;
-      himg.alt = p.title;
-      himg.style.cssText = 'display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;';
-      secBody.appendChild(himg);
-    } else {
-      secBody.appendChild(h);
+  content.then(function(c){
+    document.querySelectorAll('.nav a[data-page]').forEach(function(a){
+      var p = c[a.dataset.page];
+      if(p && p.title) a.textContent = p.title;
+    });
+    var ct = c.contact || {};
+    function setLink(id, url, text){
+      var a = document.getElementById(id);
+      if(!url){ a.style.display = 'none'; return; }
+      a.href = url;
+      if(text) a.textContent = text;
     }
-    if(p.type === 'bio'){
-      secBody.insertAdjacentHTML('beforeend', p.content);
-    } else if(p.type === 'multigallery'){
-      p.sections.forEach(function(sec){
-        var section = document.createElement('div');
-        section.className = 'exp-section';
-        var sh = document.createElement('h2');
-        sh.className = 'exp-section-title';
-        sh.textContent = sec.title;
-        section.appendChild(sh);
-        if(sec.intro){
-          section.insertAdjacentHTML('beforeend', sec.intro);
-        }
-        var gallery = document.createElement('div');
-        gallery.className = 'masonry';
-        section.appendChild(gallery);
-        secBody.appendChild(section);
-        loadGallery(gallery, sec.prefix);
-      });
-    } else {
-      if(p.intro){
-        secBody.insertAdjacentHTML('beforeend', p.intro);
-      }
-      var gallery = document.createElement('div');
-      gallery.className = 'masonry';
-      secBody.appendChild(gallery);
-      loadGallery(gallery, p.prefix);
-    }
-    secPanel.classList.add('open');
-    secPanel.scrollTop = 0;
+    setLink('cEmail', ct.email ? 'mailto:' + ct.email : '', ct.email);
+    setLink('cInstagram', ct.instagram);
+    setLink('cTwitter', ct.twitter);
+    setLink('cLinkedin', ct.linkedin);
+  });
+
+  function addGallery(parent, photos){
+    var g = document.createElement('div');
+    g.className = 'masonry';
+    parent.appendChild(g);
+    Site.gallery(g, photos, secPanel);
   }
 
-  function loadGallery(gallery, prefix){
-    var exts = ['jpg','jpeg','png'];
-    for(var i = 1; i <= 60; i++){
-      (function(i){
-        var img = document.createElement('img');
-        img.loading = 'lazy';
-        var k = 0;
-        var tryNext = function(){
-          if(k >= exts.length){ img.remove(); return; }
-          img.src = './assets/' + prefix + i + '.' + exts[k++];
-        };
-        img.onerror = tryNext;
-        tryNext();
-        gallery.appendChild(img);
-      })(i);
-    }
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if(e.isIntersecting){
-          e.target.classList.add('visible');
-          io.unobserve(e.target);
-        }
-      });
-    }, {threshold:.1, root: secPanel});
-    new MutationObserver(function(){
-      gallery.querySelectorAll('img:not(.visible)').forEach(function(img, i){
-        img.style.transitionDelay = (i % 8) * 60 + 'ms';
-        io.observe(img);
-      });
-    }).observe(gallery, {childList:true});
+  function openSection(page){
+    content.then(function(c){
+      var p = c[page];
+      if(!p) return;
+      secBody.innerHTML = '';
+      if(page === 'events' && p.headerImage){
+        var himg = document.createElement('img');
+        himg.src = Site.src(p.headerImage);
+        himg.alt = p.title;
+        himg.style.cssText = 'display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;';
+        secBody.appendChild(himg);
+      } else {
+        var h = document.createElement('h1');
+        h.textContent = p.title;
+        secBody.appendChild(h);
+      }
+      if(page === 'about'){
+        secBody.insertAdjacentHTML('beforeend', '<div class="bio">' + Site.educationHTML(p.education) + '</div>');
+      } else if(page === 'experiences'){
+        (p.sections || []).forEach(function(sec){
+          var section = document.createElement('div');
+          section.className = 'exp-section';
+          var sh = document.createElement('h2');
+          sh.className = 'exp-section-title';
+          sh.textContent = sec.title;
+          section.appendChild(sh);
+          section.insertAdjacentHTML('beforeend', Site.entriesHTML(sec.entries));
+          secBody.appendChild(section);
+          addGallery(section, sec.photos);
+        });
+      } else {
+        secBody.insertAdjacentHTML('beforeend', Site.entriesHTML(p.entries));
+        addGallery(secBody, p.photos);
+      }
+      secPanel.classList.add('open');
+      secPanel.scrollTop = 0;
+    });
   }
 
   function closeSection(){
@@ -691,9 +606,7 @@ body{
   document.querySelectorAll('.nav a:not(.contact-trigger)').forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
-      var href = a.getAttribute('href');
-      var page = href.replace('./','');
-      openSection(page);
+      openSection(a.dataset.page);
     });
   });
 
