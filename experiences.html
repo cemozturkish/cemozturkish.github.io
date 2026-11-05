@@ -165,7 +165,7 @@ Site.load().then(c => {
     g.className = 'masonry';
     section.appendChild(g);
     root.appendChild(section);
-    Site.gallery(g, sec.photos);
+    Site.gallery(g, Site.visible(sec));
   });
 });
 (function(){

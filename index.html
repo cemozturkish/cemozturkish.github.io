@@ -589,11 +589,11 @@ body{
           section.appendChild(sh);
           section.insertAdjacentHTML('beforeend', Site.entriesHTML(sec.entries));
           secBody.appendChild(section);
-          addGallery(section, sec.photos);
+          addGallery(section, Site.visible(sec));
         });
       } else {
         secBody.insertAdjacentHTML('beforeend', Site.entriesHTML(p.entries));
-        addGallery(secBody, p.photos);
+        addGallery(secBody, Site.visible(p));
       }
       secPanel.classList.add('open');
       secPanel.scrollTop = 0;

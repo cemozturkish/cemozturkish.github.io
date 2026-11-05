@@ -175,7 +175,7 @@ Site.load().then(c => {
   if(p.headerImage){ header.src = Site.src(p.headerImage); header.style.display = "block"; }
   else { title.hidden = false; }
   document.getElementById('entries').innerHTML = Site.entriesHTML(p.entries);
-  Site.gallery(document.getElementById('gallery'), p.photos);
+  Site.gallery(document.getElementById('gallery'), Site.visible(p));
 });
 (function(){
   document.querySelectorAll('a.back').forEach(a => {

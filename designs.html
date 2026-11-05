@@ -127,7 +127,7 @@ h1{
 <script>
 Site.load().then(c => {
   document.getElementById('title').textContent = c.designs.title;
-  Site.gallery(document.getElementById('gallery'), c.designs.photos);
+  Site.gallery(document.getElementById('gallery'), Site.visible(c.designs));
 });
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
