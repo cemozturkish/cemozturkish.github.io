@@ -203,5 +203,8 @@
       "assets/events18.jpg",
       "assets/events19.jpg"
     ]
+  },
+  "home": {
+    "mobileFocusX": 39.3
   }
 }
