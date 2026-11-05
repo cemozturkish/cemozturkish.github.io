@@ -137,48 +137,16 @@ h1{ animation-delay:.1s; }
 <div class="curtain enter"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
-  <h1>ABOUT</h1>
-  <div class="bio">
-    <div class="edu-entry">
-      <div class="edu-row">
-        <span class="edu-school">Pomona College</span>
-        <span class="edu-location">Claremont, CA</span>
-      </div>
-      <div class="edu-row">
-        <span class="edu-degree">Bachelor of Arts in PPE: Philosophy, Politics, and Economics</span>
-        <span class="edu-date">Spring 2026</span>
-      </div>
-    </div>
-    <div class="edu-entry">
-      <div class="edu-row">
-        <span class="edu-school">Tribhuvan University</span>
-        <span class="edu-location">Kathmandu, Nepal</span>
-      </div>
-      <div class="edu-row">
-        <span class="edu-degree">Study Abroad: Culture, Change, and Social Justice in Nepal</span>
-        <span class="edu-date">Spring 2025</span>
-      </div>
-    </div>
-    <div class="edu-entry">
-      <div class="edu-row">
-        <span class="edu-school">Bard College</span>
-        <span class="edu-location">Brooklyn, NY</span>
-      </div>
-      <div class="edu-row">
-        <span class="edu-degree">BardNYC: Globalization and International Affairs Semester Program</span>
-        <span class="edu-date">Spring 2024</span>
-      </div>
-    </div>
-    <div class="edu-entry">
-      <div class="edu-row">
-        <span class="edu-school">Kabataş Erkek Lisesi</span>
-        <span class="edu-location">Istanbul, Türkiye</span>
-      </div>
-    </div>
-  </div>
+  <h1 id="title">ABOUT</h1>
+  <div class="bio" id="bio"></div>
 </div>
 
+<script src="./site.js"></script>
 <script>
+Site.load().then(c => {
+  document.getElementById('title').textContent = c.about.title;
+  document.getElementById('bio').innerHTML = Site.educationHTML(c.about.education);
+});
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
     a.addEventListener('click', e => {

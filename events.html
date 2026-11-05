@@ -158,81 +158,25 @@ h1{
 <div class="curtain enter"></div>
 <div class="wrap">
   <a class="back" href="./index.html">&larr; HOME</a>
-  <img src="./assets/events.png" alt="EVENTS" style="display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;" />
-  <div class="exp-list">
-    <div class="exp-entry">
-      <div class="exp-head">
-        <span class="exp-org">Pitzer Campus Life</span>
-        <span class="exp-location">Claremont, CA</span>
-      </div>
-      <div class="exp-role">
-        <span class="exp-title">Event Staff Manager</span>
-        <span class="exp-date">August 2025 – May 2026</span>
-      </div>
-      <ul>
-        <li>Oversaw the event calendar for the Fall '25 semester, supervised and trained a new Event Staff team of 10 students, and managed technical operations including sound equipment setup and troubleshooting.</li>
-      </ul>
-      <div class="exp-role">
-        <span class="exp-title">Event Coordinator</span>
-        <span class="exp-date">August 2022 – February 2025</span>
-      </div>
-      <ul>
-        <li>Coordinated and executed over 100 campus-wide events across the Claremont Colleges for over 8,000 students.</li>
-        <li>Led outreach and promotion through digital and physical campaigns, including flyers, murals, email graphics, tabling on campus, and collaborating with student organizations to maximize participation.</li>
-      </ul>
-    </div>
-    <div class="exp-entry">
-      <div class="exp-head">
-        <span class="exp-org">PEN America / Russian Independent Media Archives</span>
-        <span class="exp-location">Manhattan, NY</span>
-      </div>
-      <div class="exp-role">
-        <span class="exp-title">Event Coordinator</span>
-        <span class="exp-date">February 2024 – May 2024</span>
-      </div>
-      <ul>
-        <li>Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.</li>
-        <li>Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York's Russian-speaking community to expand event participation and visibility.</li>
-      </ul>
-    </div>
-  </div>
+  <h1 id="title" hidden>EVENTS</h1>
+  <img id="header" alt="EVENTS" style="display:none;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;" />
+  <div id="entries"></div>
   <div id="gallery" class="masonry"></div>
 </div>
 
+<script src="./site.js"></script>
 <script>
-(function(){
-  const gallery = document.getElementById("gallery");
-  const exts = ["jpg","jpeg","png"];
-
-  for(let i = 1; i <= 60; i++){
-    const img = document.createElement("img");
-    img.loading = "lazy";
-    let k = 0;
-    const tryNext = () => {
-      if(k >= exts.length){ img.remove(); return; }
-      img.src = `./assets/events${i}.${exts[k++]}`;
-    };
-    img.onerror = tryNext;
-    tryNext();
-    gallery.appendChild(img);
-  }
-
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if(e.isIntersecting){
-        e.target.classList.add("visible");
-        io.unobserve(e.target);
-      }
-    });
-  }, {threshold: .1});
-
-  new MutationObserver(() => {
-    gallery.querySelectorAll("img:not(.visible)").forEach((img, i) => {
-      img.style.transitionDelay = `${(i % 8) * 60}ms`;
-      io.observe(img);
-    });
-  }).observe(gallery, {childList: true});
-})();
+Site.load().then(c => {
+  const p = c.events;
+  const title = document.getElementById('title');
+  const header = document.getElementById('header');
+  title.textContent = p.title;
+  header.alt = p.title;
+  if(p.headerImage){ header.src = Site.src(p.headerImage); header.style.display = "block"; }
+  else { title.hidden = false; }
+  document.getElementById('entries').innerHTML = Site.entriesHTML(p.entries);
+  Site.gallery(document.getElementById('gallery'), p.photos);
+});
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
     a.addEventListener('click', e => {

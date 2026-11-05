@@ -1,0 +1,206 @@
+{
+  "contact": {
+    "email": "cemwozturk@gmail.com",
+    "instagram": "https://instagram.com/cemozturkish",
+    "twitter": "https://twitter.com/hasancemozturk",
+    "linkedin": "https://linkedin.com/in/hasancemozturk"
+  },
+  "about": {
+    "title": "ABOUT",
+    "education": [
+      {
+        "school": "Pomona College",
+        "location": "Claremont, CA",
+        "degree": "Bachelor of Arts in PPE: Philosophy, Politics, and Economics",
+        "date": "Spring 2026"
+      },
+      {
+        "school": "Tribhuvan University",
+        "location": "Kathmandu, Nepal",
+        "degree": "Study Abroad: Culture, Change, and Social Justice in Nepal",
+        "date": "Spring 2025"
+      },
+      {
+        "school": "Bard College",
+        "location": "Brooklyn, NY",
+        "degree": "BardNYC: Globalization and International Affairs Semester Program",
+        "date": "Spring 2024"
+      },
+      {
+        "school": "Kabataş Erkek Lisesi",
+        "location": "Istanbul, Türkiye",
+        "degree": "",
+        "date": ""
+      }
+    ]
+  },
+  "designs": {
+    "title": "DESIGNS",
+    "photos": [
+      "assets/designer1.jpg",
+      "assets/designer2.jpg",
+      "assets/designer3.jpg",
+      "assets/designer4.jpg",
+      "assets/designer5.jpg",
+      "assets/designer6.jpg",
+      "assets/designer7.jpg",
+      "assets/designer8.jpg"
+    ]
+  },
+  "experiences": {
+    "title": "EXPERIENCES",
+    "sections": [
+      {
+        "title": "EXHIBITIONS",
+        "entries": [
+          {
+            "org": "Pitzer Art Galleries",
+            "location": "Los Angeles, CA",
+            "roles": [
+              {
+                "title": "Art Gallery Assistant",
+                "date": "August 2024 – February 2025",
+                "bullets": [
+                  "Supported installation, reception logistics, and outreach for exhibitions *Aurora* (Valeria Tizol Vivas) and *Las Tres Gracias* (Jimena Sarno), creating promotional materials including flyers and email graphics.",
+                  "Managed weekend gallery operations: opened the space, set up A/V and visuals, and prepared the gallery for visitors.",
+                  "Welcomed guests, provided programs, served as the on-site contact, and led exhibition walkthroughs."
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": [
+          "assets/exhibition1.jpg",
+          "assets/exhibition2.jpg"
+        ]
+      },
+      {
+        "title": "PRODUCTIONS",
+        "entries": [
+          {
+            "org": "Seaver Theatre",
+            "location": "Claremont, CA",
+            "roles": [
+              {
+                "title": "Theatre Assistant",
+                "date": "August 2025 – May 2026",
+                "bullets": [
+                  "Supported front-of-house operations, including box office, ushering, and event coordination.",
+                  "Worked weekly in the costume shop, tailoring garments for three productions.",
+                  "Assisted in the scene shop, building props and supporting technical production needs."
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Legal Aid Society",
+            "location": "Brooklyn, NY",
+            "roles": [
+              {
+                "title": "Production Assistant",
+                "date": "January 2024 – June 2024",
+                "bullets": [
+                  "Maintained flexible, on-call working hours to accommodate attorneys, clients, and production teams while conducting fieldwork across New York City for interviews, visiting courts, and capturing documentary footage.",
+                  "Collaborated with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos."
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": [
+          "assets/production1.jpg",
+          "assets/production2.jpg",
+          "assets/production3.jpg",
+          "assets/production4.jpg",
+          "assets/production5.jpg",
+          "assets/production6.jpg",
+          "assets/production7.jpg",
+          "assets/production8.jpg"
+        ]
+      },
+      {
+        "title": "PROJECTS",
+        "entries": [
+          {
+            "org": "Sancharika Samuha: Forum of Women Journalists & Communicators",
+            "location": "Kathmandu, Nepal",
+            "roles": [
+              {
+                "title": "Editor",
+                "date": "April 2025 – May 2025",
+                "bullets": [
+                  "Collaborated with Nepali Supreme Court Justice Sapana Pradhan Malla to enhance representation of women journalists in media, and provided support in organizing and coordinating events promoting equity-based development."
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": [
+          "assets/project1.jpg"
+        ]
+      }
+    ]
+  },
+  "events": {
+    "title": "EVENTS",
+    "headerImage": "assets/events.png",
+    "entries": [
+      {
+        "org": "Pitzer Campus Life",
+        "location": "Claremont, CA",
+        "roles": [
+          {
+            "title": "Event Staff Manager",
+            "date": "August 2025 – May 2026",
+            "bullets": [
+              "Oversaw the event calendar for the Fall '25 semester, supervised and trained a new Event Staff team of 10 students, and managed technical operations including sound equipment setup and troubleshooting."
+            ]
+          },
+          {
+            "title": "Event Coordinator",
+            "date": "August 2022 – February 2025",
+            "bullets": [
+              "Coordinated and executed over 100 campus-wide events across the Claremont Colleges for over 8,000 students.",
+              "Led outreach and promotion through digital and physical campaigns, including flyers, murals, email graphics, tabling on campus, and collaborating with student organizations to maximize participation."
+            ]
+          }
+        ]
+      },
+      {
+        "org": "PEN America / Russian Independent Media Archives",
+        "location": "Manhattan, NY",
+        "roles": [
+          {
+            "title": "Event Coordinator",
+            "date": "February 2024 – May 2024",
+            "bullets": [
+              "Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.",
+              "Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York's Russian-speaking community to expand event participation and visibility."
+            ]
+          }
+        ]
+      }
+    ],
+    "photos": [
+      "assets/events1.jpg",
+      "assets/events2.jpg",
+      "assets/events3.jpg",
+      "assets/events4.jpg",
+      "assets/events5.jpg",
+      "assets/events6.jpg",
+      "assets/events7.jpg",
+      "assets/events8.jpg",
+      "assets/events9.jpg",
+      "assets/events10.jpg",
+      "assets/events11.jpg",
+      "assets/events12.jpg",
+      "assets/events13.jpg",
+      "assets/events14.jpg",
+      "assets/events15.jpg",
+      "assets/events16.jpg",
+      "assets/events17.jpg",
+      "assets/events18.jpg",
+      "assets/events19.jpg"
+    ]
+  }
+}
