@@ -44,7 +44,8 @@
       "phone": {
         "gap": 18
       }
-    }
+    },
+    "textAlign": "justify"
   },
   "designs": {
     "title": "DESIGNS",
