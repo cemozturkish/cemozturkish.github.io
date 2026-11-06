@@ -59,7 +59,7 @@
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        })).then(function(c){ phoneCrop(c); aboutStyle(c); return c; });
+        })).then(function(c){ phoneCrop(c); aboutStyle(c); bgSaturation(c); return c; });
     return contentPromise;
   }
 
@@ -124,6 +124,14 @@
     var el = document.getElementById('about-style') || document.head.appendChild(document.createElement('style'));
     el.id = 'about-style';
     el.textContent = css;
+  }
+
+  // background photo saturation chosen in the admin (0 = black & white, 100 = original)
+  function bgSaturation(c){
+    var v = c && c.home && c.home.saturation;
+    if(typeof v !== 'number' || !isFinite(v) || v === 100) return;
+    v = Math.max(0, Math.min(100, v));
+    document.querySelectorAll('.bg').forEach(function(el){ el.style.filter = 'saturate(' + v / 100 + ')'; });
   }
 
   // photos the admin marked as hidden stay in the list but aren't shown
