@@ -59,7 +59,7 @@
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        })).then(function(c){ phoneCrop(c); return c; });
+        })).then(function(c){ phoneCrop(c); aboutStyle(c); return c; });
     return contentPromise;
   }
 
@@ -93,6 +93,37 @@
     }
     apply();
     window.addEventListener('resize', apply);
+  }
+
+  // About text size + spacing chosen in the admin (content.about.style.phone / .desktop).
+  // Only the values that were actually set override the page's built-in styles.
+  function aboutStyle(c){
+    var st = c && c.about && c.about.style;
+    if(!st) return;
+    function num(v){ return typeof v === 'number' && isFinite(v) ? v : null; }
+    function rules(o){
+      if(!o) return '';
+      var r = '', t = num(o.textSize), g = num(o.gap), el = num(o.eduLineHeight),
+          tl = num(o.textLineHeight), pg = num(o.paraGap);
+      if(t !== null){
+        r += '.about-edu .edu-degree,.about-me-scroll{font-size:' + t + 'px!important}' +
+             '.about-edu .edu-school{font-size:' + Math.round(t * 1.17 * 10) / 10 + 'px!important}' +
+             '.about-edu .edu-location,.about-edu .edu-date{font-size:' + Math.round(t * 0.9 * 10) / 10 + 'px!important}';
+      }
+      if(g !== null) r += '.about-edu .edu-entry{margin-bottom:' + g + 'px!important}';
+      if(el !== null) r += '.about-edu .edu-entry{line-height:' + el + '!important}';
+      if(tl !== null) r += '.about-me-scroll{line-height:' + tl + '!important}';
+      if(pg !== null) r += '.about-me-scroll p{margin-bottom:' + pg + 'px!important}';
+      return r;
+    }
+    var css = '';
+    var d = rules(st.desktop), p = rules(st.phone);
+    if(d) css += '@media (min-width:601px){' + d + '}';
+    if(p) css += '@media (max-width:600px){' + p + '}';
+    if(!css) return;
+    var el = document.getElementById('about-style') || document.head.appendChild(document.createElement('style'));
+    el.id = 'about-style';
+    el.textContent = css;
   }
 
   // photos the admin marked as hidden stay in the list but aren't shown
