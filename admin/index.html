@@ -420,7 +420,8 @@ function blobToB64(blob){
 function normalize(c){
   ['about','designs','experiences','events'].forEach(function(k){
     var p = c[k];
-    if(p && typeof p.heading !== 'string') p.heading = p.title || '';
+    // About shows no heading by default (Education is the first thing on it)
+    if(p && typeof p.heading !== 'string') p.heading = k === 'about' ? '' : (p.title || '');
   });
   if(c.about){
     if(typeof c.about.educationTitle !== 'string') c.about.educationTitle = 'EDUCATION';
