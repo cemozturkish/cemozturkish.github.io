@@ -242,6 +242,18 @@ textarea.big{ min-height:160px; }
   .crop-side{ align-self:center; }
   .phone{ width:170px; }
 }
+.toolbar{
+  display:flex; align-items:center; gap:2px; padding:4px; flex-wrap:wrap;
+  border:1px solid var(--line); border-bottom:none; border-radius:8px 8px 0 0; background:var(--panel);
+}
+.tb-btn{
+  width:32px; height:30px; border-radius:6px; border:1px solid transparent; background:transparent;
+  color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:15px;
+}
+.tb-btn:hover{ background:var(--panel-2); color:var(--text); }
+.tb-btn[aria-pressed="true"]{ background:var(--panel-2); color:var(--text); border-color:var(--line); }
+.tb-sep{ width:1px; height:18px; background:var(--line); margin:0 6px; }
+textarea.with-toolbar{ border-top-left-radius:0; border-top-right-radius:0; }
 .style-cols{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
 @media(max-width:760px){ .style-cols{ grid-template-columns:1fr; } }
 .style-col-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
@@ -970,6 +982,82 @@ function cropPicker(){
   );
 }
 
+/* ---------- text box with a small Word-style toolbar ---------- */
+var ALIGN_ICONS = {
+  left:    'M3 5h18M3 10h12M3 15h18M3 20h12',
+  center:  'M3 5h18M6 10h12M3 15h18M6 20h12',
+  right:   'M3 5h18M9 10h12M3 15h18M9 20h12',
+  justify: 'M3 5h18M3 10h18M3 15h18M3 20h18'
+};
+var ALIGN_LABELS = { left:'Align left', center:'Center', right:'Align right', justify:'Justify' };
+
+function svgIcon(d){
+  var ns = 'http://www.w3.org/2000/svg';
+  var svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '16'); svg.setAttribute('height', '16');
+  svg.setAttribute('aria-hidden', 'true');
+  var path = document.createElementNS(ns, 'path');
+  path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '2'); path.setAttribute('stroke-linecap', 'round');
+  svg.appendChild(path);
+  return svg;
+}
+
+function richText(obj, key, alignKey, label, opts){
+  var labelled = textField(label, obj, key, { multiline:true, big:true, placeholder:opts.placeholder, help:opts.help });
+  // a <label> would forward clicks to the first button, so use a plain wrapper
+  var field = h('div', { class:'field' });
+  while(labelled.firstChild) field.appendChild(labelled.firstChild);
+  var ta = field.querySelector('textarea');
+  ta.setAttribute('aria-label', label);
+  function current(){ return obj[alignKey] || 'left'; }
+
+  // wrap the selected words in markers (** bold, * italic); pressing again removes them
+  function wrap(mark){
+    var s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+    var before = v.slice(0, s), sel = v.slice(s, e), after = v.slice(e);
+    var n = mark.length;
+    var wrapped = before.slice(-n) === mark && after.slice(0, n) === mark;
+    if(mark === '*' && (before.slice(-2) === '**' && after.slice(0, 2) === '**') && !(before.slice(-3) === '***')) wrapped = false;
+    if(sel && wrapped){
+      ta.value = before.slice(0, -n) + sel + after.slice(n);
+      ta.setSelectionRange(s - n, e - n);
+    } else {
+      ta.value = before + mark + sel + mark + after;
+      ta.setSelectionRange(s + n, e + n);
+    }
+    ta.focus();
+    ta.dispatchEvent(new Event('input'));
+  }
+
+  var alignBtns = {};
+  function paint(){
+    var a = current();
+    Object.keys(alignBtns).forEach(function(k){ alignBtns[k].setAttribute('aria-pressed', String(k === a)); });
+    ta.style.textAlign = a;
+  }
+  var bar = h('div', { class:'toolbar', role:'toolbar', 'aria-label':'Text formatting' },
+    h('button', { type:'button', class:'tb-btn', title:'Bold', 'aria-label':'Bold',
+      onmousedown:function(e){ e.preventDefault(); }, onclick:function(){ wrap('**'); } }, h('b', { text:'B' })),
+    h('button', { type:'button', class:'tb-btn', title:'Italic', 'aria-label':'Italic',
+      onmousedown:function(e){ e.preventDefault(); }, onclick:function(){ wrap('*'); } }, h('i', { text:'I', style:'font-family:Georgia,serif' })),
+    h('span', { class:'tb-sep' }),
+    Object.keys(ALIGN_ICONS).map(function(k){
+      var b = h('button', { type:'button', class:'tb-btn', title:ALIGN_LABELS[k], 'aria-label':ALIGN_LABELS[k],
+        onclick:function(){
+          if(k === 'left') delete obj[alignKey]; else obj[alignKey] = k;
+          paint(); refreshStatus();
+        } }, svgIcon(ALIGN_ICONS[k]));
+      alignBtns[k] = b;
+      return b;
+    })
+  );
+  ta.parentNode.insertBefore(bar, ta);
+  ta.classList.add('with-toolbar');
+  paint();
+  return field;
+}
+
 /* ---------- About: text size & spacing ---------- */
 // what the site uses when nothing has been set (matches the built-in styles)
 var ABOUT_STYLE_DEFAULTS = {
@@ -1111,9 +1199,9 @@ var views = {
         h('h3', { text:'Bottom part' }),
         textField('Section title', p, 'textTitle', { placeholder:'e.g. ABOUT ME', help:'Leave empty to hide it.' }),
         h('div', { style:'height:12px' }),
-        textField('Text', p, 'text', { multiline:true, big:true,
+        richText(p, 'text', 'textAlign', 'Text', {
           placeholder:'Write anything here…',
-          help:'This part scrolls on its own while the top stays in place. Leave an empty line between paragraphs. *asterisks* for italics, **double** for bold. Leave empty to hide the whole bottom part.' })
+          help:'This part scrolls on its own while the top stays in place. Leave an empty line between paragraphs. Select words and press B or I for bold or italics. Leave empty to hide the whole bottom part.' })
       ),
       aboutStyleCard(p)
     ];

@@ -167,6 +167,12 @@
     return fallback !== undefined ? fallback : (p && p.title) || '';
   }
 
+  // text alignment chosen in the admin (left / center / right / justify)
+  function alignStyle(v){
+    if(['left','center','right','justify'].indexOf(v) < 0) return '';
+    return ' style="text-align:' + v + (v === 'justify' ? ';hyphens:auto;-webkit-hyphens:auto' : '') + '"';
+  }
+
   // About: fixed education block on top, scrollable "about me" text below
   function aboutHTML(a){
     a = a || {};
@@ -179,7 +185,7 @@
     if(text){
       h += '<div class="about-me">' +
         (textTitle ? '<h2 class="about-section-title">' + inline(textTitle) + '</h2>' : '') +
-        '<div class="about-me-scroll">' + text + '</div></div>';
+        '<div class="about-me-scroll"' + alignStyle(a.textAlign) + '>' + text + '</div></div>';
     }
     return h;
   }
