@@ -144,6 +144,10 @@
           (e.date ? '<span class="edu-date">' + inline(e.date) + '</span>' : '') +
           '</div>';
       }
+      // optional second line under the program / degree
+      if(e.degree2){
+        h += '<div class="edu-row"><span class="edu-degree" style="margin-top:0">' + inline(e.degree2) + '</span></div>';
+      }
       return h + '</div>';
     }).join('');
   }

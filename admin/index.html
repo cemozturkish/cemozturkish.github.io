@@ -1083,8 +1083,10 @@ var views = {
             h('div', { class:'grid2' },
               textField('School', e, 'school'),
               textField('Location', e, 'location'),
-              textField('Program / degree', e, 'degree', { placeholder:'Optional' }),
-              textField('Dates', e, 'date', { placeholder:'Optional' })
+              textField('Program / degree', e, 'degree', { placeholder:'e.g. Bachelor of Arts' }),
+              textField('Dates', e, 'date', { placeholder:'Optional' }),
+              textField('Second line', e, 'degree2', { placeholder:'e.g. Philosophy, Politics, and Economics',
+                help:'Optional. Shown under the program / degree.' })
             ),
             listTools(p.education, i, 'school', function(){ draw(); refreshStatus(); })
           )
