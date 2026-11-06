@@ -242,6 +242,21 @@ textarea.big{ min-height:160px; }
   .crop-side{ align-self:center; }
   .phone{ width:170px; }
 }
+.style-cols{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+@media(max-width:760px){ .style-cols{ grid-template-columns:1fr; } }
+.style-col-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.style-col-head b{ font-size:14px; }
+.style-row{ padding:10px 0; border-top:1px solid var(--line); }
+.style-label{ display:flex; flex-direction:column; margin-bottom:6px; }
+.style-label span{ font-size:13px; font-weight:500; }
+.style-label small{ font-size:12px; color:var(--muted); }
+.style-ctrl{ display:flex; align-items:center; gap:10px; }
+.style-ctrl input[type=range]{ flex:1; min-width:0; accent-color:var(--text); }
+.style-ctrl .num{
+  width:72px; border:1px solid var(--line); background:var(--panel-2); border-radius:8px;
+  padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;
+}
+.style-ctrl .unit{ width:18px; font-size:12px; color:var(--muted); }
 .single-image{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
 .single-image .preview{
   width:200px; height:110px; border-radius:8px; background:#111; border:1px solid var(--line);
@@ -955,6 +970,79 @@ function cropPicker(){
   );
 }
 
+/* ---------- About: text size & spacing ---------- */
+// what the site uses when nothing has been set (matches the built-in styles)
+var ABOUT_STYLE_DEFAULTS = {
+  phone:   { textSize:13, gap:12, eduLineHeight:1.45, textLineHeight:1.7, paraGap:14 },
+  desktop: { textSize:16, gap:18, eduLineHeight:1.45, textLineHeight:1.7, paraGap:14 }
+};
+var ABOUT_STYLE_FIELDS = [
+  { key:'textSize', label:'Text size', unit:'px', min:10, max:24, step:0.5,
+    help:'Education and About Me together, so they always match.' },
+  { key:'gap', label:'Space between schools', unit:'px', min:0, max:60, step:1 },
+  { key:'eduLineHeight', label:'Line spacing · Education', unit:'×', min:1, max:2.4, step:0.05 },
+  { key:'textLineHeight', label:'Line spacing · About Me', unit:'×', min:1, max:2.4, step:0.05 },
+  { key:'paraGap', label:'Space between paragraphs', unit:'px', min:0, max:48, step:1 }
+];
+
+function aboutStyleCard(p){
+  var body = h('div');
+  function get(dev, key){
+    var v = p.style && p.style[dev] && p.style[dev][key];
+    return typeof v === 'number' ? v : ABOUT_STYLE_DEFAULTS[dev][key];
+  }
+  function set(dev, key, v){
+    p.style = p.style || {};
+    p.style[dev] = p.style[dev] || {};
+    p.style[dev][key] = v;
+    refreshStatus();
+  }
+  function isCustom(dev){ return !!(p.style && p.style[dev] && Object.keys(p.style[dev]).length); }
+
+  function column(dev, title){
+    var col = h('div', { class:'style-col' }, h('div', { class:'style-col-head' }, h('b', { text:title })));
+    var resetBtn = h('button', { class:'btn small ghost', type:'button', onclick:function(){
+      if(p.style){ delete p.style[dev]; if(!Object.keys(p.style).length) delete p.style; }
+      draw(); refreshStatus();
+    } }, 'Reset');
+    resetBtn.disabled = !isCustom(dev);
+    col.firstChild.appendChild(resetBtn);
+    ABOUT_STYLE_FIELDS.forEach(function(f){
+      var val = get(dev, f.key);
+      var range = h('input', { type:'range', min:f.min, max:f.max, step:f.step, 'aria-label':title + ' ' + f.label });
+      var box = h('input', { type:'number', min:f.min, max:f.max, step:f.step, class:'num', 'aria-label':title + ' ' + f.label });
+      range.value = val; box.value = val;
+      function apply(v, from){
+        v = parseFloat(v);
+        if(!isFinite(v)) return;
+        v = Math.max(f.min, Math.min(f.max, v));
+        if(from !== range) range.value = v;
+        if(from !== box) box.value = v;
+        set(dev, f.key, v);
+        resetBtn.disabled = false;
+      }
+      range.addEventListener('input', function(){ apply(range.value, range); });
+      box.addEventListener('change', function(){ apply(box.value, box); box.value = get(dev, f.key); });
+      col.appendChild(h('div', { class:'style-row' },
+        h('div', { class:'style-label' }, h('span', { text:f.label }), f.help ? h('small', { text:f.help }) : null),
+        h('div', { class:'style-ctrl' }, range, box, h('span', { class:'unit', text:f.unit }))
+      ));
+    });
+    return col;
+  }
+  function draw(){
+    body.innerHTML = '';
+    body.appendChild(h('div', { class:'style-cols' }, column('phone', 'Phone'), column('desktop', 'Computer')));
+  }
+  draw();
+  return h('div', { class:'card section' },
+    h('h3', { text:'Text size & spacing' }),
+    h('p', { class:'hint', style:'margin:0 0 14px;font-size:13px',
+      text:'Fine-tune how the About page reads. Phones and computers are set separately. Use Preview to see the result before publishing.' }),
+    body
+  );
+}
+
 var views = {
   home: function(){
     return [
@@ -1024,7 +1112,8 @@ var views = {
         textField('Text', p, 'text', { multiline:true, big:true,
           placeholder:'Write anything here…',
           help:'This part scrolls on its own while the top stays in place. Leave an empty line between paragraphs. *asterisks* for italics, **double** for bold. Leave empty to hide the whole bottom part.' })
-      )
+      ),
+      aboutStyleCard(p)
     ];
   },
 
