@@ -11,20 +11,23 @@
       {
         "school": "Pitzer College",
         "location": "Claremont, CA",
-        "degree": "Bachelor of Arts in PPE: Philosophy, Politics, and Economics",
-        "date": "January 2026"
+        "degree": "Bachelor of Arts",
+        "date": "January 2026",
+        "degree2": "Philosophy, Politics, and Economics"
       },
       {
         "school": "Tribhuvan University",
         "location": "Kathmandu, Nepal",
-        "degree": "Study Abroad: Culture, Change, and Social Justice in Nepal",
-        "date": "Spring 2025"
+        "degree": "Study Abroad",
+        "date": "Spring 2025",
+        "degree2": "Culture, Change, and Social Justice in Nepal"
       },
       {
         "school": "Bard College",
         "location": "Brooklyn, NY",
-        "degree": "BardNYC: Globalization and International Affairs Semester Program",
-        "date": "Spring 2024"
+        "degree": "Exchange Program",
+        "date": "Spring 2024",
+        "degree2": "BardNYC: Globalization and International Affairs"
       },
       {
         "school": "Kabataş Erkek Lisesi",
