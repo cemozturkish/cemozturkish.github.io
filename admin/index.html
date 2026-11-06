@@ -1131,6 +1131,52 @@ function aboutStyleCard(p){
   );
 }
 
+/* ---------- background saturation ---------- */
+function getSaturation(){
+  var v = content.home && content.home.saturation;
+  return typeof v === 'number' ? v : 100;
+}
+// show the chosen saturation on every preview of the background photo in the admin
+function paintSaturation(){
+  var f = getSaturation() === 100 ? '' : 'saturate(' + getSaturation() / 100 + ')';
+  document.querySelectorAll('.crop-frame img, .phone-bg').forEach(function(el){ el.style.filter = f; });
+}
+function saturationCard(){
+  var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':'Background saturation' });
+  var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':'Background saturation' });
+  var reset = h('button', { class:'btn small ghost', type:'button' }, 'Reset');
+  function set(v, from){
+    v = Math.round(parseFloat(v));
+    if(!isFinite(v)) return;
+    v = Math.max(0, Math.min(100, v));
+    if(v === 100 && !(original.home && 'saturation' in original.home)){
+      if(content.home){ delete content.home.saturation; if(!Object.keys(content.home).length) delete content.home; }
+    } else {
+      content.home = content.home || {};
+      content.home.saturation = v;
+    }
+    if(from !== range) range.value = v;
+    if(from !== box) box.value = v;
+    reset.disabled = v === 100;
+    paintSaturation(); refreshStatus();
+  }
+  range.addEventListener('input', function(){ set(range.value, range); });
+  box.addEventListener('change', function(){ set(box.value, box); });
+  reset.addEventListener('click', function(){ set(100); });
+  range.value = box.value = getSaturation();
+  reset.disabled = getSaturation() === 100;
+  requestAnimationFrame(paintSaturation);
+  return h('div', { class:'card section' },
+    h('h3', { text:'Background photo' }),
+    h('div', { class:'style-row', style:'border-top:none;padding-top:0' },
+      h('div', { class:'style-label' }, h('span', { text:'Saturation' }),
+        h('small', { text:'0 = black & white, 100 = the original colours. Applies to the photo on every page; the previews above update as you drag.' })),
+      h('div', { class:'style-ctrl' },
+        h('span', { class:'small-label', text:'0' }), range, h('span', { class:'small-label', text:'100' }), box, reset)
+    )
+  );
+}
+
 var views = {
   home: function(){
     return [
@@ -1140,7 +1186,8 @@ var views = {
         h('p', { class:'hint', style:'margin:0 0 14px;font-size:13px',
           text:'Phones are tall and narrow, so they only show a slice of the background photo. Drag the box (or use the slider) to pick which slice. Computers still show the whole photo.' }),
         cropPicker()
-      )
+      ),
+      saturationCard()
     ];
   },
 
