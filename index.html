@@ -389,7 +389,6 @@ body{
   .section-panel.fixed .panel-close{ padding-top:14px; padding-bottom:10px; }
   .section-panel.fixed .panel-body h1{ margin-bottom:22px; }
   .section-panel.fixed .about-section-title{ font-size:14px; margin-bottom:14px; }
-  .section-panel.fixed .edu-entry{ margin-bottom:16px; }
   .section-panel.fixed .about-me{ min-height:120px; margin-top:8px; }
 }
 .section-panel.fixed .about-me-scroll{
@@ -498,6 +497,12 @@ body{
 @media(max-width:500px){
   .section-panel{ width:100%; }
   .section-panel .panel-body .masonry{ column-count:2; }
+}
+/* About: tighter spacing between schools (kept last so it wins over the rules above) */
+.section-panel .panel-body .about-edu .edu-entry{ margin-bottom:18px; line-height:1.45; }
+.section-panel .panel-body .about-edu .edu-entry .edu-degree{ margin-top:2px; }
+@media(max-width:600px){
+  .section-panel .panel-body .about-edu .edu-entry{ margin-bottom:12px; }
 }
 </style>
 </head>
@@ -609,9 +614,9 @@ body{
         himg.alt = p.title;
         himg.style.cssText = 'display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;';
         secBody.appendChild(himg);
-      } else if(Site.heading(p)){
+      } else if(Site.heading(p, page === 'about' ? '' : undefined)){
         var h = document.createElement('h1');
-        h.textContent = Site.heading(p);
+        h.textContent = Site.heading(p, page === 'about' ? '' : undefined);
         secBody.appendChild(h);
       }
       secPanel.classList.toggle('fixed', page === 'about');

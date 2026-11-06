@@ -100,7 +100,6 @@ h1{
   .back{ margin-bottom:12px; }
   h1{ margin-bottom:22px; }
   .about-section-title{ font-size:14px; margin-bottom:14px; }
-  .edu-entry{ margin-bottom:16px; }
   .about-me{ min-height:120px; margin-top:8px; }
 }
 
@@ -164,6 +163,12 @@ h1{ animation-delay:.1s; }
   animation:curtainInLeft .4s cubic-bezier(.4,0,.2,1) both;
 }
 @keyframes curtainInLeft{ from{transform:translateX(-100%)} to{transform:translateX(0)} }
+/* tighter spacing between schools (kept last so it wins over the rules above) */
+.about-edu .edu-entry{ margin-bottom:18px; line-height:1.45; }
+.about-edu .edu-entry .edu-degree{ margin-top:2px; }
+@media(max-width:600px){
+  .about-edu .edu-entry{ margin-bottom:12px; }
+}
 </style>
 </head>
 
@@ -180,7 +185,7 @@ h1{ animation-delay:.1s; }
 <script>
 Site.load().then(c => {
   const title = document.getElementById('title');
-  title.textContent = Site.heading(c.about);
+  title.textContent = Site.heading(c.about, '');
   if(!title.textContent) title.style.display = 'none';
   document.getElementById('bio').innerHTML = Site.aboutHTML(c.about);
 });

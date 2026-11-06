@@ -127,8 +127,9 @@
 
   // page heading shown at the top of a page (separate from the menu button label);
   // an empty heading hides it
-  function heading(p){
-    return p && typeof p.heading === 'string' ? p.heading : (p && p.title) || '';
+  function heading(p, fallback){
+    if(p && typeof p.heading === 'string') return p.heading;
+    return fallback !== undefined ? fallback : (p && p.title) || '';
   }
 
   // About: fixed education block on top, scrollable "about me" text below
