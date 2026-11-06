@@ -86,6 +86,10 @@
         "photos": [
           "assets/exhibition1.jpg",
           "assets/exhibition2.jpg"
+        ],
+        "hidden": [
+          "assets/exhibition1.jpg",
+          "assets/exhibition2.jpg"
         ]
       },
       {
