@@ -169,6 +169,27 @@ h1{ animation-delay:.1s; }
 @media(max-width:600px){
   .about-edu .edu-entry{ margin-bottom:12px; }
 }
+
+/* sticky header: HOME link + page title stay put, with a dark fade behind them */
+html{ overflow-x:hidden; }
+.wrap{ padding-top:0; }
+.page-head{
+  position:sticky; top:0; z-index:5;
+  padding:24px 0 26px;
+}
+.page-head::before{
+  content:""; position:absolute; top:0; bottom:0; left:50%; width:100vw; transform:translateX(-50%);
+  z-index:-1;
+  background:linear-gradient(to bottom, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.9) calc(100% - 26px), rgba(0,0,0,0) 100%);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+          mask-image:linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+}
+.page-head .back{ margin-bottom:10px; }
+.page-head h1{ margin-bottom:0; text-shadow:0 2px 12px rgba(0,0,0,0.6); }
+.page-head img{ transition:max-width .3s ease; }
+body.scrolled .page-head img{ max-width:clamp(80px, 9vw, 120px) !important; }
+.page-head + *{ margin-top:14px; }
 </style>
 </head>
 
@@ -176,8 +197,10 @@ h1{ animation-delay:.1s; }
 <div class="bg"></div>
 <div class="curtain enter"></div>
 <div class="wrap">
-  <a class="back" href="./index.html">&larr; HOME</a>
-  <h1 id="title">ABOUT</h1>
+  <div class="page-head">
+    <a class="back" href="./index.html">&larr; HOME</a>
+    <h1 id="title">ABOUT</h1>
+  </div>
   <div class="bio" id="bio"></div>
 </div>
 
