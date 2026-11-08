@@ -160,10 +160,11 @@
   window.addEventListener('resize', function(){ if(relayoutStack) relayoutStack(); });
   function stackTitles(titles, scroller, head){
     var GAP = 4;
-    var rows = [];
+    var rows = [], clipped = [];
     function layout(){
       var top = head ? head.offsetHeight : 0;
       rows = [];
+      clipped = [];
       titles.forEach(function(t){
         t.style.top = top + 'px';
         t._stickTop = top;
@@ -175,6 +176,9 @@
         // section (the .stacking class makes the section their sticky container); each
         // job title sits under its own organisation while its bullets scroll by
         section.classList.add('stacking');
+        // bullets and photos get cut off at the bottom of the stack instead of
+        // scrolling behind it
+        section.querySelectorAll('.exp-role-group > ul, .masonry').forEach(function(el){ clipped.push(el); });
         var orgTop = top;
         section.querySelectorAll('.exp-entry').forEach(function(entry){
           var org = entry.querySelector('.exp-head');
@@ -198,10 +202,25 @@
     // through the header and overlapping the rows above it)
     function markStuck(){
       var base = scroller === window ? 0 : scroller.getBoundingClientRect().top;
+      // the lowest edge of everything currently stacked (header, stuck titles, stuck rows)
+      var line = head ? head.getBoundingClientRect().bottom : base;
+      titles.forEach(function(t){
+        var r = t.getBoundingClientRect();
+        if(r.top - base <= t._stickTop + 0.5) line = Math.max(line, r.bottom);
+      });
       rows.forEach(function(r){
-        var y = r.getBoundingClientRect().top - base;
-        r.classList.toggle('stuck', y <= r._stickTop + 0.5);
-        r.classList.toggle('leaving', y < r._stickTop - 1);
+        var rect = r.getBoundingClientRect(), y = rect.top - base;
+        var stuck = y <= r._stickTop + 0.5, leaving = y < r._stickTop - 1;
+        r.classList.toggle('stuck', stuck);
+        r.classList.toggle('leaving', leaving);
+        if(stuck && !leaving) line = Math.max(line, rect.bottom);
+      });
+      line += GAP;
+      // cut content off at that edge, so the reading area shrinks as the stack grows
+      clipped.forEach(function(el){
+        var cut = line - el.getBoundingClientRect().top;
+        el.style.clipPath = cut > 0 ? 'inset(' + Math.round(cut) + 'px -40px -40px -40px)' : '';
+        el.style.webkitClipPath = el.style.clipPath;
       });
     }
     var ticking = false;
