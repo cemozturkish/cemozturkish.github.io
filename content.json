@@ -175,6 +175,19 @@
                 ]
               }
             ]
+          },
+          {
+            "org": "Indepedent Study Project",
+            "location": "Kathmandu, Nepal",
+            "roles": [
+              {
+                "title": "",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
           }
         ],
         "photos": [
@@ -245,6 +258,45 @@
             "roles": [
               {
                 "title": "Teaching Assistant",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Kadikoy Shelter",
+            "location": "",
+            "roles": [
+              {
+                "title": "Caretaker",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "GETEM",
+            "location": "",
+            "roles": [
+              {
+                "title": "Reader",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Gorme Engelliler Okulu",
+            "location": "",
+            "roles": [
+              {
+                "title": "Exam Reader",
                 "date": "",
                 "bullets": [
                   ""
