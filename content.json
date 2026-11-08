@@ -36,7 +36,7 @@
         "date": ""
       }
     ],
-    "text": "After graduating from high school, I went to California to pursue a Liberal Arts education at the Claremont Colleges. By Pitzer College, I was selected as what they call an International Scholar, granted a full-ride scholarship.\n\nThe Claremont Colleges are consortium that ha\n\nI majored through Pomona College at their Philosophy, Politics, and Economics (PPE) department, concentrating in Behavioral Economics. For the other two disciplines, I picked Political Philosophy and International Relations to focus on and wrote my senior thesis on democratic backsliding..\n\n",
+    "text": "After graduating from high school, I went to California to pursue a Liberal Arts degree at the Claremont Colleges. I was selected by Pitzer College as what they call an International Scholar, granted a full-ride scholarship.\n\nThe Claremont Colleges are consortium.\n\nThrough Pomona College, I majored in Philosophy, Politics, and Economics (PPE), with a concentration in Behavioral Economics. For my senior thesis, however, I've picked the philosopy and politics to focus on.\n\n",
     "heading": "",
     "educationTitle": "EDUCATION",
     "textTitle": "ABOUT ME",
@@ -126,6 +126,16 @@
           }
         ],
         "photos": [
+          "assets/production1.jpg",
+          "assets/production2.jpg",
+          "assets/production3.jpg",
+          "assets/production4.jpg",
+          "assets/production5.jpg",
+          "assets/production6.jpg",
+          "assets/production7.jpg",
+          "assets/production8.jpg"
+        ],
+        "hidden": [
           "assets/production1.jpg",
           "assets/production2.jpg",
           "assets/production3.jpg",
