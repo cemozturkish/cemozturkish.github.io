@@ -304,13 +304,22 @@ body{
   position:sticky;
   top:0;
   z-index:2;
-  padding-bottom:26px;
-  background:linear-gradient(to bottom, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.9) calc(100% - 26px), rgba(0,0,0,0) 100%);
-  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
-  -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
-          mask-image:linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+  padding-bottom:6px;
+  pointer-events:none;           /* only BACK is clickable; content under the header stays tappable */
+}
+.section-panel .panel-head .panel-close{ pointer-events:auto; position:relative; z-index:0; }
+/* soft dark shadow just behind the words */
+.section-panel .panel-head .panel-close::before{
+  content:""; position:absolute; z-index:-1;
+  top:2px; bottom:2px; left:calc(clamp(24px, 4vw, 60px) - 20px); right:calc(clamp(24px, 4vw, 60px) - 20px);
+  background:#000; filter:blur(10px); border-radius:999px;
 }
 .section-panel .panel-title:empty{ display:none; }
+.section-panel .panel-title.logo{ display:table; margin:0 auto; position:relative; z-index:0; }
+.section-panel .panel-title.logo::before{
+  content:""; position:absolute; inset:-6px -14px; z-index:-1;
+  background:#000; filter:blur(12px); border-radius:50%;
+}
 .section-panel .panel-title h1{
   font-family:'Josefin Sans', sans-serif;
   font-size:clamp(18px, 2.6vw, 30px);
@@ -318,9 +327,15 @@ body{
   letter-spacing:.06em;
   color:rgba(255,255,255,0.55);
   text-align:center;
-  margin:0;
-  padding:0 clamp(24px, 4vw, 60px);
-  text-shadow:0 2px 12px rgba(0,0,0,0.6);
+  display:table;               /* shrink to the words so the shadow hugs them */
+  margin:0 auto;
+  padding:2px 6px;
+  position:relative;
+  z-index:0;
+}
+.section-panel .panel-title h1::before{
+  content:""; position:absolute; inset:-14px -24px; z-index:-1;
+  background:#000; filter:blur(10px); border-radius:999px;
 }
 .section-panel .panel-title img{
   display:block;
@@ -329,6 +344,7 @@ body{
   height:auto;
   opacity:0.9;
   transition:max-width .3s ease;
+  filter:drop-shadow(0 0 6px rgba(0,0,0,0.9)) drop-shadow(0 0 14px rgba(0,0,0,0.8));
 }
 /* the Events logo shrinks once you scroll so it doesn't take half the screen */
 .section-panel.scrolled .panel-title img{ max-width:clamp(80px, 9vw, 120px); }
@@ -351,7 +367,7 @@ body{
   color:rgba(255,255,255,0.9);
 }
 .section-panel .panel-body{
-  padding:14px clamp(24px, 4vw, 60px) 60px;
+  padding:34px clamp(24px, 4vw, 60px) 60px;
 }
 .section-panel .panel-body h1{
   font-family:'Josefin Sans', sans-serif;
@@ -407,7 +423,8 @@ body{
 .section-panel .panel-body .about-me-scroll p{ margin-bottom:14px; }
 /* About: title + education stay put, only the "about me" text scrolls */
 .section-panel.fixed{ display:flex; flex-direction:column; overflow:hidden; }
-.section-panel.fixed .panel-head{ flex:none; padding-bottom:0; background:none; -webkit-backdrop-filter:none; backdrop-filter:none; -webkit-mask-image:none; mask-image:none; }
+.section-panel.fixed .panel-head{ flex:none; padding-bottom:0; pointer-events:auto; }
+.section-panel.fixed .panel-head .panel-close::before{ display:none; }
 .section-panel.fixed .panel-body{ padding-top:0; }
 .section-panel.fixed .panel-body{
   flex:1; min-height:0; display:flex; flex-direction:column;
@@ -653,6 +670,7 @@ body{
       if(!p) return;
       secBody.innerHTML = '';
       secTitle.innerHTML = '';
+      secTitle.classList.toggle('logo', page === 'events' && !!p.headerImage);
       secPanel.classList.remove('scrolled');
       if(page === 'events' && p.headerImage){
         var himg = document.createElement('img');
