@@ -254,6 +254,9 @@ textarea.big{ min-height:160px; }
 .tb-btn[aria-pressed="true"]{ background:var(--panel-2); color:var(--text); border-color:var(--line); }
 .tb-sep{ width:1px; height:18px; background:var(--line); margin:0 6px; }
 textarea.with-toolbar{ border-top-left-radius:0; border-top-right-radius:0; }
+.bright-strip{ display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin:4px 0 12px; }
+.bright-strip img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#111; display:block; }
+@media(max-width:640px){ .bright-strip{ grid-template-columns:repeat(3, 1fr); } }
 .style-cols{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
 @media(max-width:760px){ .style-cols{ grid-template-columns:1fr; } }
 .style-col-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
@@ -1177,6 +1180,60 @@ function saturationCard(){
   );
 }
 
+/* ---------- website photo brightness ---------- */
+function brightnessCard(){
+  function get(){ var v = content.home && content.home.photoBrightness; return typeof v === 'number' ? v : 100; }
+  // a few of the site's photos as a live sample
+  var sample = [];
+  ['designs','events'].forEach(function(k){
+    var pg = content[k]; if(!pg || !pg.photos) return;
+    pg.photos.filter(function(p){ return !(pg.hidden || []).includes(p); }).slice(0, 3).forEach(function(p){ sample.push(p); });
+  });
+  var strip = h('div', { class:'bright-strip' }, sample.slice(0, 6).map(function(p){
+    var img = h('img', { alt:'', loading:'lazy', src:imgSrc(p) });
+    if(!pending[p] && !localUrls[p]) attachFallback(img, p);
+    return img;
+  }));
+  function paint(){
+    var f = get() === 100 ? '' : 'brightness(' + get() / 100 + ')';
+    strip.querySelectorAll('img').forEach(function(i){ i.style.filter = f; });
+  }
+  var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':'Photo brightness' });
+  var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':'Photo brightness' });
+  var reset = h('button', { class:'btn small ghost', type:'button' }, 'Reset');
+  function set(v, from){
+    v = Math.round(parseFloat(v));
+    if(!isFinite(v)) return;
+    v = Math.max(0, Math.min(100, v));
+    if(v === 100 && !(original.home && 'photoBrightness' in original.home)){
+      if(content.home){ delete content.home.photoBrightness; if(!Object.keys(content.home).length) delete content.home; }
+    } else {
+      content.home = content.home || {};
+      content.home.photoBrightness = v;
+    }
+    if(from !== range) range.value = v;
+    if(from !== box) box.value = v;
+    reset.disabled = v === 100;
+    paint(); refreshStatus();
+  }
+  range.addEventListener('input', function(){ set(range.value, range); });
+  box.addEventListener('change', function(){ set(box.value, box); });
+  reset.addEventListener('click', function(){ set(100); });
+  range.value = box.value = get();
+  reset.disabled = get() === 100;
+  paint();
+  return h('div', { class:'card section' },
+    h('h3', { text:'Website photos' }),
+    h('div', { class:'style-row', style:'border-top:none;padding-top:0' },
+      h('div', { class:'style-label' }, h('span', { text:'Brightness' }),
+        h('small', { text:'Dims the photos in the Designs, Experiences and Events galleries (not the background). 100 = original.' })),
+      sample.length ? strip : null,
+      h('div', { class:'style-ctrl' },
+        h('span', { class:'small-label', text:'0' }), range, h('span', { class:'small-label', text:'100' }), box, reset)
+    )
+  );
+}
+
 var views = {
   home: function(){
     return [
@@ -1187,7 +1244,8 @@ var views = {
           text:'Phones are tall and narrow, so they only show a slice of the background photo. Drag the box (or use the slider) to pick which slice. Computers still show the whole photo.' }),
         cropPicker()
       ),
-      saturationCard()
+      saturationCard(),
+      brightnessCard()
     ];
   },
 

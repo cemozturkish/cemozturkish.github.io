@@ -59,7 +59,7 @@
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        })).then(function(c){ phoneCrop(c); aboutStyle(c); bgSaturation(c); return c; });
+        })).then(function(c){ phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); return c; });
     return contentPromise;
   }
 
@@ -132,6 +132,20 @@
     if(typeof v !== 'number' || !isFinite(v) || v === 100) return;
     v = Math.max(0, Math.min(100, v));
     document.querySelectorAll('.bg').forEach(function(el){ el.style.filter = 'saturate(' + v / 100 + ')'; });
+  }
+
+  // brightness of the gallery photos chosen in the admin (0 = black, 100 = original).
+  // Keeps the fade-in blur the galleries already use.
+  function photoBrightness(c){
+    var v = c && c.home && c.home.photoBrightness;
+    if(typeof v !== 'number' || !isFinite(v) || v === 100) return;
+    var b = Math.max(0, Math.min(100, v)) / 100;
+    var el = document.getElementById('photo-brightness') || document.head.appendChild(document.createElement('style'));
+    el.id = 'photo-brightness';
+    el.textContent =
+      '.masonry img{filter:blur(4px) brightness(' + b + ')!important}' +
+      '.masonry img.visible{filter:blur(0) brightness(' + b + ')!important}' +
+      '@media(prefers-reduced-motion:reduce){.masonry img{filter:brightness(' + b + ')!important}}';
   }
 
   // photos the admin marked as hidden stay in the list but aren't shown
