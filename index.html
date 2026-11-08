@@ -299,9 +299,41 @@ body{
   opacity:1;
   pointer-events:auto;
 }
-.section-panel .panel-close{
+/* sticky header: BACK + page title stay put, with a dark fade behind them */
+.section-panel .panel-head{
   position:sticky;
   top:0;
+  z-index:2;
+  padding-bottom:26px;
+  background:linear-gradient(to bottom, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.9) calc(100% - 26px), rgba(0,0,0,0) 100%);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  -webkit-mask-image:linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+          mask-image:linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+}
+.section-panel .panel-title:empty{ display:none; }
+.section-panel .panel-title h1{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(18px, 2.6vw, 30px);
+  font-weight:200;
+  letter-spacing:.06em;
+  color:rgba(255,255,255,0.55);
+  text-align:center;
+  margin:0;
+  padding:0 clamp(24px, 4vw, 60px);
+  text-shadow:0 2px 12px rgba(0,0,0,0.6);
+}
+.section-panel .panel-title img{
+  display:block;
+  margin:0 auto;
+  max-width:clamp(160px, 22vw, 280px);
+  height:auto;
+  opacity:0.9;
+  transition:max-width .3s ease;
+}
+/* the Events logo shrinks once you scroll so it doesn't take half the screen */
+.section-panel.scrolled .panel-title img{ max-width:clamp(80px, 9vw, 120px); }
+.section-panel .panel-body{ overflow-anchor:none; }
+.section-panel .panel-close{
   display:block;
   padding:20px clamp(24px, 4vw, 60px);
   font-size:14px;
@@ -319,7 +351,7 @@ body{
   color:rgba(255,255,255,0.9);
 }
 .section-panel .panel-body{
-  padding:0 clamp(24px, 4vw, 60px) 60px;
+  padding:14px clamp(24px, 4vw, 60px) 60px;
 }
 .section-panel .panel-body h1{
   font-family:'Josefin Sans', sans-serif;
@@ -375,7 +407,8 @@ body{
 .section-panel .panel-body .about-me-scroll p{ margin-bottom:14px; }
 /* About: title + education stay put, only the "about me" text scrolls */
 .section-panel.fixed{ display:flex; flex-direction:column; overflow:hidden; }
-.section-panel.fixed .panel-close{ flex:none; align-self:flex-start; }
+.section-panel.fixed .panel-head{ flex:none; padding-bottom:0; background:none; -webkit-backdrop-filter:none; backdrop-filter:none; -webkit-mask-image:none; mask-image:none; }
+.section-panel.fixed .panel-body{ padding-top:0; }
 .section-panel.fixed .panel-body{
   flex:1; min-height:0; display:flex; flex-direction:column;
   padding-bottom:0; overflow-y:auto;
@@ -521,7 +554,10 @@ body{
 </div>
 
 <div class="section-panel" id="sectionPanel">
-  <button class="panel-close" id="panelClose">&larr; BACK</button>
+  <div class="panel-head" id="panelHead">
+    <button class="panel-close" id="panelClose">&larr; BACK</button>
+    <div class="panel-title" id="panelTitle"></div>
+  </div>
   <div class="panel-body" id="panelBody"></div>
 </div>
 
@@ -574,6 +610,14 @@ body{
   var secPanel = document.getElementById('sectionPanel');
   var secBody = document.getElementById('panelBody');
   var secClose = document.getElementById('panelClose');
+  var secTitle = document.getElementById('panelTitle');
+
+  // compact header once the panel is scrolled (hysteresis avoids flicker)
+  secPanel.addEventListener('scroll', function(){
+    var y = secPanel.scrollTop;
+    if(y > 60) secPanel.classList.add('scrolled');
+    else if(y < 4) secPanel.classList.remove('scrolled');
+  }, { passive:true });
 
   // wording and photos come from content.json (edited through /admin)
   var content = Site.load();
@@ -608,16 +652,17 @@ body{
       var p = c[page];
       if(!p) return;
       secBody.innerHTML = '';
+      secTitle.innerHTML = '';
+      secPanel.classList.remove('scrolled');
       if(page === 'events' && p.headerImage){
         var himg = document.createElement('img');
         himg.src = Site.src(p.headerImage);
         himg.alt = p.title;
-        himg.style.cssText = 'display:block;margin:0 auto 40px;max-width:clamp(160px,22vw,280px);height:auto;opacity:0.9;';
-        secBody.appendChild(himg);
+        secTitle.appendChild(himg);
       } else if(Site.heading(p, page === 'about' ? '' : undefined)){
         var h = document.createElement('h1');
         h.textContent = Site.heading(p, page === 'about' ? '' : undefined);
-        secBody.appendChild(h);
+        secTitle.appendChild(h);
       }
       secPanel.classList.toggle('fixed', page === 'about');
       if(page === 'about'){
