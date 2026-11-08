@@ -307,35 +307,20 @@ body{
   padding-bottom:6px;
   pointer-events:none;           /* only BACK is clickable; content under the header stays tappable */
 }
-.section-panel .panel-head .panel-close{ pointer-events:auto; position:relative; z-index:0; }
+.section-panel .panel-head .panel-close{ pointer-events:auto; color:#808080; text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85); }
+.section-panel .panel-head .panel-close:hover{ color:#e6e6e6; }
 /* soft dark shadow just behind the words */
-.section-panel .panel-head .panel-close::before{
-  content:""; position:absolute; z-index:-1;
-  top:2px; bottom:2px; left:calc(clamp(24px, 4vw, 60px) - 20px); right:calc(clamp(24px, 4vw, 60px) - 20px);
-  background:#000; filter:blur(10px); border-radius:999px;
-}
 .section-panel .panel-title:empty{ display:none; }
-.section-panel .panel-title.logo{ display:table; margin:0 auto; position:relative; z-index:0; }
-.section-panel .panel-title.logo::before{
-  content:""; position:absolute; inset:-6px -14px; z-index:-1;
-  background:#000; filter:blur(12px); border-radius:50%;
-}
 .section-panel .panel-title h1{
   font-family:'Josefin Sans', sans-serif;
   font-size:clamp(18px, 2.6vw, 30px);
   font-weight:200;
   letter-spacing:.06em;
-  color:rgba(255,255,255,0.55);
+  color:#8c8c8c;
   text-align:center;
-  display:table;               /* shrink to the words so the shadow hugs them */
-  margin:0 auto;
-  padding:2px 6px;
-  position:relative;
-  z-index:0;
-}
-.section-panel .panel-title h1::before{
-  content:""; position:absolute; inset:-14px -24px; z-index:-1;
-  background:#000; filter:blur(10px); border-radius:999px;
+  margin:0;
+  padding:0 clamp(24px, 4vw, 60px);
+  text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85);
 }
 .section-panel .panel-title img{
   display:block;
@@ -424,7 +409,6 @@ body{
 /* About: title + education stay put, only the "about me" text scrolls */
 .section-panel.fixed{ display:flex; flex-direction:column; overflow:hidden; }
 .section-panel.fixed .panel-head{ flex:none; padding-bottom:0; pointer-events:auto; }
-.section-panel.fixed .panel-head .panel-close::before{ display:none; }
 .section-panel.fixed .panel-body{ padding-top:0; }
 .section-panel.fixed .panel-body{
   flex:1; min-height:0; display:flex; flex-direction:column;
@@ -670,7 +654,6 @@ body{
       if(!p) return;
       secBody.innerHTML = '';
       secTitle.innerHTML = '';
-      secTitle.classList.toggle('logo', page === 'events' && !!p.headerImage);
       secPanel.classList.remove('scrolled');
       if(page === 'events' && p.headerImage){
         var himg = document.createElement('img');

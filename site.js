@@ -135,17 +135,18 @@
   }
 
   // brightness of the gallery photos chosen in the admin (0 = black, 100 = original).
-  // Keeps the fade-in blur the galleries already use.
+  // Done by fading the photos into the near-black page behind them rather than with a
+  // CSS brightness() filter: iPhone Safari paints filtered photos inside the blurred
+  // slide-in panel as flat grey boxes.
   function photoBrightness(c){
     var v = c && c.home && c.home.photoBrightness;
     if(typeof v !== 'number' || !isFinite(v) || v === 100) return;
     var b = Math.max(0, Math.min(100, v)) / 100;
     var el = document.getElementById('photo-brightness') || document.head.appendChild(document.createElement('style'));
     el.id = 'photo-brightness';
-    el.textContent =
-      '.masonry img{filter:blur(4px) brightness(' + b + ')!important}' +
-      '.masonry img.visible{filter:blur(0) brightness(' + b + ')!important}' +
-      '@media(prefers-reduced-motion:reduce){.masonry img{filter:brightness(' + b + ')!important}}';
+    // 0.9 is the photos' normal resting opacity
+    el.textContent = '.masonry img.visible{opacity:' + Math.round(0.9 * b * 1000) / 1000 + '!important}' +
+      '@media(prefers-reduced-motion:reduce){.masonry img{opacity:' + Math.round(0.9 * b * 1000) / 1000 + '!important}}';
   }
 
   // photos the admin marked as hidden stay in the list but aren't shown

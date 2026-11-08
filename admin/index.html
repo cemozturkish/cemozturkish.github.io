@@ -255,7 +255,8 @@ textarea.big{ min-height:160px; }
 .tb-sep{ width:1px; height:18px; background:var(--line); margin:0 6px; }
 textarea.with-toolbar{ border-top-left-radius:0; border-top-right-radius:0; }
 .bright-strip{ display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin:4px 0 12px; }
-.bright-strip img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; background:#111; display:block; }
+.bright-strip{ background:#000; padding:8px; border-radius:8px; }
+.bright-strip img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; display:block; }
 @media(max-width:640px){ .bright-strip{ grid-template-columns:repeat(3, 1fr); } }
 .style-cols{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
 @media(max-width:760px){ .style-cols{ grid-template-columns:1fr; } }
@@ -1195,8 +1196,9 @@ function brightnessCard(){
     return img;
   }));
   function paint(){
-    var f = get() === 100 ? '' : 'brightness(' + get() / 100 + ')';
-    strip.querySelectorAll('img').forEach(function(i){ i.style.filter = f; });
+    // same method as the site: fade the photo into black
+    var o = get() === 100 ? '' : String(get() / 100);
+    strip.querySelectorAll('img').forEach(function(i){ i.style.opacity = o; });
   }
   var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':'Photo brightness' });
   var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':'Photo brightness' });
