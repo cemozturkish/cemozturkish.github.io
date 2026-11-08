@@ -166,6 +166,25 @@
         "photos": [
           "assets/project1.jpg"
         ]
+      },
+      {
+        "title": "VOLUNTEERING",
+        "entries": [
+          {
+            "org": "Istanbul Municipality",
+            "location": "Istanbul, Turkiye",
+            "roles": [
+              {
+                "title": "Tourism Ambassador",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": []
       }
     ],
     "heading": "WORK EXPERIENCES"
