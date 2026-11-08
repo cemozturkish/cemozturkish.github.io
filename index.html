@@ -303,7 +303,7 @@ body{
 .section-panel .panel-head{
   position:sticky;
   top:0;
-  z-index:2;
+  z-index:3;
   padding-bottom:6px;
   pointer-events:none;           /* only BACK is clickable; content under the header stays tappable */
 }
@@ -482,7 +482,7 @@ body{
 /* section titles stick and stack under the page title; click to jump back to one */
 .stack-title{
   position:sticky;
-  z-index:1;
+  z-index:2;   /* above stuck names */
   width:fit-content;
   margin-left:auto !important;
   margin-right:auto !important;
@@ -494,6 +494,12 @@ body{
   text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85);
 }
 .stack-title:hover{ color:#bbb !important; }
+/* organisation names and job titles stick under the section titles too */
+.stick-row{ position:sticky; z-index:1; text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85); }
+.stick-row .exp-location, .stick-row .exp-date{ transition:opacity .2s; }
+.stick-row.stuck .exp-location, .stick-row.stuck .exp-date{ opacity:0; }
+.stick-row{ transition:opacity .15s; }
+.stick-row.leaving{ opacity:0; }
 .section-panel .panel-body .exp-list{
   max-width:800px;
   margin:0 auto 30px;
