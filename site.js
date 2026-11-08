@@ -153,18 +153,60 @@
   // Each title sits right before its section (as a sibling, so it stays stuck to the end
   // of the page), with an invisible marker in front of it that remembers where the
   // section starts. Clicking a stacked title scrolls smoothly back to that section.
-  var relayoutStack = null;
+  // Inside each section, the organisation name and then the job title also stick (under
+  // that section's stacked titles) while their entry scrolls by; their location and
+  // dates fade out while stuck.
+  var relayoutStack = null, stuckWatch = null;
   window.addEventListener('resize', function(){ if(relayoutStack) relayoutStack(); });
   function stackTitles(titles, scroller, head){
     var GAP = 4;
+    var rows = [];
     function layout(){
       var top = head ? head.offsetHeight : 0;
+      rows = [];
       titles.forEach(function(t){
         t.style.top = top + 'px';
         t._stickTop = top;
         top += t.offsetHeight + GAP;
+        // the section's entries sit right under this title's slot
+        var section = t.nextElementSibling;
+        if(!section || !section.classList.contains('exp-section')) return;
+        section.querySelectorAll('.exp-entry').forEach(function(entry){
+          var org = entry.querySelector('.exp-head');
+          var orgTop = top;
+          if(org){
+            org.classList.add('stick-row');
+            org.style.top = orgTop + 'px'; org._stickTop = orgTop; rows.push(org);
+          }
+          var roleTop = orgTop + (org ? org.offsetHeight + GAP : 0);
+          entry.querySelectorAll('.exp-role').forEach(function(role){
+            role.classList.add('stick-row');
+            role.style.top = roleTop + 'px'; role._stickTop = roleTop; rows.push(role);
+          });
+        });
+      });
+      markStuck();
+    }
+    // a row is "stuck" once it has reached its sticky position, and "leaving" once the
+    // end of its entry starts pushing it back up (it fades out instead of sliding
+    // through the header and overlapping the rows above it)
+    function markStuck(){
+      var base = scroller === window ? 0 : scroller.getBoundingClientRect().top;
+      rows.forEach(function(r){
+        var y = r.getBoundingClientRect().top - base;
+        r.classList.toggle('stuck', y <= r._stickTop + 0.5);
+        r.classList.toggle('leaving', y < r._stickTop - 1);
       });
     }
+    var ticking = false;
+    function onScroll(){
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){ ticking = false; markStuck(); });
+    }
+    if(stuckWatch) stuckWatch.target.removeEventListener('scroll', stuckWatch.fn);
+    scroller.addEventListener('scroll', onScroll, { passive:true });
+    stuckWatch = { target:scroller, fn:onScroll };
     function docTop(el){
       var r = el.getBoundingClientRect();
       if(scroller === window) return r.top + window.scrollY;
@@ -262,6 +304,7 @@
         (e.location ? '<span class="exp-location">' + inline(e.location) + '</span>' : '') +
         '</div>';
       (e.roles || []).forEach(function(r){
+        h += '<div class="exp-role-group">';
         if(r.title || r.date){
           h += '<div class="exp-role"><span class="exp-title">' + inline(r.title) + '</span>' +
             (r.date ? '<span class="exp-date">' + inline(r.date) + '</span>' : '') + '</div>';
@@ -270,6 +313,7 @@
         if(bullets.length){
           h += '<ul>' + bullets.map(function(b){ return '<li>' + inline(b) + '</li>'; }).join('') + '</ul>';
         }
+        h += '</div>';
       });
       return h + '</div>';
     }).join('') + '</div>';
