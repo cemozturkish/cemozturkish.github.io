@@ -306,6 +306,7 @@
   },
   "home": {
     "mobileFocusX": 43,
-    "saturation": 56
+    "saturation": 56,
+    "photoBrightness": 60
   }
 }
