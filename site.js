@@ -153,9 +153,9 @@
   // Each title sits right before its section (as a sibling, so it stays stuck to the end
   // of the page), with an invisible marker in front of it that remembers where the
   // section starts. Clicking a stacked title scrolls smoothly back to that section.
-  // Inside each section, the organisation name and then the job title also stick (under
-  // that section's stacked titles) while their entry scrolls by; their location and
-  // dates fade out while stuck.
+  // Inside each section, organisation names also stick and pile up under that section's
+  // title until the section ends; each job title (with its dates) sits under its own
+  // organisation while that role's bullets scroll by.
   var relayoutStack = null, stuckWatch = null;
   window.addEventListener('resize', function(){ if(relayoutStack) relayoutStack(); });
   function stackTitles(titles, scroller, head){
@@ -171,14 +171,20 @@
         // the section's entries sit right under this title's slot
         var section = t.nextElementSibling;
         if(!section || !section.classList.contains('exp-section')) return;
+        // organisation names pile up under the section titles for the rest of the
+        // section (the .stacking class makes the section their sticky container); each
+        // job title sits under its own organisation while its bullets scroll by
+        section.classList.add('stacking');
+        var orgTop = top;
         section.querySelectorAll('.exp-entry').forEach(function(entry){
           var org = entry.querySelector('.exp-head');
-          var orgTop = top;
+          var thisTop = orgTop;
           if(org){
             org.classList.add('stick-row');
-            org.style.top = orgTop + 'px'; org._stickTop = orgTop; rows.push(org);
+            org.style.top = thisTop + 'px'; org._stickTop = thisTop; rows.push(org);
+            orgTop += org.offsetHeight + GAP;
           }
-          var roleTop = orgTop + (org ? org.offsetHeight + GAP : 0);
+          var roleTop = orgTop;
           entry.querySelectorAll('.exp-role').forEach(function(role){
             role.classList.add('stick-row');
             role.style.top = roleTop + 'px'; role._stickTop = roleTop; rows.push(role);
