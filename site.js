@@ -149,6 +149,47 @@
       '@media(prefers-reduced-motion:reduce){.masonry img{opacity:' + Math.round(0.9 * b * 1000) / 1000 + '!important}}';
   }
 
+  // Section titles that stick and stack under the page title as you scroll past them.
+  // Each title sits right before its section (as a sibling, so it stays stuck to the end
+  // of the page), with an invisible marker in front of it that remembers where the
+  // section starts. Clicking a stacked title scrolls smoothly back to that section.
+  var relayoutStack = null;
+  window.addEventListener('resize', function(){ if(relayoutStack) relayoutStack(); });
+  function stackTitles(titles, scroller, head){
+    var GAP = 4;
+    function layout(){
+      var top = head ? head.offsetHeight : 0;
+      titles.forEach(function(t){
+        t.style.top = top + 'px';
+        t._stickTop = top;
+        top += t.offsetHeight + GAP;
+      });
+    }
+    function docTop(el){
+      var r = el.getBoundingClientRect();
+      if(scroller === window) return r.top + window.scrollY;
+      return r.top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+    }
+    titles.forEach(function(t){
+      var marker = document.createElement('div');
+      marker.className = 'stack-anchor';
+      t.parentNode.insertBefore(marker, t);
+      t.classList.add('stack-title');
+      t.setAttribute('role', 'button');
+      t.setAttribute('tabindex', '0');
+      function go(){
+        layout();
+        var y = Math.max(0, docTop(marker) - t._stickTop);
+        scroller.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      t.addEventListener('click', go);
+      t.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+    });
+    layout();
+    relayoutStack = layout;
+    return layout;
+  }
+
   // photos the admin marked as hidden stay in the list but aren't shown
   function visible(owner){
     var hidden = (owner && owner.hidden) || [];
@@ -267,6 +308,7 @@
     aboutHTML: aboutHTML,
     entriesHTML: entriesHTML,
     gallery: gallery,
-    visible: visible
+    visible: visible,
+    stackTitles: stackTitles
   };
 })();
