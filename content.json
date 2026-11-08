@@ -247,7 +247,7 @@
   },
   "events": {
     "title": "EVENTS",
-    "headerImage": "assets/events.png",
+    "headerImage": "",
     "entries": [
       {
         "org": "Pitzer Campus Life",
@@ -306,7 +306,7 @@
       "assets/events18.jpg",
       "assets/events19.jpg"
     ],
-    "heading": "EVENTS"
+    "heading": "EVENTS ORGANIZED"
   },
   "home": {
     "mobileFocusX": 43,
