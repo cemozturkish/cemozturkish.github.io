@@ -481,11 +481,13 @@ body{
 }
 /* Collapsing resume (Work Experiences): titles, organisations and job titles stick and
    pile up for the rest of the page; bullets and photos scroll away under the stack.
-   The wrappers make no boxes, so every row's sticky container is the whole page. */
+   Every row sits directly in one container spanning the whole list, so it stays stuck. */
 /* shrunk rows are laid out wider than the column; never let that widen the page */
-.resume-stack{ overflow-x:clip; padding-bottom:0 !important; }
-.resume-stack .exp-section, .resume-stack .exp-list,
-.resume-stack .exp-entry, .resume-stack .exp-role-group{ display:contents; }
+.resume-stack{ overflow-x:clip; padding-bottom:0 !important; margin:0 !important; }
+/* the one container that holds the whole flat list (galleries use the full width) */
+.resume-flat{ max-width:none !important; margin:0 !important; }
+/* the list runs to the very end of the panel, so the stack has the whole screen */
+.section-panel .panel-body.resume-body{ padding-bottom:0; }
 .resume-stack .exp-head, .resume-stack .exp-role, .resume-stack ul{
   max-width:800px; margin-left:auto !important; margin-right:auto !important;
 }
@@ -693,6 +695,7 @@ body{
       if(!p) return;
       if(Site.stopResume) Site.stopResume();
       secBody.innerHTML = '';
+      secBody.classList.remove('resume-body');
       secTitle.innerHTML = '';
       secPanel.classList.remove('scrolled');
       if(page === 'events' && p.headerImage){
@@ -709,19 +712,10 @@ body{
       if(page === 'about'){
         secBody.insertAdjacentHTML('beforeend', '<div class="bio">' + Site.aboutHTML(p) + '</div>');
       } else if(page === 'experiences'){
-        (p.sections || []).forEach(function(sec){
-          var sh = document.createElement('h2');
-          sh.className = 'exp-section-title';
-          sh.textContent = sec.title;
-          secBody.appendChild(sh);
-          var section = document.createElement('div');
-          section.className = 'exp-section';
-          section.insertAdjacentHTML('beforeend', Site.entriesHTML(sec.entries));
-          secBody.appendChild(section);
-          addGallery(section, Site.visible(sec));
-        });
+        secBody.classList.add('resume-body');
+        var resume = Site.buildResume(secBody, p.sections, addGallery);
         requestAnimationFrame(function(){
-          Site.stackResume(secBody, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'));
+          Site.stackResume(resume, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'));
         });
       } else {
         secBody.insertAdjacentHTML('beforeend', Site.entriesHTML(p.entries));

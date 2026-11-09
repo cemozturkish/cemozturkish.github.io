@@ -157,6 +157,39 @@
   // shrink as they lock into the stack (just enough for the full stack to fit on one
   // screen); space is added at the end so the last row can reach its place. Tapping any
   // stacked row (or the page title) scrolls back to it.
+  // Builds the Work Experiences list flat: every section title, organisation row, job-title
+  // row, bullet list and gallery is a direct child of ONE container that spans the whole
+  // list. (Sticky rows must sit directly in a real box that spans the page: Safari won't
+  // stick rows inside `display: contents` wrappers.) Returns that container.
+  function buildResume(container, sections, makeGallery){
+    var list = document.createElement('div');
+    list.className = 'exp-list resume-flat';
+    var inner = document.createElement('div');
+    inner.className = 'exp-entry resume-flat-inner';   // keeps the usual entry styles
+    list.appendChild(inner);
+    container.appendChild(list);
+    (sections || []).forEach(function(sec){
+      var h = '<h2 class="exp-section-title">' + esc(sec.title || '') + '</h2>';
+      (sec.entries || []).forEach(function(e){
+        h += '<div class="exp-head"><span class="exp-org">' + inline(e.org) + '</span>' +
+          (e.location ? '<span class="exp-location">' + inline(e.location) + '</span>' : '') + '</div>';
+        (e.roles || []).forEach(function(r){
+          if(r.title || r.date){
+            h += '<div class="exp-role"><span class="exp-title">' + inline(r.title) + '</span>' +
+              (r.date ? '<span class="exp-date">' + inline(r.date) + '</span>' : '') + '</div>';
+          }
+          var bullets = (r.bullets || []).filter(function(b){ return String(b).trim(); });
+          if(bullets.length){
+            h += '<ul>' + bullets.map(function(b){ return '<li>' + inline(b) + '</li>'; }).join('') + '</ul>';
+          }
+        });
+      });
+      inner.insertAdjacentHTML('beforeend', h);
+      if(makeGallery) makeGallery(inner, visible(sec));
+    });
+    return inner;
+  }
+
   var resumeState = null;
   window.addEventListener('resize', function(){ if(resumeState) resumeState.onResize(); });
   function stackResume(root, scroller, head, pageTitle){
@@ -431,6 +464,7 @@
     gallery: gallery,
     visible: visible,
     stackResume: stackResume,
+    buildResume: buildResume,
     stopResume: function(){ if(resumeState) resumeState.destroy(); }
   };
 })();
