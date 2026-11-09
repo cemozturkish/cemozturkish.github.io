@@ -720,7 +720,7 @@ body{
         secBody.classList.add('resume-body');
         var resume = Site.buildResume(secBody, p.sections, addGallery);
         requestAnimationFrame(function(){
-          Site.stackResume(resume, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'));
+          Site.stackResume(resume, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'), p.stackScale);
         });
       } else {
         secBody.insertAdjacentHTML('beforeend', Site.entriesHTML(p.entries));

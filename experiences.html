@@ -223,7 +223,7 @@ Site.load().then(c => {
     parent.appendChild(g);
     Site.gallery(g, photos);
   });
-  requestAnimationFrame(() => Site.stackResume(resume, window, document.querySelector('.page-head'), document.getElementById('title')));
+  requestAnimationFrame(() => Site.stackResume(resume, window, document.querySelector('.page-head'), document.getElementById('title'), c.experiences.stackScale));
 });
 (function(){
   document.querySelectorAll('a.back').forEach(a => {

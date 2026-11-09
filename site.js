@@ -192,10 +192,11 @@
 
   var resumeState = null;
   window.addEventListener('resize', function(){ if(resumeState) resumeState.onResize(); });
-  function stackResume(root, scroller, head, pageTitle){
+  function stackResume(root, scroller, head, pageTitle, size){
     if(resumeState) resumeState.destroy();
     var GAP = 2;
-    var MIN_RS = 0.8;      // rows never shrink below 80% (stays readable)
+    // how big rows are once stacked (admin: Experiences → Stacked rows size); 0.5–1
+    var RS = typeof size === 'number' && isFinite(size) ? Math.max(0.5, Math.min(1, size)) : 0.9;
     var push = 0;          // how far the stack has slid up once it fills the screen
     var stackLimit = 0;    // lowest the stack's bottom may go (from the top of the scroll area)
     root.classList.add('resume-stack');
@@ -281,22 +282,9 @@
       var tail = Math.max(0, full0 - rootEnd - spacer.offsetHeight);
       var extra = items.reduce(function(m, el){ return Math.max(m, el.offsetHeight); }, 0);
       stackLimit = viewH() - tail - extra - 6;
-      var avail = stackLimit - headH();
-      root.style.setProperty('--rs', 1);
-      if(stackHeight() > avail){
-        // shrink just enough to fit, but not below MIN_RS; if it still doesn't fit, the
-        // stack slides up as it fills the screen (see pushFor)
-        root.style.setProperty('--rs', MIN_RS);
-        if(stackHeight() <= avail){
-          var lo = MIN_RS, hi = 1;
-          for(var i = 0; i < 8; i++){
-            var mid = (lo + hi) / 2;
-            root.style.setProperty('--rs', mid.toFixed(4));
-            if(stackHeight() <= avail) lo = mid; else hi = mid;
-          }
-          root.style.setProperty('--rs', lo.toFixed(4));
-        }
-      }
+      // rows shrink to the chosen size as they stack; when the stack fills the screen it
+      // slides up instead of shrinking further (see pushFor)
+      root.style.setProperty('--rs', RS);
       measureCollapsed();
       // 2. give every row its place in the stack
       var top = headH();

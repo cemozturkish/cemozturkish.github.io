@@ -1181,6 +1181,39 @@ function saturationCard(){
   );
 }
 
+/* ---------- Experiences: size of stacked rows ---------- */
+function stackSizeCard(p){
+  function get(){ return typeof p.stackScale === 'number' ? Math.round(p.stackScale * 100) : 90; }
+  var range = h('input', { type:'range', min:50, max:100, step:1, 'aria-label':'Stacked rows size' });
+  var box = h('input', { type:'number', min:50, max:100, step:1, class:'num', 'aria-label':'Stacked rows size' });
+  var reset = h('button', { class:'btn small ghost', type:'button' }, 'Reset');
+  function set(v, from){
+    v = Math.round(parseFloat(v));
+    if(!isFinite(v)) return;
+    v = Math.max(50, Math.min(100, v));
+    if(v === 90 && !('stackScale' in (original.experiences || {}))) delete p.stackScale;
+    else p.stackScale = v / 100;
+    if(from !== range) range.value = v;
+    if(from !== box) box.value = v;
+    reset.disabled = v === 90;
+    refreshStatus();
+  }
+  range.addEventListener('input', function(){ set(range.value, range); });
+  box.addEventListener('change', function(){ set(box.value, box); });
+  reset.addEventListener('click', function(){ set(90); });
+  range.value = box.value = get();
+  reset.disabled = get() === 90;
+  return h('div', { class:'card section' },
+    h('h3', { text:'Stacking' }),
+    h('div', { class:'style-row', style:'border-top:none;padding-top:0' },
+      h('div', { class:'style-label' }, h('span', { text:'Stacked rows size' }),
+        h('small', { text:'As you scroll, names and job titles stack at the top and shrink to this size (100% = no shrinking). When the stack fills the screen it slides up. Use Preview to try it.' })),
+      h('div', { class:'style-ctrl' },
+        h('span', { class:'small-label', text:'50%' }), range, h('span', { class:'small-label', text:'100%' }), box, h('span', { class:'unit', text:'%' }), reset)
+    )
+  );
+}
+
 /* ---------- website photo brightness ---------- */
 function brightnessCard(){
   function get(){ var v = content.home && content.home.photoBrightness; return typeof v === 'number' ? v : 100; }
@@ -1356,6 +1389,7 @@ var views = {
     return [
       pageHead('Experiences', 'Each section has its own entries and photos.'),
       titleSection(p),
+      stackSizeCard(p),
       wrap
     ];
   },
