@@ -507,9 +507,14 @@ body{
 .resume-stack .masonry{ margin-top:20px; }
 /* rows shrink (by --rs) as they lock into the stack, so the whole collapsed resume fits on
    one screen; their space in the page stays the same, so nothing below jumps */
-.resume-stack .stack-item{ transform-origin:0 0; transition:transform .25s ease, color .2s; }
+.resume-stack .stack-item{ transform-origin:0 0; transition:transform .25s ease, top .25s ease, opacity .2s, color .2s; }
+/* once the stack fills the screen it slides up; rows that pass under the header hide */
+.resume-stack .stack-item.tucked{ opacity:0; pointer-events:none; }
 .resume-stack h2.exp-section-title{ transform-origin:50% 0; }
 .resume-stack .stack-item.stuck{ transform:scale(var(--rs, 1)); }
+/* a stuck row keeps its normal height in the page; keep wrapped lines packed at the top
+   instead of spread over that height */
+.resume-stack .stack-item{ align-content:flex-start; }
 .resume-stack .exp-head.stuck, .resume-stack .exp-role.stuck,
 .resume-stack.measure-collapsed .exp-head, .resume-stack.measure-collapsed .exp-role{
   /* drawn at --rs, so lay out wider to still span the column once shrunk */
