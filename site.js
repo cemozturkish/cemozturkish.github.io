@@ -149,112 +149,164 @@
       '@media(prefers-reduced-motion:reduce){.masonry img{opacity:' + Math.round(0.9 * b * 1000) / 1000 + '!important}}';
   }
 
-  // Section titles that stick and stack under the page title as you scroll past them.
-  // Each title sits right before its section (as a sibling, so it stays stuck to the end
-  // of the page), with an invisible marker in front of it that remembers where the
-  // section starts. Clicking a stacked title scrolls smoothly back to that section.
-  // Inside each section, organisation names also stick and pile up under that section's
-  // title until the section ends; each job title (with its dates) sits under its own
-  // organisation while that role's bullets scroll by.
-  var relayoutStack = null, stuckWatch = null;
-  window.addEventListener('resize', function(){ if(relayoutStack) relayoutStack(); });
-  function stackTitles(titles, scroller, head){
-    var GAP = 4;
-    var rows = [], clipped = [];
-    function layout(){
-      var top = head ? head.offsetHeight : 0;
-      rows = [];
-      clipped = [];
-      titles.forEach(function(t){
-        t.style.top = top + 'px';
-        t._stickTop = top;
-        top += t.offsetHeight + GAP;
-        // the section's entries sit right under this title's slot
-        var section = t.nextElementSibling;
-        if(!section || !section.classList.contains('exp-section')) return;
-        // organisation names pile up under the section titles for the rest of the
-        // section (the .stacking class makes the section their sticky container); each
-        // job title sits under its own organisation while its bullets scroll by
-        section.classList.add('stacking');
-        // bullets and photos get cut off at the bottom of the stack instead of
-        // scrolling behind it
-        section.querySelectorAll('.exp-role-group > ul, .masonry').forEach(function(el){ clipped.push(el); });
-        var orgTop = top;
-        section.querySelectorAll('.exp-entry').forEach(function(entry){
-          var org = entry.querySelector('.exp-head');
-          var thisTop = orgTop;
-          if(org){
-            org.classList.add('stick-row');
-            org.style.top = thisTop + 'px'; org._stickTop = thisTop; rows.push(org);
-            orgTop += org.offsetHeight + GAP;
-          }
-          var roleTop = orgTop;
-          entry.querySelectorAll('.exp-role').forEach(function(role){
-            role.classList.add('stick-row');
-            role.style.top = roleTop + 'px'; role._stickTop = roleTop; rows.push(role);
-          });
-        });
-      });
-      markStuck();
+  // Collapsing resume (Work Experiences). Every section title, organisation row (name +
+  // location) and job-title row (title + dates) sticks once it reaches the stack and stays
+  // there for the rest of the page, piling up in page order; only the details (bullets,
+  // photos) scroll away, cut off at the bottom edge of the stack. Scrolled to the end, the
+  // screen shows the whole resume collapsed. Rows keep their normal size while you read and
+  // shrink as they lock into the stack (just enough for the full stack to fit on one
+  // screen); space is added at the end so the last row can reach its place. Tapping any
+  // stacked row (or the page title) scrolls back to it.
+  var resumeState = null;
+  window.addEventListener('resize', function(){ if(resumeState) resumeState.onResize(); });
+  function stackResume(root, scroller, head, pageTitle){
+    if(resumeState) resumeState.destroy();
+    var GAP = 2;
+    root.classList.add('resume-stack');
+    // empty section titles take no space
+    root.querySelectorAll('h2.exp-section-title').forEach(function(t){ if(!t.textContent.trim()) t.style.display = 'none'; });
+    var items = [].filter.call(root.querySelectorAll('h2.exp-section-title, .exp-head, .exp-role'), function(el){
+      return el.style.display !== 'none';
+    });
+    var clipped = [].slice.call(root.querySelectorAll('ul, .masonry'));
+    var spacer = document.createElement('div');
+    spacer.className = 'stack-spacer';
+    root.appendChild(spacer);
+
+    function viewH(){ return scroller === window ? window.innerHeight : scroller.clientHeight; }
+    function headH(){ return head ? head.offsetHeight : 0; }
+    function docTop(el){
+      var r = el.getBoundingClientRect();
+      if(scroller === window) return r.top + window.scrollY;
+      return r.top - scroller.getBoundingClientRect().top + scroller.scrollTop;
     }
-    // a row is "stuck" once it has reached its sticky position, and "leaving" once the
-    // end of its entry starts pushing it back up (it fades out instead of sliding
-    // through the header and overlapping the rows above it)
-    function markStuck(){
-      var base = scroller === window ? 0 : scroller.getBoundingClientRect().top;
-      // the lowest edge of everything currently stacked (header, stuck titles, stuck rows)
-      var line = head ? head.getBoundingClientRect().bottom : base;
-      titles.forEach(function(t){
-        var r = t.getBoundingClientRect();
-        if(r.top - base <= t._stickTop + 0.5) line = Math.max(line, r.bottom);
+    function naturalTop(el){ return docTop(el._marker) + el._marker.offsetHeight; }
+    function scrollTo(y){ scroller.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }
+
+    items.forEach(function(el){
+      // remembers where the row sits in the page (sticky rows move, this doesn't)
+      var marker = document.createElement('div');
+      marker.className = 'stack-anchor';
+      el.parentNode.insertBefore(marker, el);
+      // the row's space above moves into the marker, so the marker's bottom is exactly
+      // where the row starts (margins would otherwise collapse unpredictably)
+      marker.style.height = getComputedStyle(el).marginTop;
+      el.style.setProperty('margin-top', '0px', 'important');
+      el._marker = marker;
+      el.classList.add('stack-item');
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      function go(){ scrollTo(naturalTop(el) - el._stickTop); }
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+    });
+    function toTop(){ scrollTo(0); }
+    if(pageTitle){ pageTitle.classList.add('stack-page-title'); pageTitle.addEventListener('click', toTop); }
+
+    // height each row takes once collapsed into the stack, at the current --rs
+    function measureCollapsed(){
+      root.classList.add('measure-collapsed');
+      var rs = parseFloat(root.style.getPropertyValue('--rs')) || 1;
+      items.forEach(function(el){ el._collH = el.offsetHeight * rs; });
+      root.classList.remove('measure-collapsed');
+    }
+    function stackHeight(){
+      measureCollapsed();
+      return items.reduce(function(sum, el){ return sum + el._collH + GAP; }, 0);
+    }
+    var laidOutFor = null;
+    function layout(){
+      // 1. scale rows so the whole stack fits on one screen
+      // (binary search for the largest size that fits: names wrap less as they shrink,
+      // so the height doesn't shrink in proportion)
+      // Rows keep their full height in the page while drawn smaller, and a sticky row can't
+      // go past the end of its container; so leave room below the stack for that (the
+      // rows' full height beyond their shrunk height) and for whatever follows the list.
+      items.forEach(function(el){ el.classList.remove('stuck'); el.style.height = ''; });
+      var full0 = scroller === window ? document.documentElement.scrollHeight : scroller.scrollHeight;
+      var rootEnd = docTop(spacer);                       // where the list ends
+      var tail = Math.max(0, full0 - rootEnd - spacer.offsetHeight);
+      var extra = items.reduce(function(m, el){ return Math.max(m, el.offsetHeight); }, 0);
+      var avail = viewH() - headH() - tail - extra - 6;
+      root.style.setProperty('--rs', 1);
+      if(stackHeight() > avail){
+        var lo = 0.45, hi = 1;
+        for(var i = 0; i < 8; i++){
+          var mid = (lo + hi) / 2;
+          root.style.setProperty('--rs', mid.toFixed(4));
+          if(stackHeight() <= avail) lo = mid; else hi = mid;
+        }
+        root.style.setProperty('--rs', lo.toFixed(4));
+      }
+      measureCollapsed();
+      // 2. give every row its place in the stack
+      var top = headH();
+      items.forEach(function(el){
+        el.classList.remove('stuck'); el.style.height = '';
+        el._flowH = el.offsetHeight;          // its normal height while reading
+        el.style.top = top + 'px';
+        el._stickTop = top;
+        top += el._collH + GAP;
       });
-      rows.forEach(function(r){
-        var rect = r.getBoundingClientRect(), y = rect.top - base;
-        var stuck = y <= r._stickTop + 0.5, leaving = y < r._stickTop - 1;
-        r.classList.toggle('stuck', stuck);
-        r.classList.toggle('leaving', leaving);
-        if(stuck && !leaving) line = Math.max(line, rect.bottom);
+      // 3. enough room at the end for the last row to reach its place
+      // (worked out without first removing the old spacing, so a re-measure while you're
+      // at the bottom doesn't knock you off it)
+      var last = items[items.length - 1];
+      if(last){
+        var full = scroller === window ? document.documentElement.scrollHeight : scroller.scrollHeight;
+        var maxScrollWithout = full - spacer.offsetHeight - viewH();
+        var needed = naturalTop(last) - last._stickTop;
+        spacer.style.height = Math.max(0, Math.ceil(needed - maxScrollWithout) + 2) + 'px';
+      }
+      laidOutFor = { w: window.innerWidth, h: viewH() };
+      update();
+    }
+    function update(){
+      var base = scroller === window ? 0 : scroller.getBoundingClientRect().top;
+      var line = head ? head.getBoundingClientRect().bottom : base;
+      items.forEach(function(el){
+        var r = el.getBoundingClientRect();
+        var stuck = r.top - base <= el._stickTop + 0.5;
+        if(stuck !== el.classList.contains('stuck')){
+          el.classList.toggle('stuck', stuck);
+          // keep its normal height in the page while it's drawn smaller, so nothing jumps
+          el.style.height = stuck ? el._flowH + 'px' : '';
+        }
+        if(stuck) line = Math.max(line, base + el._stickTop + el._collH);
       });
       line += GAP;
-      // cut content off at that edge, so the reading area shrinks as the stack grows
+      // details are cut off at the bottom edge of the stack
       clipped.forEach(function(el){
         var cut = line - el.getBoundingClientRect().top;
-        el.style.clipPath = cut > 0 ? 'inset(' + Math.round(cut) + 'px -40px -40px -40px)' : '';
-        el.style.webkitClipPath = el.style.clipPath;
+        var v = cut > 0 ? 'inset(' + Math.round(cut) + 'px -40px -40px -40px)' : '';
+        el.style.clipPath = v; el.style.webkitClipPath = v;
       });
     }
     var ticking = false;
     function onScroll(){
       if(ticking) return;
       ticking = true;
-      requestAnimationFrame(function(){ ticking = false; markStuck(); });
+      requestAnimationFrame(function(){ ticking = false; update(); });
     }
-    if(stuckWatch) stuckWatch.target.removeEventListener('scroll', stuckWatch.fn);
     scroller.addEventListener('scroll', onScroll, { passive:true });
-    stuckWatch = { target:scroller, fn:onScroll };
-    function docTop(el){
-      var r = el.getBoundingClientRect();
-      if(scroller === window) return r.top + window.scrollY;
-      return r.top - scroller.getBoundingClientRect().top + scroller.scrollTop;
-    }
-    titles.forEach(function(t){
-      var marker = document.createElement('div');
-      marker.className = 'stack-anchor';
-      t.parentNode.insertBefore(marker, t);
-      t.classList.add('stack-title');
-      t.setAttribute('role', 'button');
-      t.setAttribute('tabindex', '0');
-      function go(){
-        layout();
-        var y = Math.max(0, docTop(marker) - t._stickTop);
-        scroller.scrollTo({ top: y, behavior: 'smooth' });
+    // photos loading change the page length: redo the layout when they do
+    var ro = window.ResizeObserver ? new ResizeObserver(function(){ requestAnimationFrame(layout); }) : null;
+    if(ro) root.querySelectorAll('.masonry').forEach(function(m){ ro.observe(m); });
+
+    resumeState = {
+      // phone toolbars change the height a little while scrolling; ignore that
+      onResize: function(){
+        if(!laidOutFor || window.innerWidth !== laidOutFor.w || Math.abs(viewH() - laidOutFor.h) > 150) layout();
+      },
+      destroy: function(){
+        scroller.removeEventListener('scroll', onScroll);
+        if(ro) ro.disconnect();
+        if(pageTitle){ pageTitle.removeEventListener('click', toTop); pageTitle.classList.remove('stack-page-title'); }
+        root.classList.remove('resume-stack');
+        resumeState = null;
       }
-      t.addEventListener('click', go);
-      t.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
-    });
+    };
     layout();
-    relayoutStack = layout;
-    return layout;
   }
 
   // photos the admin marked as hidden stay in the list but aren't shown
@@ -378,6 +430,7 @@
     entriesHTML: entriesHTML,
     gallery: gallery,
     visible: visible,
-    stackTitles: stackTitles
+    stackResume: stackResume,
+    stopResume: function(){ if(resumeState) resumeState.destroy(); }
   };
 })();
