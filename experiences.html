@@ -153,30 +153,45 @@ h2.exp-section-title{
 body.scrolled .page-head img{ max-width:clamp(80px, 9vw, 120px) !important; }
 .page-head + *{ margin-top:34px; }
 
-/* section titles stick and stack under the page title; click to jump back to one */
-.stack-title{
-  position:sticky;
-  z-index:2;   /* above stuck names */
-  width:fit-content;
-  margin-left:auto !important;
-  margin-right:auto !important;
-  padding:2px 10px;
-  color:#666 !important;
-  cursor:pointer;
+/* Collapsing resume (Work Experiences): titles, organisations and job titles stick and
+   pile up for the rest of the page; bullets and photos scroll away under the stack.
+   The wrappers make no boxes, so every row's sticky container is the whole page. */
+/* shrunk rows are laid out wider than the column; never let that widen the page */
+.resume-stack{ overflow-x:clip; padding-bottom:0 !important; }
+.resume-stack .exp-section, .resume-stack .exp-list,
+.resume-stack .exp-entry, .resume-stack .exp-role-group{ display:contents; }
+.resume-stack .exp-head, .resume-stack .exp-role, .resume-stack ul{
+  max-width:800px; margin-left:auto !important; margin-right:auto !important;
+}
+.resume-stack .stack-item{
+  position:sticky; z-index:1; cursor:pointer; line-height:1.3;
   -webkit-tap-highlight-color:transparent;
-  transition:color .2s;
   text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85);
 }
-.stack-title:hover{ color:#bbb !important; }
-/* organisation names and job titles stick under the section titles too */
-.stick-row{ position:sticky; z-index:1; text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85); }
-/* in a stacking section the list/entry wrappers don't make boxes, so the section is the
-   sticky container for organisation names (they stay until the section ends) */
-.stacking .exp-list, .stacking .exp-entry{ display:contents; }
-.stacking .exp-entry > *{ max-width:800px; margin-left:auto; margin-right:auto; }
-.stacking .exp-entry > :last-child{ margin-bottom:32px; }
-.stick-row{ transition:opacity .15s; }
-.stick-row.leaving{ opacity:0; }
+.resume-stack .exp-head{ margin-top:22px !important; }
+.resume-stack .exp-role{ margin-top:4px !important; }
+.resume-stack ul{ margin-top:6px !important; margin-bottom:4px; }
+.resume-stack h2.exp-section-title{
+  width:fit-content; padding:0 10px; margin:40px auto 0 !important;
+  color:#666 !important; transition:color .2s;
+}
+.resume-stack h2.exp-section-title:hover{ color:#bbb !important; }
+.resume-stack .masonry{ margin-top:20px; }
+/* rows shrink (by --rs) as they lock into the stack, so the whole collapsed resume fits on
+   one screen; their space in the page stays the same, so nothing below jumps */
+.resume-stack .stack-item{ transform-origin:0 0; transition:transform .25s ease, color .2s; }
+.resume-stack h2.exp-section-title{ transform-origin:50% 0; }
+.resume-stack .stack-item.stuck{ transform:scale(var(--rs, 1)); }
+.resume-stack .exp-head.stuck, .resume-stack .exp-role.stuck,
+.resume-stack.measure-collapsed .exp-head, .resume-stack.measure-collapsed .exp-role{
+  /* drawn at --rs, so lay out wider to still span the column once shrunk */
+  width:calc(100% / var(--rs, 1)) !important;
+  max-width:calc(800px / var(--rs, 1)) !important;
+  margin-left:max(0px, calc((100% - 800px) / 2)) !important;  /* stay in the centred column */
+  margin-right:0 !important;
+}
+.resume-stack.measure-collapsed .stack-item{ height:auto !important; transition:none; }
+.stack-page-title{ cursor:pointer; pointer-events:auto; }
 </style>
 </head>
 
@@ -197,14 +212,11 @@ Site.load().then(c => {
   document.getElementById('title').textContent = Site.heading(c.experiences);
   if(!Site.heading(c.experiences)) document.getElementById('title').style.display = 'none';
   const root = document.getElementById('sections');
-  const stack = [];
   (c.experiences.sections || []).forEach(sec => {
-    // the title is a sibling of its section so it can stay stuck to the end
     const h = document.createElement('h2');
     h.className = 'exp-section-title';
     h.textContent = sec.title;
     root.appendChild(h);
-    if(sec.title) stack.push(h);
     const section = document.createElement('div');
     section.className = 'exp-section';
     section.insertAdjacentHTML('beforeend', Site.entriesHTML(sec.entries));
@@ -214,7 +226,7 @@ Site.load().then(c => {
     root.appendChild(section);
     Site.gallery(g, Site.visible(sec));
   });
-  requestAnimationFrame(() => Site.stackTitles(stack, window, document.querySelector('.page-head')));
+  requestAnimationFrame(() => Site.stackResume(root, window, document.querySelector('.page-head'), document.getElementById('title')));
 });
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
