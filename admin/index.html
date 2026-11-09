@@ -1238,9 +1238,9 @@ function stackSizeCard(p){
   );
 }
 
-/* ---------- website photo brightness ---------- */
+/* ---------- website photos: brightness + saturation ---------- */
 function brightnessCard(){
-  function get(){ var v = content.home && content.home.photoBrightness; return typeof v === 'number' ? v : 100; }
+  function get(k){ var v = content.home && content.home[k]; return typeof v === 'number' ? v : 100; }
   // a few of the site's photos as a live sample
   var sample = [];
   ((content.photos && content.photos.sections) || []).forEach(function(pg){
@@ -1252,43 +1252,52 @@ function brightnessCard(){
     return img;
   }));
   function paint(){
-    // same method as the site: fade the photo into black
-    var o = get() === 100 ? '' : String(get() / 100);
-    strip.querySelectorAll('img').forEach(function(i){ i.style.opacity = o; });
+    var b = get('photoBrightness'), sat = get('photoSaturation');
+    strip.querySelectorAll('img').forEach(function(i){
+      i.style.opacity = b === 100 ? '' : String(b / 100);              // site: fades into black
+      i.style.filter = sat === 100 ? '' : 'saturate(' + sat / 100 + ')'; // site: grey blend on top
+    });
   }
-  var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':'Photo brightness' });
-  var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':'Photo brightness' });
-  var reset = h('button', { class:'btn small ghost', type:'button' }, 'Reset');
-  function set(v, from){
-    v = Math.round(parseFloat(v));
-    if(!isFinite(v)) return;
-    v = Math.max(0, Math.min(100, v));
-    if(v === 100 && !(original.home && 'photoBrightness' in original.home)){
-      if(content.home){ delete content.home.photoBrightness; if(!Object.keys(content.home).length) delete content.home; }
-    } else {
-      content.home = content.home || {};
-      content.home.photoBrightness = v;
+  function slider(key, label, help){
+    var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':'Photo ' + label.toLowerCase() });
+    var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':'Photo ' + label.toLowerCase() });
+    var reset = h('button', { class:'btn small ghost', type:'button' }, 'Reset');
+    function set(v, from){
+      v = Math.round(parseFloat(v));
+      if(!isFinite(v)) return;
+      v = Math.max(0, Math.min(100, v));
+      if(v === 100 && !(original.home && key in original.home)){
+        if(content.home){ delete content.home[key]; if(!Object.keys(content.home).length) delete content.home; }
+      } else {
+        content.home = content.home || {};
+        content.home[key] = v;
+      }
+      if(from !== range) range.value = v;
+      if(from !== box) box.value = v;
+      reset.disabled = v === 100;
+      paint(); refreshStatus();
     }
-    if(from !== range) range.value = v;
-    if(from !== box) box.value = v;
-    reset.disabled = v === 100;
-    paint(); refreshStatus();
+    range.addEventListener('input', function(){ set(range.value, range); });
+    box.addEventListener('change', function(){ set(box.value, box); });
+    reset.addEventListener('click', function(){ set(100); });
+    range.value = box.value = get(key);
+    reset.disabled = get(key) === 100;
+    return h('div', { class:'style-row' },
+      h('div', { class:'style-label' }, h('span', { text:label }), h('small', { text:help })),
+      h('div', { class:'style-ctrl' },
+        h('span', { class:'small-label', text:'0' }), range, h('span', { class:'small-label', text:'100' }), box, reset)
+    );
   }
-  range.addEventListener('input', function(){ set(range.value, range); });
-  box.addEventListener('change', function(){ set(box.value, box); });
-  reset.addEventListener('click', function(){ set(100); });
-  range.value = box.value = get();
-  reset.disabled = get() === 100;
+  var rows = [
+    slider('photoBrightness', 'Brightness', '0 = black, 100 = original.'),
+    slider('photoSaturation', 'Saturation', '0 = black & white, 100 = original colours.')
+  ];
   paint();
   return h('div', { class:'card section' },
     h('h3', { text:'Website photos' }),
-    h('div', { class:'style-row', style:'border-top:none;padding-top:0' },
-      h('div', { class:'style-label' }, h('span', { text:'Brightness' }),
-        h('small', { text:'Dims the photos in the Designs, Experiences and Events galleries (not the background). 100 = original.' })),
-      sample.length ? strip : null,
-      h('div', { class:'style-ctrl' },
-        h('span', { class:'small-label', text:'0' }), range, h('span', { class:'small-label', text:'100' }), box, reset)
-    )
+    h('p', { class:'hint', style:'margin:0 0 10px;font-size:13px', text:'Applies to the photos in the Photos and Experiences galleries (not the background).' }),
+    sample.length ? strip : null,
+    rows
   );
 }
 

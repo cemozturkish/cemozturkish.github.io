@@ -722,18 +722,12 @@ body{
           Site.stackResume(resume, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'), p.stackScale);
         });
       } else if(page === 'photos'){
-        // one section per gallery (DESIGNS, EVENTS, ...)
-        (p.sections || []).forEach(function(sec){
-          var section = document.createElement('div');
-          section.className = 'exp-section';
-          if(sec.title){
-            var sh = document.createElement('h2');
-            sh.className = 'exp-section-title';
-            sh.textContent = sec.title;
-            section.appendChild(sh);
-          }
-          secBody.appendChild(section);
-          addGallery(section, Site.visible(sec));
+        // one section per gallery (DESIGNS, EVENTS, ...); their titles stack like on
+        // Work Experiences and can be tapped to jump back (titles keep their full size)
+        secBody.classList.add('resume-body');
+        var gallery = Site.buildResume(secBody, p.sections, addGallery);
+        requestAnimationFrame(function(){
+          Site.stackResume(gallery, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'), 1);
         });
       } else {
         secBody.insertAdjacentHTML('beforeend', Site.entriesHTML(p.entries));

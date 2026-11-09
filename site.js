@@ -59,7 +59,7 @@
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        })).then(function(c){ migrate(c); phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); textColors(c); return c; });
+        })).then(function(c){ migrate(c); phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); photoSaturation(c); textColors(c); return c; });
     return contentPromise;
   }
 
@@ -374,6 +374,31 @@
     layout();
   }
 
+  // saturation of the gallery photos chosen in the admin (0 = black & white, 100 = original).
+  // Not a CSS filter on the photos (iPhone Safari draws filtered photos in the blurred panel
+  // as grey boxes): a grey layer over each gallery with the "saturation" blend mode takes the
+  // colour out; its opacity sets how much.
+  // Each photo then sits in its own frame (.ph): the grey layer only covers that photo, and the
+  // photo itself stays solid (dimming for brightness moves to the frame), so nothing turns grey.
+  var framePhotos = false;
+  function photoSaturation(c){
+    var v = c && c.home && c.home.photoSaturation;
+    if(typeof v !== 'number' || !isFinite(v) || v === 100) return;
+    framePhotos = true;
+    var amount = 1 - Math.max(0, Math.min(100, v)) / 100;
+    var b = c.home && typeof c.home.photoBrightness === 'number' ? Math.max(0, Math.min(100, c.home.photoBrightness)) / 100 : 1;
+    var el = document.getElementById('photo-saturation') || document.head.appendChild(document.createElement('style'));
+    el.id = 'photo-saturation';
+    el.textContent =
+      '.masonry .ph{display:block;position:relative;isolation:isolate;break-inside:avoid;margin-bottom:20px;' +
+        'opacity:' + (0.9 * b).toFixed(3) + '}' +
+      '.masonry .ph img{margin-bottom:0!important}' +
+      '.masonry .ph img.visible{opacity:1!important}' +
+      '.masonry .ph::after{content:"";position:absolute;inset:0;background:#808080;mix-blend-mode:saturation;' +
+        'opacity:0;transition:opacity .65s ease;pointer-events:none}' +
+      '.masonry .ph.visible::after{opacity:' + amount.toFixed(3) + '}';
+  }
+
   // Designs and Events used to be separate pages; they're now one Photos page with a
   // section for each. Older content is converted on the fly (the admin saves it in the
   // new form the next time something is published).
@@ -511,6 +536,7 @@
       entries.forEach(function(e){
         if(e.isIntersecting){
           e.target.classList.add('visible');
+          if(e.target.parentNode.classList.contains('ph')) e.target.parentNode.classList.add('visible');
           io.unobserve(e.target);
         }
       });
@@ -520,9 +546,15 @@
       img.loading = 'lazy';
       img.alt = '';
       img.src = src(p);
-      img.onerror = function(){ img.remove(); };
       img.style.transitionDelay = (i % 8) * 60 + 'ms';
-      el.appendChild(img);
+      var holder = img;
+      if(framePhotos){                       // see photoSaturation
+        holder = document.createElement('span');
+        holder.className = 'ph';
+        holder.appendChild(img);
+      }
+      img.onerror = function(){ holder.remove(); };
+      el.appendChild(holder);
       io.observe(img);
     });
   }
