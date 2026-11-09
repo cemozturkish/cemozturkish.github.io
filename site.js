@@ -59,7 +59,7 @@
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        })).then(function(c){ phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); return c; });
+        })).then(function(c){ migrate(c); phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); textColors(c); return c; });
     return contentPromise;
   }
 
@@ -374,6 +374,50 @@
     layout();
   }
 
+  // Designs and Events used to be separate pages; they're now one Photos page with a
+  // section for each. Older content is converted on the fly (the admin saves it in the
+  // new form the next time something is published).
+  function migrate(c){
+    if(!c || c.photos || !(c.designs || c.events)) return;
+    var sections = [];
+    [c.designs, c.events].forEach(function(p, i){
+      if(!p) return;
+      var sec = { title: p.title || (i ? 'EVENTS' : 'DESIGNS'), photos: (p.photos || []).slice() };
+      if(p.hidden && p.hidden.length) sec.hidden = p.hidden.slice();
+      sections.push(sec);
+    });
+    c.photos = { title:'PHOTOS', heading:'PHOTOS', sections: sections };
+    delete c.designs; delete c.events;
+  }
+
+  // Text brightness per kind of text, set in the admin (Colors tab): 0 = black, 100 = white.
+  // Drawn as solid greys (not see-through white) so nothing behind shows through letters.
+  var COLOR_TARGETS = {
+    names:    ['.exp-org', '.edu-school'],
+    roles:    ['.exp-title', '.edu-degree'],
+    meta:     ['.exp-location', '.exp-date', '.edu-location', '.edu-date'],
+    text:     ['.exp-entry ul li', '.exp-list ul li', '.about-me-scroll', '.about-me-scroll p'],
+    sections: ['.exp-section-title', '.about-section-title'],
+    titles:   ['.panel-title h1', '.page-head h1']
+  };
+  function textColors(c){
+    var cols = c && c.colors;
+    if(!cols) return;
+    var css = '';
+    Object.keys(COLOR_TARGETS).forEach(function(k){
+      var v = cols[k];
+      if(typeof v !== 'number' || !isFinite(v)) return;
+      var g = Math.round(Math.max(0, Math.min(100, v)) * 2.55);
+      // :not(#_) lifts these above the page's own rules
+      css += COLOR_TARGETS[k].map(function(sel){ return 'html body ' + sel + ':not(#_)'; }).join(',') +
+        '{color:rgb(' + g + ',' + g + ',' + g + ')!important}';
+    });
+    if(!css) return;
+    var el = document.getElementById('text-colors') || document.head.appendChild(document.createElement('style'));
+    el.id = 'text-colors';
+    el.textContent = css;
+  }
+
   // photos the admin marked as hidden stay in the list but aren't shown
   function visible(owner){
     var hidden = (owner && owner.hidden) || [];
@@ -495,6 +539,7 @@
     entriesHTML: entriesHTML,
     gallery: gallery,
     visible: visible,
+    migrate: migrate,
     stackResume: stackResume,
     buildResume: buildResume,
     stopResume: function(){ if(resumeState) resumeState.destroy(); }
