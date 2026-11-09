@@ -610,9 +610,8 @@ body{
 
 <nav class="nav">
   <a href="./about.html" data-page="about">ABOUT</a>
-  <a href="./designs.html" data-page="designs">DESIGNS</a>
+  <a href="./photos.html" data-page="photos">PHOTOS</a>
   <a href="./experiences.html" data-page="experiences">EXPERIENCES</a>
-  <a href="./events.html" data-page="events">EVENTS</a>
   <a href="#" class="contact-trigger" id="contactTrigger">CONTACT</a>
 </nav>
 
@@ -721,6 +720,20 @@ body{
         var resume = Site.buildResume(secBody, p.sections, addGallery);
         requestAnimationFrame(function(){
           Site.stackResume(resume, secPanel, document.getElementById('panelHead'), secTitle.querySelector('h1'), p.stackScale);
+        });
+      } else if(page === 'photos'){
+        // one section per gallery (DESIGNS, EVENTS, ...)
+        (p.sections || []).forEach(function(sec){
+          var section = document.createElement('div');
+          section.className = 'exp-section';
+          if(sec.title){
+            var sh = document.createElement('h2');
+            sh.className = 'exp-section-title';
+            sh.textContent = sec.title;
+            section.appendChild(sh);
+          }
+          secBody.appendChild(section);
+          addGallery(section, Site.visible(sec));
         });
       } else {
         secBody.insertAdjacentHTML('beforeend', Site.entriesHTML(p.entries));

@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow" />
 <title>Site Editor</title>
 <link rel="icon" type="image/png" href="../favicon.png" />
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,200;0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
 <style>
 :root{
   --bg:#f4f4f2; --panel:#ffffff; --panel-2:#f8f8f6; --text:#18181b; --muted:#6b6b70;
@@ -254,6 +254,17 @@ textarea.big{ min-height:160px; }
 .tb-btn[aria-pressed="true"]{ background:var(--panel-2); color:var(--text); border-color:var(--line); }
 .tb-sep{ width:1px; height:18px; background:var(--line); margin:0 6px; }
 textarea.with-toolbar{ border-top-left-radius:0; border-top-right-radius:0; }
+.color-sample{
+  background:#0b0b0b; border-radius:10px; padding:18px 20px; margin-bottom:10px;
+  font-family:'Josefin Sans',system-ui,sans-serif;
+}
+.color-sample .cs-title{ text-align:center; font-weight:200; font-size:22px; letter-spacing:.06em; margin-bottom:10px; }
+.color-sample .cs-section{ text-align:center; font-weight:300; font-size:15px; letter-spacing:.08em; margin-bottom:12px; }
+.color-sample .cs-row{ display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-top:4px; }
+.color-sample .cs-name{ font-weight:300; font-size:17px; letter-spacing:.04em; }
+.color-sample .cs-role{ font-style:italic; font-size:14px; }
+.color-sample .cs-meta{ font-size:13px; white-space:nowrap; }
+.color-sample .cs-text{ font-size:14px; line-height:1.6; margin-top:8px; padding-left:6px; }
 .bright-strip{ display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin:4px 0 12px; }
 .bright-strip{ background:#000; padding:8px; border-radius:8px; }
 .bright-strip img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; display:block; }
@@ -449,7 +460,19 @@ function blobToB64(blob){
 // fill in fields added after content.json was first written, using what the site
 // already shows by default, so opening the editor never looks like a change
 function normalize(c){
-  ['about','designs','experiences','events'].forEach(function(k){
+  // Designs + Events became one Photos page with a section each
+  if(!c.photos && (c.designs || c.events)){
+    var sections = [];
+    [c.designs, c.events].forEach(function(p, i){
+      if(!p) return;
+      var sec = { title: p.title || (i ? 'EVENTS' : 'DESIGNS'), photos: (p.photos || []).slice() };
+      if(p.hidden && p.hidden.length) sec.hidden = p.hidden.slice();
+      sections.push(sec);
+    });
+    c.photos = { title:'PHOTOS', heading:'PHOTOS', sections: sections };
+    delete c.designs; delete c.events;
+  }
+  ['about','photos','experiences'].forEach(function(k){
     var p = c[k];
     // About shows no heading by default (Education is the first thing on it)
     if(p && typeof p.heading !== 'string') p.heading = k === 'about' ? '' : (p.title || '');
@@ -579,6 +602,7 @@ function referenced(c){
   function add(p){ if(p) s[p] = true; }
   if(c.events){ add(c.events.headerImage); (c.events.photos || []).forEach(add); }
   if(c.designs) (c.designs.photos || []).forEach(add);
+  if(c.photos) (c.photos.sections || []).forEach(function(x){ (x.photos || []).forEach(add); });
   if(c.experiences) (c.experiences.sections || []).forEach(function(x){ (x.photos || []).forEach(add); });
   return s;
 }
@@ -884,9 +908,9 @@ var TABS = [
   { id:'home', label:'Home' },
   { id:'contact', label:'Contact' },
   { id:'about', label:'About' },
-  { id:'designs', label:'Designs' },
+  { id:'photos', label:'Photos' },
   { id:'experiences', label:'Experiences' },
-  { id:'events', label:'Events' }
+  { id:'colors', label:'Colors' }
 ];
 
 function pageHead(title, sub){
@@ -937,7 +961,7 @@ function cropPicker(){
   var phone = h('div', { class:'phone' },
     phoneBg,
     h('div', { class:'phone-shade' }),
-    h('div', { class:'phone-nav' }, ['about','designs','experiences','events'].map(function(k){
+    h('div', { class:'phone-nav' }, ['about','photos','experiences'].map(function(k){
       return h('span', { text:(content[k] && content[k].title) || k.toUpperCase() });
     })),
     h('div', { class:'phone-contact', text:'CONTACT' })
@@ -1219,9 +1243,8 @@ function brightnessCard(){
   function get(){ var v = content.home && content.home.photoBrightness; return typeof v === 'number' ? v : 100; }
   // a few of the site's photos as a live sample
   var sample = [];
-  ['designs','events'].forEach(function(k){
-    var pg = content[k]; if(!pg || !pg.photos) return;
-    pg.photos.filter(function(p){ return !(pg.hidden || []).includes(p); }).slice(0, 3).forEach(function(p){ sample.push(p); });
+  ((content.photos && content.photos.sections) || []).forEach(function(pg){
+    (pg.photos || []).filter(function(p){ return !(pg.hidden || []).includes(p); }).slice(0, 3).forEach(function(p){ sample.push(p); });
   });
   var strip = h('div', { class:'bright-strip' }, sample.slice(0, 6).map(function(p){
     var img = h('img', { alt:'', loading:'lazy', src:imgSrc(p) });
@@ -1267,6 +1290,70 @@ function brightnessCard(){
         h('span', { class:'small-label', text:'0' }), range, h('span', { class:'small-label', text:'100' }), box, reset)
     )
   );
+}
+
+/* ---------- Colors: brightness of each kind of text ---------- */
+// defaults = what the site shows when nothing is set (approximate greys of the built-in styles)
+var COLOR_FIELDS = [
+  { key:'titles',   label:'Page titles',                         def:55, help:'WORK EXPERIENCES, PHOTOS, …' },
+  { key:'sections', label:'Section titles',                      def:40, help:'EDUCATION, INTERNSHIPS, DESIGNS, …' },
+  { key:'names',    label:'Organization & school names',         def:85 },
+  { key:'roles',    label:'Job titles & degrees',                def:60 },
+  { key:'meta',     label:'Locations & dates',                   def:45 },
+  { key:'text',     label:'Descriptions',                        def:60, help:'Bullet points and the About Me text' }
+];
+function colorsView(){
+  function get(k){ var c = content.colors; return c && typeof c[k] === 'number' ? c[k] : COLOR_FIELDS.filter(function(f){ return f.key === k; })[0].def; }
+  function grey(v){ var g = Math.round(v * 2.55); return 'rgb(' + g + ',' + g + ',' + g + ')'; }
+
+  // live sample on the site's dark background
+  var sample = h('div', { class:'color-sample' },
+    h('div', { class:'cs-title', 'data-k':'titles', text:'WORK EXPERIENCES' }),
+    h('div', { class:'cs-section', 'data-k':'sections', text:'INTERNSHIPS' }),
+    h('div', { class:'cs-row' }, h('span', { class:'cs-name', 'data-k':'names', text:'Legal Aid Society' }), h('span', { class:'cs-meta', 'data-k':'meta', text:'Brooklyn, NY' })),
+    h('div', { class:'cs-row' }, h('span', { class:'cs-role', 'data-k':'roles', text:'Production Assistant' }), h('span', { class:'cs-meta', 'data-k':'meta', text:'January 2024 – June 2024' })),
+    h('div', { class:'cs-text', 'data-k':'text', text:'· Worked with videographers and attorneys to produce video mitigation projects.' })
+  );
+  function paint(){ sample.querySelectorAll('[data-k]').forEach(function(el){ el.style.color = grey(get(el.dataset.k)); }); }
+
+  var resetAll = h('button', { class:'btn small ghost', type:'button' }, 'Reset all');
+  var rows = COLOR_FIELDS.map(function(f){
+    var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':f.label });
+    var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':f.label });
+    range.value = box.value = get(f.key);
+    function set(v, from){
+      v = Math.round(parseFloat(v));
+      if(!isFinite(v)) return;
+      v = Math.max(0, Math.min(100, v));
+      content.colors = content.colors || {};
+      if(v === f.def && !(original.colors && f.key in original.colors)) delete content.colors[f.key];
+      else content.colors[f.key] = v;
+      if(!Object.keys(content.colors).length) delete content.colors;
+      if(from !== range) range.value = v;
+      if(from !== box) box.value = v;
+      resetAll.disabled = !content.colors;
+      paint(); refreshStatus();
+    }
+    range.addEventListener('input', function(){ set(range.value, range); });
+    box.addEventListener('change', function(){ set(box.value, box); });
+    var row = h('div', { class:'style-row' },
+      h('div', { class:'style-label' }, h('span', { text:f.label }), f.help ? h('small', { text:f.help }) : null),
+      h('div', { class:'style-ctrl' }, h('span', { class:'small-label', text:'dark' }), range, h('span', { class:'small-label', text:'white' }), box)
+    );
+    row._set = set;
+    return row;
+  });
+  resetAll.addEventListener('click', function(){ rows.forEach(function(r, i){ r._set(COLOR_FIELDS[i].def); }); });
+  resetAll.disabled = !content.colors;
+  paint();
+  return [
+    pageHead('Colors', 'How bright each kind of text is on the site. 100 = white; lower = greyer (darker).'),
+    h('div', { class:'card section' },
+      h('div', { class:'section-head' }, h('h3', { text:'Text brightness' }), resetAll),
+      sample,
+      rows
+    )
+  ];
 }
 
 var views = {
@@ -1347,13 +1434,34 @@ var views = {
     ];
   },
 
-  designs: function(){
-    var p = content.designs;
-    p.photos = p.photos || [];
+  photos: function(){
+    var p = content.photos = content.photos || { title:'PHOTOS', heading:'PHOTOS', sections:[] };
+    p.sections = p.sections || [];
+    var wrap = h('div');
+    function draw(){
+      wrap.innerHTML = '';
+      p.sections.forEach(function(sec, i){
+        sec.photos = sec.photos || [];
+        wrap.appendChild(h('div', { class:'card section' },
+          h('div', { class:'section-head' },
+            h('h3', { text:'Section ' + (i + 1) + (sec.title ? ' · ' + sec.title : '') }),
+            listTools(p.sections, i, 'section', function(){ draw(); refreshStatus(); })
+          ),
+          textField('Section title', sec, 'title', { placeholder:'e.g. DESIGNS' }),
+          h('div', { style:'height:16px' }),
+          photoGrid(sec, slug(sec.title))
+        ));
+      });
+      wrap.appendChild(h('button', { class:'btn add', type:'button', onclick:function(){
+        p.sections.push({ title:'', photos:[] }); draw(); refreshStatus();
+        var cards = wrap.querySelectorAll('.card.section'); cards[cards.length - 1].querySelector('input').focus();
+      } }, '+ Add section'));
+    }
+    draw();
     return [
-      pageHead('Designs', 'A photo gallery.'),
+      pageHead('Photos', 'Photo galleries, one per section (e.g. Designs, Events).'),
       titleSection(p),
-      h('div', { class:'card section' }, h('h3', { text:'Photos' }), photoGrid(p, 'designer'))
+      wrap
     ];
   },
 
@@ -1392,46 +1500,10 @@ var views = {
       stackSizeCard(p),
       wrap
     ];
-  },
-
-  events: function(){
-    var p = content.events;
-    p.entries = p.entries || [];
-    p.photos = p.photos || [];
-    var header = h('div', { class:'single-image' });
-    function drawHeader(){
-      header.innerHTML = '';
-      var prev = h('div', { class:'preview' });
-      if(p.headerImage){
-        var img = h('img', { alt:'', src:imgSrc(p.headerImage) });
-        if(!pending[p.headerImage] && !localUrls[p.headerImage]) attachFallback(img, p.headerImage);
-        prev.appendChild(img);
-      } else prev.textContent = 'Using the title text';
-      header.appendChild(prev);
-      header.appendChild(h('div', { class:'row-btns', style:'margin:0' },
-        h('button', { class:'btn small', type:'button', onclick:function(){
-          pickFiles(false).then(function(files){ return addFiles(files, 'events-header', 1200); }).then(function(paths){
-            if(paths[0]){ p.headerImage = paths[0]; drawHeader(); refreshStatus(); }
-          });
-        } }, p.headerImage ? 'Replace image' : 'Upload image'),
-        p.headerImage ? h('button', { class:'btn small ghost danger', type:'button', onclick:function(){
-          p.headerImage = ''; drawHeader(); refreshStatus();
-        } }, 'Remove, use title text') : null
-      ));
-    }
-    drawHeader();
-    return [
-      pageHead('Events', 'Your events work and a photo gallery.'),
-      titleSection(p, h('div', {},
-        h('div', { style:'height:16px' }),
-        h('div', { class:'field' }, h('span', { text:'Header image (shown instead of the title)' })),
-        h('div', { style:'height:6px' }),
-        header
-      )),
-      h('div', { class:'card section' }, h('h3', { text:'Entries' }), entriesEditor(p.entries)),
-      h('div', { class:'card section' }, h('h3', { text:'Photos' }), photoGrid(p, 'events'))
-    ];
   }
+,
+
+  colors: function(){ return colorsView(); }
 };
 
 /* ================= screens ================= */

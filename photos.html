@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PHOTOS BY CEM</title>
+<link rel="icon" type="image/png" href="./favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,200;0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet" />
+
+<style>
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  min-height:100%;
+}
+
+body{
+  font-family: 'Josefin Sans', sans-serif;   /* one font for the whole site */
+  background:#0a0a0a;
+  color:#fff;
+}
+
+.bg{
+  position:fixed; inset:0; z-index:-1;
+  background:url("./assets/background.jpg") center/cover no-repeat;
+}
+.bg::after{
+  content:""; position:absolute; inset:0;
+  background:rgba(0,0,0,0.75);
+}
+
+.wrap{
+  max-width:1400px;
+  margin:0 auto;
+  padding:40px clamp(24px, 4vw, 60px);
+}
+
+/* back link */
+.back{
+  display:inline-block;
+  font-size:14px;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,0.5);
+  text-decoration:none;
+  margin-bottom:20px;
+  transition:color .2s;
+}
+.back:hover{ color:rgba(255,255,255,0.9); }
+
+h1{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(18px, 2.6vw, 30px);
+  font-weight:200;
+  letter-spacing:.06em;
+  color:rgba(255,255,255,0.55);
+  margin-bottom:40px;
+  text-align:center;
+}
+
+/* masonry gallery */
+.masonry{
+  column-count:4;
+  column-gap:20px;
+}
+.masonry img{
+  width:100%;
+  height:auto;
+  margin-bottom:20px;
+  break-inside:avoid;
+  display:block;
+  opacity:0;
+  transform:translateY(30px);
+  filter:blur(4px);
+  transition:opacity .65s ease, transform .65s ease, filter .8s ease;
+}
+.masonry img.visible{
+  opacity:0.9;
+  transform:translateY(0);
+  filter:blur(0);
+}
+
+@media(max-width:1200px){ .masonry{column-count:3;} }
+@media(max-width:900px){  .masonry{column-count:2;} }
+@media(max-width:500px){  .masonry{column-count:2;} }
+
+@media(prefers-reduced-motion:reduce){
+  .masonry img{
+    transition:none;
+    opacity:1;
+    transform:none;
+    filter:none;
+  }
+}
+
+.curtain{
+  position:fixed; inset:0; z-index:9999;
+  background:#0a0a0a;
+}
+.curtain.enter{
+  animation:curtainOut .45s cubic-bezier(.4,0,.2,1) .05s both;
+}
+.curtain.exit{
+  animation:curtainIn .4s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes curtainIn{  from{transform:translateX(100%)} to{transform:translateX(0)} }
+@keyframes curtainOut{ from{transform:translateX(0)} to{transform:translateX(-100%)} }
+.curtain.exit-left{
+  animation:curtainInLeft .4s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes curtainInLeft{ from{transform:translateX(-100%)} to{transform:translateX(0)} }
+
+/* sticky header: HOME link + page title stay put, with a dark fade behind them */
+.wrap{ padding-top:0; }
+.page-head{
+  position:sticky; top:0; z-index:5;
+  padding:24px 0 6px;
+  pointer-events:none;
+}
+.page-head .back, .page-head h1{ text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85); }
+.page-head .back{ color:#808080; }
+.page-head .back:hover{ color:#e6e6e6; }
+.page-head h1{ color:#8c8c8c; }
+.page-head .back{ margin-bottom:10px; pointer-events:auto; }
+.page-head h1{ margin:0; }
+.page-head img{ transition:max-width .3s ease; filter:drop-shadow(0 0 6px rgba(0,0,0,0.9)) drop-shadow(0 0 14px rgba(0,0,0,0.8)); }
+body.scrolled .page-head img{ max-width:clamp(80px, 9vw, 120px) !important; }
+.page-head + *{ margin-top:34px; }
+
+h2.exp-section-title{
+  font-family:'Josefin Sans', sans-serif;
+  font-size:clamp(15px, 1.8vw, 20px);
+  font-weight:300;
+  letter-spacing:.08em;
+  color:#666;
+  text-align:center;
+  margin:0 auto 24px;
+}
+.exp-section{ margin-bottom:60px; }
+.exp-section:last-child{ margin-bottom:0; }
+</style>
+</head>
+
+<body>
+<div class="bg"></div>
+<div class="curtain enter"></div>
+<div class="wrap">
+  <div class="page-head">
+    <a class="back" href="./index.html">&larr; HOME</a>
+    <h1 id="title">PHOTOS</h1>
+  </div>
+  <div id="sections"></div>
+</div>
+
+<script src="./site.js"></script>
+<script>
+Site.load().then(c => {
+  const p = c.photos || { sections: [] };
+  document.getElementById('title').textContent = Site.heading(p);
+  if(!Site.heading(p)) document.getElementById('title').style.display = 'none';
+  const root = document.getElementById('sections');
+  (p.sections || []).forEach(sec => {
+    const section = document.createElement('div');
+    section.className = 'exp-section';
+    if(sec.title){
+      const h = document.createElement('h2');
+      h.className = 'exp-section-title';
+      h.textContent = sec.title;
+      section.appendChild(h);
+    }
+    const g = document.createElement('div');
+    g.className = 'masonry';
+    section.appendChild(g);
+    root.appendChild(section);
+    Site.gallery(g, Site.visible(sec));
+  });
+});
+(function(){
+  document.querySelectorAll('a.back').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const href = a.href;
+      const c = document.createElement('div');
+      c.className = 'curtain exit-left';
+      document.body.appendChild(c);
+      sessionStorage.setItem('nav-back','1');
+      setTimeout(() => { window.location = href; }, 420);
+    });
+  });
+})();
+</script>
+</body>
+</html>
