@@ -141,6 +141,46 @@
         "photos": []
       },
       {
+        "title": "INTERNSHIPS",
+        "entries": [
+          {
+            "org": "Legal Aid Society",
+            "location": "Brooklyn, NY",
+            "roles": [
+              {
+                "title": "Production Assistant",
+                "date": "January 2024 – June 2024",
+                "bullets": [
+                  "Worked with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos.",
+                  "Collaborated with Fordham Law students and Legal Aid attorneys to conduct field work accross the boroughs.",
+                  "Worked with lawyers, clients, and production teams for interviews, visiting courts, and capturing documentary footage."
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": [
+          "assets/production1.jpg",
+          "assets/production2.jpg",
+          "assets/production3.jpg",
+          "assets/production4.jpg",
+          "assets/production5.jpg",
+          "assets/production6.jpg",
+          "assets/production7.jpg",
+          "assets/production8.jpg"
+        ],
+        "hidden": [
+          "assets/production1.jpg",
+          "assets/production2.jpg",
+          "assets/production3.jpg",
+          "assets/production4.jpg",
+          "assets/production5.jpg",
+          "assets/production6.jpg",
+          "assets/production7.jpg",
+          "assets/production8.jpg"
+        ]
+      },
+      {
         "title": "APPRENTICESHIP",
         "entries": [
           {
@@ -181,46 +221,6 @@
         "hidden": [
           "assets/exhibition1.jpg",
           "assets/exhibition2.jpg"
-        ]
-      },
-      {
-        "title": "INTERNSHIPS",
-        "entries": [
-          {
-            "org": "Legal Aid Society",
-            "location": "Brooklyn, NY",
-            "roles": [
-              {
-                "title": "Production Assistant",
-                "date": "January 2024 – June 2024",
-                "bullets": [
-                  "Worked with videographers and attorneys to produce Video Mitigation Projects — editing advocacy videos.",
-                  "Collaborated with Fordham Law students and Legal Aid attorneys to conduct field work accross the boroughs.",
-                  "Worked with lawyers, clients, and production teams for interviews, visiting courts, and capturing documentary footage."
-                ]
-              }
-            ]
-          }
-        ],
-        "photos": [
-          "assets/production1.jpg",
-          "assets/production2.jpg",
-          "assets/production3.jpg",
-          "assets/production4.jpg",
-          "assets/production5.jpg",
-          "assets/production6.jpg",
-          "assets/production7.jpg",
-          "assets/production8.jpg"
-        ],
-        "hidden": [
-          "assets/production1.jpg",
-          "assets/production2.jpg",
-          "assets/production3.jpg",
-          "assets/production4.jpg",
-          "assets/production5.jpg",
-          "assets/production6.jpg",
-          "assets/production7.jpg",
-          "assets/production8.jpg"
         ]
       },
       {
