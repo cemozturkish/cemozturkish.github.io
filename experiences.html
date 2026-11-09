@@ -155,11 +155,11 @@ body.scrolled .page-head img{ max-width:clamp(80px, 9vw, 120px) !important; }
 
 /* Collapsing resume (Work Experiences): titles, organisations and job titles stick and
    pile up for the rest of the page; bullets and photos scroll away under the stack.
-   The wrappers make no boxes, so every row's sticky container is the whole page. */
+   Every row sits directly in one container spanning the whole list, so it stays stuck. */
 /* shrunk rows are laid out wider than the column; never let that widen the page */
-.resume-stack{ overflow-x:clip; padding-bottom:0 !important; }
-.resume-stack .exp-section, .resume-stack .exp-list,
-.resume-stack .exp-entry, .resume-stack .exp-role-group{ display:contents; }
+.resume-stack{ overflow-x:clip; padding-bottom:0 !important; margin:0 !important; }
+/* the one container that holds the whole flat list (galleries use the full width) */
+.resume-flat{ max-width:none !important; margin:0 !important; }
 .resume-stack .exp-head, .resume-stack .exp-role, .resume-stack ul{
   max-width:800px; margin-left:auto !important; margin-right:auto !important;
 }
@@ -212,21 +212,13 @@ Site.load().then(c => {
   document.getElementById('title').textContent = Site.heading(c.experiences);
   if(!Site.heading(c.experiences)) document.getElementById('title').style.display = 'none';
   const root = document.getElementById('sections');
-  (c.experiences.sections || []).forEach(sec => {
-    const h = document.createElement('h2');
-    h.className = 'exp-section-title';
-    h.textContent = sec.title;
-    root.appendChild(h);
-    const section = document.createElement('div');
-    section.className = 'exp-section';
-    section.insertAdjacentHTML('beforeend', Site.entriesHTML(sec.entries));
+  const resume = Site.buildResume(root, c.experiences.sections, (parent, photos) => {
     const g = document.createElement('div');
     g.className = 'masonry';
-    section.appendChild(g);
-    root.appendChild(section);
-    Site.gallery(g, Site.visible(sec));
+    parent.appendChild(g);
+    Site.gallery(g, photos);
   });
-  requestAnimationFrame(() => Site.stackResume(root, window, document.querySelector('.page-head'), document.getElementById('title')));
+  requestAnimationFrame(() => Site.stackResume(resume, window, document.querySelector('.page-head'), document.getElementById('title')));
 });
 (function(){
   document.querySelectorAll('a.back').forEach(a => {
