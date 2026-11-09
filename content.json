@@ -65,7 +65,7 @@
     "title": "EXPERIENCES",
     "sections": [
       {
-        "title": "EXHIBITIONS",
+        "title": "APPRENTICESHIP",
         "entries": [
           {
             "org": "Pitzer Art Galleries",
@@ -81,20 +81,7 @@
                 ]
               }
             ]
-          }
-        ],
-        "photos": [
-          "assets/exhibition1.jpg",
-          "assets/exhibition2.jpg"
-        ],
-        "hidden": [
-          "assets/exhibition1.jpg",
-          "assets/exhibition2.jpg"
-        ]
-      },
-      {
-        "title": "PRODUCTIONS",
-        "entries": [
+          },
           {
             "org": "Seaver Theatre",
             "location": "Claremont, CA",
@@ -109,7 +96,20 @@
                 ]
               }
             ]
-          },
+          }
+        ],
+        "photos": [
+          "assets/exhibition1.jpg",
+          "assets/exhibition2.jpg"
+        ],
+        "hidden": [
+          "assets/exhibition1.jpg",
+          "assets/exhibition2.jpg"
+        ]
+      },
+      {
+        "title": "INTERNSHIPS",
+        "entries": [
           {
             "org": "Legal Aid Society",
             "location": "Brooklyn, NY",
@@ -209,6 +209,67 @@
         "hidden": [
           "assets/project1.jpg"
         ]
+      },
+      {
+        "title": "EVENTS MANAGEMENT",
+        "entries": [
+          {
+            "org": "Career Services",
+            "location": "Claremont, CA",
+            "roles": [
+              {
+                "title": "Executive Office Assistant",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Pitzer Campus Life",
+            "location": "",
+            "roles": [
+              {
+                "title": "Events Board Manager, Treasurer",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              },
+              {
+                "title": "Events Coordinator",
+                "date": "",
+                "bullets": [
+                  "Coordinated and executed 100+ campus-wide events across the Claremont Colleges for a community of 8,000+ students.",
+                  "Oversaw the Kohoutek Music Festival ($45,000 budget, 700+ attendees from across Los Angeles), supervising the teams\nhandling artist booking, vendors, security, promotion, and day-of operations.",
+                  "Led promotion through flyers, murals, email graphics, and on-campus tabling, partnering with student organizations to drive attendance."
+                ]
+              },
+              {
+                "title": "Events Staff",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Pomona-Pitzer Athletics",
+            "location": "",
+            "roles": [
+              {
+                "title": "Athletic Event Staff",
+                "date": "",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": []
       },
       {
         "title": "VOLUNTEERING",
