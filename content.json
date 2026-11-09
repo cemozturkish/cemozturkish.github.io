@@ -366,32 +366,6 @@
                 ]
               }
             ]
-          },
-          {
-            "org": "GETEM",
-            "location": "",
-            "roles": [
-              {
-                "title": "Reader",
-                "date": "",
-                "bullets": [
-                  ""
-                ]
-              }
-            ]
-          },
-          {
-            "org": "Gorme Engelliler Okulu",
-            "location": "",
-            "roles": [
-              {
-                "title": "Exam Reader",
-                "date": "",
-                "bullets": [
-                  ""
-                ]
-              }
-            ]
           }
         ],
         "photos": []
