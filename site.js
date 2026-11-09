@@ -59,7 +59,7 @@
       : fetch('./content.json', { cache:'no-cache' }).then(function(r){
           if(!r.ok) throw new Error('content.json ' + r.status);
           return r.json();
-        })).then(function(c){ migrate(c); phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); textColors(c); return c; });
+        })).then(function(c){ migrate(c); phoneCrop(c); aboutStyle(c); bgSaturation(c); photoBrightness(c); photoSaturation(c); textColors(c); return c; });
     return contentPromise;
   }
 
@@ -374,6 +374,31 @@
     layout();
   }
 
+  // saturation of the gallery photos chosen in the admin (0 = black & white, 100 = original).
+  // Not a CSS filter on the photos (iPhone Safari draws filtered photos in the blurred panel
+  // as grey boxes): a grey layer over each gallery with the "saturation" blend mode takes the
+  // colour out; its opacity sets how much.
+  // Each photo then sits in its own frame (.ph): the grey layer only covers that photo, and the
+  // photo itself stays solid (dimming for brightness moves to the frame), so nothing turns grey.
+  var framePhotos = false;
+  function photoSaturation(c){
+    var v = c && c.home && c.home.photoSaturation;
+    if(typeof v !== 'number' || !isFinite(v) || v === 100) return;
+    framePhotos = true;
+    var amount = 1 - Math.max(0, Math.min(100, v)) / 100;
+    var b = c.home && typeof c.home.photoBrightness === 'number' ? Math.max(0, Math.min(100, c.home.photoBrightness)) / 100 : 1;
+    var el = document.getElementById('photo-saturation') || document.head.appendChild(document.createElement('style'));
+    el.id = 'photo-saturation';
+    el.textContent =
+      '.masonry .ph{display:block;position:relative;isolation:isolate;break-inside:avoid;margin-bottom:20px;' +
+        'opacity:' + (0.9 * b).toFixed(3) + '}' +
+      '.masonry .ph img{margin-bottom:0!important}' +
+      '.masonry .ph img.visible{opacity:1!important}' +
+      '.masonry .ph::after{content:"";position:absolute;inset:0;background:#808080;mix-blend-mode:saturation;' +
+        'opacity:0;transition:opacity .65s ease;pointer-events:none}' +
+      '.masonry .ph.visible::after{opacity:' + amount.toFixed(3) + '}';
+  }
+
   // Designs and Events used to be separate pages; they're now one Photos page with a
   // section for each. Older content is converted on the fly (the admin saves it in the
   // new form the next time something is published).
@@ -392,26 +417,46 @@
 
   // Text brightness per kind of text, set in the admin (Colors tab): 0 = black, 100 = white.
   // Drawn as solid greys (not see-through white) so nothing behind shows through letters.
+  // (colors.stacked holds separate values for rows once they've locked into a stack)
   var COLOR_TARGETS = {
-    names:    ['.exp-org', '.edu-school'],
-    roles:    ['.exp-title', '.edu-degree'],
-    meta:     ['.exp-location', '.exp-date', '.edu-location', '.edu-date'],
-    text:     ['.exp-entry ul li', '.exp-list ul li', '.about-me-scroll', '.about-me-scroll p'],
-    sections: ['.exp-section-title', '.about-section-title'],
-    titles:   ['.panel-title h1', '.page-head h1']
+    names:     ['.exp-org', '.edu-school'],
+    roles:     ['.exp-title', '.edu-degree'],
+    locations: ['.exp-location', '.edu-location'],
+    dates:     ['.exp-date', '.edu-date'],
+    text:      ['.exp-entry ul li', '.exp-list ul li', '.about-me-scroll', '.about-me-scroll p'],
+    sections:  ['.exp-section-title', '.about-section-title'],
+    titles:    ['.panel-title h1', '.page-head h1']
   };
+  var STACKED_TARGETS = {
+    names:     ['.stack-item.stuck .exp-org'],
+    roles:     ['.stack-item.stuck .exp-title'],
+    locations: ['.stack-item.stuck .exp-location'],
+    dates:     ['.stack-item.stuck .exp-date'],
+    sections:  ['.exp-section-title.stack-item.stuck']
+  };
+  function greyRule(sels, v){
+    var g = Math.round(Math.max(0, Math.min(100, v)) * 2.55);
+    // :not(#_) lifts these above the page's own rules
+    return sels.map(function(sel){ return 'html body ' + sel + ':not(#_)'; }).join(',') +
+      '{color:rgb(' + g + ',' + g + ',' + g + ')!important}';
+  }
   function textColors(c){
     var cols = c && c.colors;
     if(!cols) return;
+    function num(v){ return typeof v === 'number' && isFinite(v); }
     var css = '';
     Object.keys(COLOR_TARGETS).forEach(function(k){
       var v = cols[k];
-      if(typeof v !== 'number' || !isFinite(v)) return;
-      var g = Math.round(Math.max(0, Math.min(100, v)) * 2.55);
-      // :not(#_) lifts these above the page's own rules
-      css += COLOR_TARGETS[k].map(function(sel){ return 'html body ' + sel + ':not(#_)'; }).join(',') +
-        '{color:rgb(' + g + ',' + g + ',' + g + ')!important}';
+      // older setting: one value for locations and dates together
+      if(!num(v) && (k === 'locations' || k === 'dates')) v = cols.meta;
+      if(num(v)) css += greyRule(COLOR_TARGETS[k], v);
     });
+    var st = cols.stacked || {};
+    Object.keys(STACKED_TARGETS).forEach(function(k){
+      if(num(st[k])) css += greyRule(STACKED_TARGETS[k], st[k]);
+    });
+    // fade between the two when a row locks into the stack
+    css += '.resume-stack .stack-item > span{transition:color .3s ease}';
     if(!css) return;
     var el = document.getElementById('text-colors') || document.head.appendChild(document.createElement('style'));
     el.id = 'text-colors';
@@ -511,6 +556,7 @@
       entries.forEach(function(e){
         if(e.isIntersecting){
           e.target.classList.add('visible');
+          if(e.target.parentNode.classList.contains('ph')) e.target.parentNode.classList.add('visible');
           io.unobserve(e.target);
         }
       });
@@ -520,9 +566,15 @@
       img.loading = 'lazy';
       img.alt = '';
       img.src = src(p);
-      img.onerror = function(){ img.remove(); };
       img.style.transitionDelay = (i % 8) * 60 + 'ms';
-      el.appendChild(img);
+      var holder = img;
+      if(framePhotos){                       // see photoSaturation
+        holder = document.createElement('span');
+        holder.className = 'ph';
+        holder.appendChild(img);
+      }
+      img.onerror = function(){ holder.remove(); };
+      el.appendChild(holder);
       io.observe(img);
     });
   }
