@@ -65,6 +65,82 @@
     "title": "EXPERIENCES",
     "sections": [
       {
+        "title": "",
+        "entries": [
+          {
+            "org": "Career Services",
+            "location": "Claremont, CA",
+            "roles": [
+              {
+                "title": "Executive Office Assistant",
+                "date": "January 2022 - January 2026",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Pitzer Campus Life",
+            "location": "Claremont, CA",
+            "roles": [
+              {
+                "title": "Events Board Manager, Treasurer",
+                "date": "August 2025 - January 2026",
+                "bullets": [
+                  "Led the Campus Life Events Board, reporting directly to the Director of Campus Life; recruited and trained 10 event staﬀ.",
+                  "Managed programming budget each semester across 5 semesters as Events Board Treasurer."
+                ]
+              },
+              {
+                "title": "Events Coordinator",
+                "date": "August 2022 - February 2025",
+                "bullets": [
+                  "Coordinated and executed 100+ campus-wide events across the Claremont Colleges for a community of 8,000+ students.",
+                  "Oversaw the Kohoutek Music Festival ($45,000 budget, 700+ attendees from across Los Angeles), supervising the teams\nhandling artist booking, vendors, security, promotion, and day-of operations.",
+                  "Led promotion through flyers, murals, email graphics, and on-campus tabling, partnering with student organizations to drive attendance."
+                ]
+              },
+              {
+                "title": "Events Staff",
+                "date": "January 2022 - August 2022",
+                "bullets": [
+                  ""
+                ]
+              }
+            ]
+          },
+          {
+            "org": "Pomona-Pitzer Athletics",
+            "location": "Los Angeles, CA",
+            "roles": [
+              {
+                "title": "Athletic Event Staff",
+                "date": "August 2022 - January 2024",
+                "bullets": [
+                  "Ran game-day operations for 50+ NCAA Division III competitions across 7 sports, including the ~2,000-spectator Sixth Street Rivalry."
+                ]
+              }
+            ]
+          },
+          {
+            "org": "PEN America / Russian Independent Media Archives",
+            "location": "Manhattan, NY",
+            "roles": [
+              {
+                "title": "Event Planner",
+                "date": "February 2024 – May 2024",
+                "bullets": [
+                  "Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.",
+                  "Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York's Russian-speaking community to expand event participation and visibility."
+                ]
+              }
+            ]
+          }
+        ],
+        "photos": []
+      },
+      {
         "title": "APPRENTICESHIP",
         "entries": [
           {
@@ -209,81 +285,6 @@
         "hidden": [
           "assets/project1.jpg"
         ]
-      },
-      {
-        "title": "EVENTS MANAGEMENT",
-        "entries": [
-          {
-            "org": "Career Services",
-            "location": "Claremont, CA",
-            "roles": [
-              {
-                "title": "Executive Office Assistant",
-                "date": "",
-                "bullets": [
-                  ""
-                ]
-              }
-            ]
-          },
-          {
-            "org": "Pitzer Campus Life",
-            "location": "",
-            "roles": [
-              {
-                "title": "Events Board Manager, Treasurer",
-                "date": "",
-                "bullets": [
-                  ""
-                ]
-              },
-              {
-                "title": "Events Coordinator",
-                "date": "",
-                "bullets": [
-                  "Coordinated and executed 100+ campus-wide events across the Claremont Colleges for a community of 8,000+ students.",
-                  "Oversaw the Kohoutek Music Festival ($45,000 budget, 700+ attendees from across Los Angeles), supervising the teams\nhandling artist booking, vendors, security, promotion, and day-of operations.",
-                  "Led promotion through flyers, murals, email graphics, and on-campus tabling, partnering with student organizations to drive attendance."
-                ]
-              },
-              {
-                "title": "Events Staff",
-                "date": "",
-                "bullets": [
-                  ""
-                ]
-              }
-            ]
-          },
-          {
-            "org": "Pomona-Pitzer Athletics",
-            "location": "",
-            "roles": [
-              {
-                "title": "Athletic Event Staff",
-                "date": "",
-                "bullets": [
-                  ""
-                ]
-              }
-            ]
-          },
-          {
-            "org": "PEN America / Russian Independent Media Archives",
-            "location": "Manhattan, NY",
-            "roles": [
-              {
-                "title": "Event Planner",
-                "date": "February 2024 – May 2024",
-                "bullets": [
-                  "Planned and executed multiple events, including a Hackathon, World Cafe, and a gala for journalists in exile, coordinating logistics between PEN America, RIMA, and international journalists.",
-                  "Designed outreach materials across social media platforms as well as physical media across the boroughs, and managed outreach campaigns to journalists worldwide and New York's Russian-speaking community to expand event participation and visibility."
-                ]
-              }
-            ]
-          }
-        ],
-        "photos": []
       },
       {
         "title": "VOLUNTEERING",
