@@ -408,10 +408,11 @@
     ]
   },
   "colors": {
-    "titles": 78,
-    "sections": 61,
-    "roles": 47,
-    "meta": 68,
-    "text": 38
+    "titles": 88,
+    "sections": 75,
+    "roles": 35,
+    "meta": 70,
+    "text": 38,
+    "names": 93
   }
 }
