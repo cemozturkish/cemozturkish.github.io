@@ -195,6 +195,9 @@
   function stackResume(root, scroller, head, pageTitle){
     if(resumeState) resumeState.destroy();
     var GAP = 2;
+    var MIN_RS = 0.8;      // rows never shrink below 80% (stays readable)
+    var push = 0;          // how far the stack has slid up once it fills the screen
+    var stackLimit = 0;    // lowest the stack's bottom may go (from the top of the scroll area)
     root.classList.add('resume-stack');
     // empty section titles take no space
     root.querySelectorAll('h2.exp-section-title').forEach(function(t){ if(!t.textContent.trim()) t.style.display = 'none'; });
@@ -229,7 +232,7 @@
       el.classList.add('stack-item');
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
-      function go(){ scrollTo(naturalTop(el) - el._stickTop); }
+      function go(){ scrollTo(naturalTop(el) - (el._stickTop - pushFor(items.indexOf(el)))); }
       el.addEventListener('click', go);
       el.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
     });
@@ -247,6 +250,23 @@
       measureCollapsed();
       return items.reduce(function(sum, el){ return sum + el._collH + GAP; }, 0);
     }
+    // once the stack fills the screen it slides up so row i's bottom stays on screen
+    function pushFor(i){
+      if(i < 0) return 0;
+      var el = items[i];
+      return Math.max(0, el._stickTop + el._collH - stackLimit);
+    }
+    function setPush(p){
+      if(p === push) return;
+      push = p;
+      var hh = headH();
+      items.forEach(function(el){
+        var t = el._stickTop - push;
+        el.style.top = t + 'px';
+        // rows that slide up past the header are tucked away (they come back on the way up)
+        el.classList.toggle('tucked', t < hh - 1);
+      });
+    }
     var laidOutFor = null;
     function layout(){
       // 1. scale rows so the whole stack fits on one screen
@@ -260,16 +280,22 @@
       var rootEnd = docTop(spacer);                       // where the list ends
       var tail = Math.max(0, full0 - rootEnd - spacer.offsetHeight);
       var extra = items.reduce(function(m, el){ return Math.max(m, el.offsetHeight); }, 0);
-      var avail = viewH() - headH() - tail - extra - 6;
+      stackLimit = viewH() - tail - extra - 6;
+      var avail = stackLimit - headH();
       root.style.setProperty('--rs', 1);
       if(stackHeight() > avail){
-        var lo = 0.45, hi = 1;
-        for(var i = 0; i < 8; i++){
-          var mid = (lo + hi) / 2;
-          root.style.setProperty('--rs', mid.toFixed(4));
-          if(stackHeight() <= avail) lo = mid; else hi = mid;
+        // shrink just enough to fit, but not below MIN_RS; if it still doesn't fit, the
+        // stack slides up as it fills the screen (see pushFor)
+        root.style.setProperty('--rs', MIN_RS);
+        if(stackHeight() <= avail){
+          var lo = MIN_RS, hi = 1;
+          for(var i = 0; i < 8; i++){
+            var mid = (lo + hi) / 2;
+            root.style.setProperty('--rs', mid.toFixed(4));
+            if(stackHeight() <= avail) lo = mid; else hi = mid;
+          }
+          root.style.setProperty('--rs', lo.toFixed(4));
         }
-        root.style.setProperty('--rs', lo.toFixed(4));
       }
       measureCollapsed();
       // 2. give every row its place in the stack
@@ -277,10 +303,10 @@
       items.forEach(function(el){
         el.classList.remove('stuck'); el.style.height = '';
         el._flowH = el.offsetHeight;          // its normal height while reading
-        el.style.top = top + 'px';
         el._stickTop = top;
         top += el._collH + GAP;
       });
+      push = -1; setPush(0);
       // 3. enough room at the end for the last row to reach its place
       // (worked out without first removing the old spacing, so a re-measure while you're
       // at the bottom doesn't knock you off it)
@@ -288,7 +314,7 @@
       if(last){
         var full = scroller === window ? document.documentElement.scrollHeight : scroller.scrollHeight;
         var maxScrollWithout = full - spacer.offsetHeight - viewH();
-        var needed = naturalTop(last) - last._stickTop;
+        var needed = naturalTop(last) - (last._stickTop - pushFor(items.length - 1));
         spacer.style.height = Math.max(0, Math.ceil(needed - maxScrollWithout) + 2) + 'px';
       }
       laidOutFor = { w: window.innerWidth, h: viewH() };
@@ -297,15 +323,25 @@
     function update(){
       var base = scroller === window ? 0 : scroller.getBoundingClientRect().top;
       var line = head ? head.getBoundingClientRect().bottom : base;
+      // which rows have reached the stack: row i joins when it touches the bottom of the
+      // stack as it was before it (that only depends on the rows above it, so it's stable)
+      var scrollY = scroller === window ? window.scrollY : scroller.scrollTop;
+      var joined = -1;
+      for(var i = 0; i < items.length; i++){
+        var nat = naturalTop(items[i]) - scrollY;
+        if(nat <= items[i]._stickTop - pushFor(i - 1) + 0.5) joined = i; else break;
+      }
+      setPush(pushFor(joined));
       items.forEach(function(el){
-        var r = el.getBoundingClientRect();
-        var stuck = r.top - base <= el._stickTop + 0.5;
+        // stuck = its place in the page has reached its spot in the stack (worked out from
+        // the page position, not the screen, so the stack sliding doesn't confuse it)
+        var stuck = naturalTop(el) - scrollY <= el._stickTop - push + 0.5;
         if(stuck !== el.classList.contains('stuck')){
           el.classList.toggle('stuck', stuck);
           // keep its normal height in the page while it's drawn smaller, so nothing jumps
           el.style.height = stuck ? el._flowH + 'px' : '';
         }
-        if(stuck) line = Math.max(line, base + el._stickTop + el._collH);
+        if(stuck && !el.classList.contains('tucked')) line = Math.max(line, base + el._stickTop - push + el._collH);
       });
       line += GAP;
       // details are cut off at the bottom edge of the stack
@@ -325,14 +361,22 @@
     // photos loading change the page length: redo the layout when they do
     var ro = window.ResizeObserver ? new ResizeObserver(function(){ requestAnimationFrame(layout); }) : null;
     if(ro) root.querySelectorAll('.masonry').forEach(function(m){ ro.observe(m); });
+    // the font arriving changes how rows wrap: measure again when it does
+    function onFonts(){ requestAnimationFrame(layout); }
+    if(document.fonts){
+      document.fonts.ready.then(function(){ if(resumeState && resumeState.layout === layout) onFonts(); });
+      document.fonts.addEventListener('loadingdone', onFonts);
+    }
 
     resumeState = {
       // phone toolbars change the height a little while scrolling; ignore that
       onResize: function(){
         if(!laidOutFor || window.innerWidth !== laidOutFor.w || Math.abs(viewH() - laidOutFor.h) > 150) layout();
       },
+      layout: layout,
       destroy: function(){
         scroller.removeEventListener('scroll', onScroll);
+        if(document.fonts) document.fonts.removeEventListener('loadingdone', onFonts);
         if(ro) ro.disconnect();
         if(pageTitle){ pageTitle.removeEventListener('click', toTop); pageTitle.classList.remove('stack-page-title'); }
         root.classList.remove('resume-stack');
