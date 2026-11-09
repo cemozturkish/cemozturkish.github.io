@@ -254,15 +254,21 @@ textarea.big{ min-height:160px; }
 .tb-btn[aria-pressed="true"]{ background:var(--panel-2); color:var(--text); border-color:var(--line); }
 .tb-sep{ width:1px; height:18px; background:var(--line); margin:0 6px; }
 textarea.with-toolbar{ border-top-left-radius:0; border-top-right-radius:0; }
+.color-samples{ display:grid; grid-template-columns:3fr 2fr; gap:10px; margin-bottom:10px; }
+@media(max-width:700px){ .color-samples{ grid-template-columns:1fr; } }
+.color-sample.stacked{ font-size:85%; }
+.color-sample .cs-label{ font-family:system-ui,sans-serif; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#666; margin-bottom:10px; }
+.style-ctrl .stack-when{ width:96px; flex-shrink:0; }
+@media(max-width:640px){ .style-ctrl .stack-when{ width:auto; } }
 .color-sample{
-  background:#0b0b0b; border-radius:10px; padding:18px 20px; margin-bottom:10px;
+  background:#0b0b0b; border-radius:10px; padding:18px 20px; margin-bottom:0;
   font-family:'Josefin Sans',system-ui,sans-serif;
 }
 .color-sample .cs-title{ text-align:center; font-weight:200; font-size:22px; letter-spacing:.06em; margin-bottom:10px; }
 .color-sample .cs-section{ text-align:center; font-weight:300; font-size:15px; letter-spacing:.08em; margin-bottom:12px; }
 .color-sample .cs-row{ display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-top:4px; }
 .color-sample .cs-name{ font-weight:300; font-size:17px; letter-spacing:.04em; }
-.color-sample .cs-role{ font-style:italic; font-size:14px; }
+.color-sample .cs-role{ font-size:14px; }
 .color-sample .cs-meta{ font-size:13px; white-space:nowrap; }
 .color-sample .cs-text{ font-size:14px; line-height:1.6; margin-top:8px; padding-left:6px; }
 .bright-strip{ display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; margin:4px 0 12px; }
@@ -471,6 +477,11 @@ function normalize(c){
     });
     c.photos = { title:'PHOTOS', heading:'PHOTOS', sections: sections };
     delete c.designs; delete c.events;
+  }
+  if(c.colors && typeof c.colors.meta === 'number'){
+    if(typeof c.colors.locations !== 'number') c.colors.locations = c.colors.meta;
+    if(typeof c.colors.dates !== 'number') c.colors.dates = c.colors.meta;
+    delete c.colors.meta;
   }
   ['about','photos','experiences'].forEach(function(k){
     var p = c[k];
@@ -1304,62 +1315,103 @@ function brightnessCard(){
 /* ---------- Colors: brightness of each kind of text ---------- */
 // defaults = what the site shows when nothing is set (approximate greys of the built-in styles)
 var COLOR_FIELDS = [
-  { key:'titles',   label:'Page titles',                         def:55, help:'WORK EXPERIENCES, PHOTOS, …' },
-  { key:'sections', label:'Section titles',                      def:40, help:'EDUCATION, INTERNSHIPS, DESIGNS, …' },
-  { key:'names',    label:'Organization & school names',         def:85 },
-  { key:'roles',    label:'Job titles & degrees',                def:60 },
-  { key:'meta',     label:'Locations & dates',                   def:45 },
-  { key:'text',     label:'Descriptions',                        def:60, help:'Bullet points and the About Me text' }
+  { key:'titles',    label:'Page titles',                 def:55, help:'WORK EXPERIENCES, PHOTOS, …' },
+  { key:'sections',  label:'Section titles',              def:40, help:'EDUCATION, INTERNSHIPS, DESIGNS, …', stacks:true },
+  { key:'names',     label:'Organization & school names', def:85, stacks:true },
+  { key:'roles',     label:'Job titles & degrees',        def:60, stacks:true },
+  { key:'locations', label:'Locations',                   def:45, stacks:true },
+  { key:'dates',     label:'Dates',                       def:40, stacks:true },
+  { key:'text',      label:'Descriptions',                def:60, help:'Bullet points and the About Me text' }
 ];
 function colorsView(){
-  function get(k){ var c = content.colors; return c && typeof c[k] === 'number' ? c[k] : COLOR_FIELDS.filter(function(f){ return f.key === k; })[0].def; }
+  function field(k){ return COLOR_FIELDS.filter(function(f){ return f.key === k; })[0]; }
+  function get(k){ var c = content.colors; return c && typeof c[k] === 'number' ? c[k] : field(k).def; }
+  // once stacked: its own value if set, otherwise the same as before stacking
+  function getStacked(k){ var st = content.colors && content.colors.stacked; return st && typeof st[k] === 'number' ? st[k] : get(k); }
   function grey(v){ var g = Math.round(v * 2.55); return 'rgb(' + g + ',' + g + ',' + g + ')'; }
+  function cleanup(){
+    var c = content.colors;
+    if(!c) return;
+    if(c.stacked && !Object.keys(c.stacked).length) delete c.stacked;
+    if(!Object.keys(c).length) delete content.colors;
+  }
 
-  // live sample on the site's dark background
-  var sample = h('div', { class:'color-sample' },
-    h('div', { class:'cs-title', 'data-k':'titles', text:'WORK EXPERIENCES' }),
-    h('div', { class:'cs-section', 'data-k':'sections', text:'INTERNSHIPS' }),
-    h('div', { class:'cs-row' }, h('span', { class:'cs-name', 'data-k':'names', text:'Legal Aid Society' }), h('span', { class:'cs-meta', 'data-k':'meta', text:'Brooklyn, NY' })),
-    h('div', { class:'cs-row' }, h('span', { class:'cs-role', 'data-k':'roles', text:'Production Assistant' }), h('span', { class:'cs-meta', 'data-k':'meta', text:'January 2024 – June 2024' })),
-    h('div', { class:'cs-text', 'data-k':'text', text:'· Worked with videographers and attorneys to produce video mitigation projects.' })
-  );
-  function paint(){ sample.querySelectorAll('[data-k]').forEach(function(el){ el.style.color = grey(get(el.dataset.k)); }); }
+  // live samples on the site's dark background: while reading, and once stacked
+  function entry(stacked){
+    var g = stacked ? 'data-s' : 'data-k';
+    function a(k){ var o = {}; o[g] = k; return o; }
+    return h('div', { class:'color-sample' + (stacked ? ' stacked' : '') },
+      h('div', { class:'cs-label', text: stacked ? 'Once stacked' : 'While reading' }),
+      stacked ? null : h('div', Object.assign({ class:'cs-title', text:'WORK EXPERIENCES' }, { 'data-k':'titles' })),
+      h('div', Object.assign({ class:'cs-section', text:'INTERNSHIPS' }, a('sections'))),
+      h('div', { class:'cs-row' }, h('span', Object.assign({ class:'cs-name', text:'Legal Aid Society' }, a('names'))), h('span', Object.assign({ class:'cs-meta', text:'Brooklyn, NY' }, a('locations')))),
+      h('div', { class:'cs-row' }, h('span', Object.assign({ class:'cs-role', text:'Production Assistant' }, a('roles'))), h('span', Object.assign({ class:'cs-meta', text:'January 2024 – June 2024' }, a('dates')))),
+      stacked ? null : h('div', { class:'cs-text', 'data-k':'text', text:'· Worked with videographers and attorneys to produce video mitigation projects.' })
+    );
+  }
+  var samples = h('div', { class:'color-samples' }, entry(false), entry(true));
+  function paint(){
+    samples.querySelectorAll('[data-k]').forEach(function(el){ el.style.color = grey(get(el.dataset.k)); });
+    samples.querySelectorAll('[data-s]').forEach(function(el){ el.style.color = grey(getStacked(el.dataset.s)); });
+  }
 
   var resetAll = h('button', { class:'btn small ghost', type:'button' }, 'Reset all');
-  var rows = COLOR_FIELDS.map(function(f){
-    var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':f.label });
-    var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':f.label });
-    range.value = box.value = get(f.key);
+  var controls = [];
+  function slider(f, stacked){
+    var label = f.label + (stacked ? ' (stacked)' : '');
+    var range = h('input', { type:'range', min:0, max:100, step:1, 'aria-label':label });
+    var box = h('input', { type:'number', min:0, max:100, step:1, class:'num', 'aria-label':label });
+    function show(){ range.value = box.value = stacked ? getStacked(f.key) : get(f.key); }
     function set(v, from){
       v = Math.round(parseFloat(v));
       if(!isFinite(v)) return;
       v = Math.max(0, Math.min(100, v));
       content.colors = content.colors || {};
-      if(v === f.def && !(original.colors && f.key in original.colors)) delete content.colors[f.key];
-      else content.colors[f.key] = v;
-      if(!Object.keys(content.colors).length) delete content.colors;
+      if(stacked){
+        content.colors.stacked = content.colors.stacked || {};
+        content.colors.stacked[f.key] = v;
+      } else if(v === f.def && !(original.colors && f.key in original.colors)){
+        delete content.colors[f.key];
+      } else {
+        content.colors[f.key] = v;
+      }
+      cleanup();
       if(from !== range) range.value = v;
       if(from !== box) box.value = v;
+      controls.forEach(function(c){ if(c !== ctl) c.show(); });   // stacked sliders follow until set
       resetAll.disabled = !content.colors;
       paint(); refreshStatus();
     }
     range.addEventListener('input', function(){ set(range.value, range); });
     box.addEventListener('change', function(){ set(box.value, box); });
-    var row = h('div', { class:'style-row' },
+    var ctl = { show: show };
+    controls.push(ctl);
+    show();
+    return h('div', { class:'style-ctrl' },
+      f.stacks ? h('span', { class:'small-label stack-when', text: stacked ? 'After stacking' : 'Before stacking' }) : null,
+      h('span', { class:'small-label', text:'dark' }), range, h('span', { class:'small-label', text:'white' }), box);
+  }
+  var rows = COLOR_FIELDS.map(function(f){
+    return h('div', { class:'style-row' },
       h('div', { class:'style-label' }, h('span', { text:f.label }), f.help ? h('small', { text:f.help }) : null),
-      h('div', { class:'style-ctrl' }, h('span', { class:'small-label', text:'dark' }), range, h('span', { class:'small-label', text:'white' }), box)
+      slider(f, false),
+      f.stacks ? h('div', { style:'height:6px' }) : null,
+      f.stacks ? slider(f, true) : null
     );
-    row._set = set;
-    return row;
   });
-  resetAll.addEventListener('click', function(){ rows.forEach(function(r, i){ r._set(COLOR_FIELDS[i].def); }); });
+  resetAll.addEventListener('click', function(){
+    delete content.colors;
+    controls.forEach(function(c){ c.show(); });
+    resetAll.disabled = true;
+    paint(); refreshStatus();
+  });
   resetAll.disabled = !content.colors;
   paint();
   return [
-    pageHead('Colors', 'How bright each kind of text is on the site. 100 = white; lower = greyer (darker).'),
+    pageHead('Colors', 'How bright each kind of text is on the site. 100 = white; lower = greyer (darker). Names, job titles, locations, dates and section titles can be set separately for once they lock into a stack while scrolling.'),
     h('div', { class:'card section' },
       h('div', { class:'section-head' }, h('h3', { text:'Text brightness' }), resetAll),
-      sample,
+      samples,
       rows
     )
   ];

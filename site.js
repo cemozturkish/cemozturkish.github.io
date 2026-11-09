@@ -417,26 +417,46 @@
 
   // Text brightness per kind of text, set in the admin (Colors tab): 0 = black, 100 = white.
   // Drawn as solid greys (not see-through white) so nothing behind shows through letters.
+  // (colors.stacked holds separate values for rows once they've locked into a stack)
   var COLOR_TARGETS = {
-    names:    ['.exp-org', '.edu-school'],
-    roles:    ['.exp-title', '.edu-degree'],
-    meta:     ['.exp-location', '.exp-date', '.edu-location', '.edu-date'],
-    text:     ['.exp-entry ul li', '.exp-list ul li', '.about-me-scroll', '.about-me-scroll p'],
-    sections: ['.exp-section-title', '.about-section-title'],
-    titles:   ['.panel-title h1', '.page-head h1']
+    names:     ['.exp-org', '.edu-school'],
+    roles:     ['.exp-title', '.edu-degree'],
+    locations: ['.exp-location', '.edu-location'],
+    dates:     ['.exp-date', '.edu-date'],
+    text:      ['.exp-entry ul li', '.exp-list ul li', '.about-me-scroll', '.about-me-scroll p'],
+    sections:  ['.exp-section-title', '.about-section-title'],
+    titles:    ['.panel-title h1', '.page-head h1']
   };
+  var STACKED_TARGETS = {
+    names:     ['.stack-item.stuck .exp-org'],
+    roles:     ['.stack-item.stuck .exp-title'],
+    locations: ['.stack-item.stuck .exp-location'],
+    dates:     ['.stack-item.stuck .exp-date'],
+    sections:  ['.exp-section-title.stack-item.stuck']
+  };
+  function greyRule(sels, v){
+    var g = Math.round(Math.max(0, Math.min(100, v)) * 2.55);
+    // :not(#_) lifts these above the page's own rules
+    return sels.map(function(sel){ return 'html body ' + sel + ':not(#_)'; }).join(',') +
+      '{color:rgb(' + g + ',' + g + ',' + g + ')!important}';
+  }
   function textColors(c){
     var cols = c && c.colors;
     if(!cols) return;
+    function num(v){ return typeof v === 'number' && isFinite(v); }
     var css = '';
     Object.keys(COLOR_TARGETS).forEach(function(k){
       var v = cols[k];
-      if(typeof v !== 'number' || !isFinite(v)) return;
-      var g = Math.round(Math.max(0, Math.min(100, v)) * 2.55);
-      // :not(#_) lifts these above the page's own rules
-      css += COLOR_TARGETS[k].map(function(sel){ return 'html body ' + sel + ':not(#_)'; }).join(',') +
-        '{color:rgb(' + g + ',' + g + ',' + g + ')!important}';
+      // older setting: one value for locations and dates together
+      if(!num(v) && (k === 'locations' || k === 'dates')) v = cols.meta;
+      if(num(v)) css += greyRule(COLOR_TARGETS[k], v);
     });
+    var st = cols.stacked || {};
+    Object.keys(STACKED_TARGETS).forEach(function(k){
+      if(num(st[k])) css += greyRule(STACKED_TARGETS[k], st[k]);
+    });
+    // fade between the two when a row locks into the stack
+    css += '.resume-stack .stack-item > span{transition:color .3s ease}';
     if(!css) return;
     var el = document.getElementById('text-colors') || document.head.appendChild(document.createElement('style'));
     el.id = 'text-colors';
