@@ -47,20 +47,6 @@
     },
     "textAlign": "justify"
   },
-  "designs": {
-    "title": "DESIGNS",
-    "photos": [
-      "assets/designer1.jpg",
-      "assets/designer2.jpg",
-      "assets/designer3.jpg",
-      "assets/designer4.jpg",
-      "assets/designer5.jpg",
-      "assets/designer6.jpg",
-      "assets/designer7.jpg",
-      "assets/designer8.jpg"
-    ],
-    "heading": "MY DESIGNS"
-  },
   "experiences": {
     "title": "EXPERIENCES",
     "sections": [
@@ -373,58 +359,59 @@
     ],
     "heading": "WORK EXPERIENCES"
   },
-  "events": {
-    "title": "EVENTS",
-    "headerImage": "",
-    "entries": [
-      {
-        "org": "Pitzer Campus Life",
-        "location": "Claremont, CA",
-        "roles": [
-          {
-            "title": "Events Board Manager",
-            "date": "August 2025 – May 2026",
-            "bullets": [
-              "Oversaw the event calendar, supervised Event Staff, and managed technical operations including sound equipment setup and troubleshooting."
-            ]
-          },
-          {
-            "title": "Events Coordinator",
-            "date": "August 2022 – February 2025",
-            "bullets": [
-              "Coordinated and executed over 100 campus-wide events across the Claremont Colleges for over 8,000 students.",
-              "Led outreach and promotion through digital and physical campaigns, including flyers, murals, email graphics, tabling on campus, and collaborating with student organizations to maximize participation."
-            ]
-          }
-        ]
-      }
-    ],
-    "photos": [
-      "assets/events1.jpg",
-      "assets/events2.jpg",
-      "assets/events3.jpg",
-      "assets/events4.jpg",
-      "assets/events5.jpg",
-      "assets/events6.jpg",
-      "assets/events7.jpg",
-      "assets/events8.jpg",
-      "assets/events9.jpg",
-      "assets/events10.jpg",
-      "assets/events11.jpg",
-      "assets/events12.jpg",
-      "assets/events13.jpg",
-      "assets/events14.jpg",
-      "assets/events15.jpg",
-      "assets/events16.jpg",
-      "assets/events17.jpg",
-      "assets/events18.jpg",
-      "assets/events19.jpg"
-    ],
-    "heading": "EVENTS ORGANIZED"
-  },
   "home": {
     "mobileFocusX": 43,
     "saturation": 34,
     "photoBrightness": 60
+  },
+  "photos": {
+    "title": "PHOTOS",
+    "heading": "PHOTOS",
+    "sections": [
+      {
+        "title": "DESIGNS",
+        "photos": [
+          "assets/designer1.jpg",
+          "assets/designer2.jpg",
+          "assets/designer3.jpg",
+          "assets/designer4.jpg",
+          "assets/designer5.jpg",
+          "assets/designer6.jpg",
+          "assets/designer7.jpg",
+          "assets/designer8.jpg"
+        ]
+      },
+      {
+        "title": "EVENTS",
+        "photos": [
+          "assets/events1.jpg",
+          "assets/events2.jpg",
+          "assets/events3.jpg",
+          "assets/events4.jpg",
+          "assets/events5.jpg",
+          "assets/events6.jpg",
+          "assets/events7.jpg",
+          "assets/events8.jpg",
+          "assets/events9.jpg",
+          "assets/events10.jpg",
+          "assets/events11.jpg",
+          "assets/events12.jpg",
+          "assets/events13.jpg",
+          "assets/events14.jpg",
+          "assets/events15.jpg",
+          "assets/events16.jpg",
+          "assets/events17.jpg",
+          "assets/events18.jpg",
+          "assets/events19.jpg"
+        ]
+      }
+    ]
+  },
+  "colors": {
+    "titles": 78,
+    "sections": 61,
+    "roles": 47,
+    "meta": 68,
+    "text": 38
   }
 }
