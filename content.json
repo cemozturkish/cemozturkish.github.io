@@ -323,7 +323,8 @@
   "home": {
     "mobileFocusX": 43,
     "saturation": 34,
-    "photoBrightness": 60
+    "photoBrightness": 60,
+    "photoSaturation": 41
   },
   "photos": {
     "title": "PHOTOS",
