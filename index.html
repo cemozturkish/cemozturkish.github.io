@@ -496,6 +496,39 @@ body{
   -webkit-tap-highlight-color:transparent;
   text-shadow:0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 7px #000, 0 0 9px #000, 0 0 12px #000, 0 0 16px #000, 0 0 22px rgba(0,0,0,0.85);
 }
+/* Phones: photos and bullets pass BEHIND a black backdrop on the header and stacked rows.
+   The backdrop moves with the sticky rows, so it keeps up with the finger. (The script's
+   cut-off lands a few frames late on iPhone, which let photos slide over a title and then
+   snap off.) The panel is almost black here, so the backdrop barely shows: it fades in as a
+   row nears the stack, and its soft lower edge fades photos out instead of cutting them. */
+@media (hover:none), (pointer:coarse){
+  /* rows' backdrops span the whole panel: the list's sideways clip reaches out over the
+     panel's side padding (content stays where it was) */
+  .section-panel .resume-stack{
+    margin:0 calc(-1 * clamp(24px, 4vw, 60px)) !important;
+    padding-left:clamp(24px, 4vw, 60px); padding-right:clamp(24px, 4vw, 60px);
+  }
+  .section-panel .panel-head::before,
+  .section-panel .resume-stack .stack-item::before{
+    content:""; position:absolute; z-index:-1; pointer-events:none;
+    top:0; bottom:0; left:0; right:0;
+    background:#000;
+  }
+  /* rows: close the 2px gap above; hidden until the row is about to join the stack */
+  .section-panel .resume-stack .stack-item::before{
+    top:-2px; left:-100vw; right:-100vw;
+    opacity:0; transition:opacity .2s ease;
+  }
+  .section-panel .resume-stack .stack-item.near::before,
+  .section-panel .resume-stack .stack-item.stuck::before{ opacity:1; }
+  /* soft edge under a section title (its photos start 20px lower) and under any row once
+     it's in the stack */
+  .section-panel .resume-stack h2.exp-section-title::before,
+  .section-panel .resume-stack .stack-item.stuck::before{
+    bottom:-18px;
+    background:linear-gradient(to bottom, #000 calc(100% - 18px), rgba(0,0,0,0));
+  }
+}
 .resume-stack .exp-head{ margin-top:22px !important; }
 .resume-stack .exp-role{ margin-top:4px !important; }
 .resume-stack ul{ margin-top:6px !important; margin-bottom:4px; }
