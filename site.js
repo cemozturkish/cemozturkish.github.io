@@ -195,7 +195,6 @@
   function stackResume(root, scroller, head, pageTitle, size){
     if(resumeState) resumeState.destroy();
     var GAP = 2;
-    var NEAR = 90;         // px before a row joins the stack that it counts as 'near'
     // how big rows are once stacked (admin: Experiences → Stacked rows size); 0.5–1
     var RS = typeof size === 'number' && isFinite(size) ? Math.max(0.5, Math.min(1, size)) : 0.9;
     var push = 0;          // how far the stack has slid up once it fills the screen
@@ -324,10 +323,7 @@
       items.forEach(function(el){
         // stuck = its place in the page has reached its spot in the stack (worked out from
         // the page position, not the screen, so the stack sliding doesn't confuse it)
-        var gap = naturalTop(el) - scrollY - (el._stickTop - push);
-        var stuck = gap <= 0.5;
-        // about to join the stack (pages can fade in a backdrop behind it ahead of time)
-        el.classList.toggle('near', gap <= NEAR);
+        var stuck = naturalTop(el) - scrollY <= el._stickTop - push + 0.5;
         if(stuck !== el.classList.contains('stuck')){
           el.classList.toggle('stuck', stuck);
           // keep its normal height in the page while it's drawn smaller, so nothing jumps
