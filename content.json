@@ -371,9 +371,15 @@
   "colors": {
     "titles": 88,
     "sections": 75,
-    "roles": 35,
-    "meta": 70,
-    "text": 38,
-    "names": 93
+    "roles": 38,
+    "text": 48,
+    "names": 93,
+    "locations": 64,
+    "dates": 41,
+    "stacked": {
+      "dates": 29,
+      "roles": 30,
+      "locations": 50
+    }
   }
 }
